@@ -298,6 +298,12 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-admin-match-actions{display:flex;gap:6px;margin-top:7px;padding-top:6px;border-top:1px solid #263638;flex-wrap:wrap}
 .bx-admin-match-actions button{font-size:10px;padding:5px 7px}
 
+
+.audit-action{display:inline-block;border:1px solid #304447;border-radius:4px;padding:3px 7px;font-size:10px;font-weight:600}
+.audit-login{color:#43BEC6}.audit-insert{color:#57d69b}.audit-update{color:#e6c35b}.audit-delete{color:#ed6b76}
+#auditLogList details summary{cursor:pointer;color:#43BEC6;font-size:12px}
+#auditLogList pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:520px;max-height:220px;overflow:auto;background:#050909;padding:8px;border-radius:4px;font-size:10px;color:#bcd0d1}
+
 </style>
 </head>
 <body>
@@ -349,7 +355,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <button id="memberSignOut" class="danger">Sign out</button></div>
 <div id="notAdminPanel" class="panel loginbox hide"><h2>Dashboard-only access</h2><p>You are signed in, but this email has not been approved for full details. Contact the BFB X administrator if you need access.</p><button id="notAdminSignOut">Sign out</button></div>
 <div id="adminPanel" class="hide"><div class="panel section"><div class="head"><div><h2>Admin Control Center</h2><div id="adminEmail" class="authnote"></div></div><div class="actions"><button id="refreshBtn">Refresh now</button><button id="signOutBtn" class="danger">Sign out</button></div></div></div>
-<div class="panel section"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div></div>
+<div class="panel section"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div>
+<div class="panel section">
+ <div class="head"><div><h3>Activity & Login Audit Log</h3><p class="muted">See which account signed in, what records changed, who changed them, and when.</p></div><button type="button" id="refreshAuditLog">Refresh log</button></div>
+ <div class="form-grid"><div><label for="auditEmailFilter">Filter by email</label><input id="auditEmailFilter" placeholder="name@example.com"></div><div><label for="auditActionFilter">Filter by action</label><select id="auditActionFilter"><option value="">All activity</option><option value="LOGIN">Logins</option><option value="INSERT">Created</option><option value="UPDATE">Updated</option><option value="DELETE">Deleted</option></select></div></div>
+ <div id="auditLogList" style="margin-top:12px">Run the audit-log SQL migration, then refresh this panel.</div>
+</div>
+</div>
 <div class="admin-grid">
 <div class="panel"><h3>Player profile</h3><form id="playerForm"><input type="hidden" id="playerId"><label>Blader name *</label><input id="playerName" required maxlength="100"><label>Combos</label><textarea id="playerCombos" rows="3" maxlength="2000" placeholder="Enter combos"></textarea><label>Decks</label><textarea id="playerDecks" rows="3" maxlength="2000" placeholder="Enter decks"></textarea><div class="actions"><button class="primary" type="submit" id="playerSave">Add player</button><button type="button" class="ghost" data-reset="player">Clear</button></div></form><h3 style="margin-top:19px">Existing players</h3><div id="adminPlayers"></div></div>
 <div class="panel"><h3>Beyblade Combo</h3><form id="comboForm"><input type="hidden" id="comboId"><label>Combo name *</label><input id="comboName" required placeholder="Example: Phoenix Wing 9-60P"><div class="form-grid"><div><label>Blade</label><input id="comboBlade"></div><div><label>Ratchet</label><input id="comboRatchet"></div><div><label>Bit</label><input id="comboBit"></div><div><label>Type</label><select id="comboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div></div><label>Owner</label><select id="comboOwner"></select><label>Notes</label><input id="comboNotes"><div class="actions"><button class="primary" type="submit" id="comboSave">Add combo</button><button type="button" class="ghost" data-reset="combo">Clear</button></div></form><h3 style="margin-top:19px">Existing combos</h3><div id="adminCombos"></div></div>
@@ -624,7 +636,7 @@ function showAuth(){
  $('memberEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
  document.querySelector('[data-view="admin"]').textContent=isAdmin?'Admin Dashboard':(isViewer?'Member Account':'Member / Admin Login');
  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!isViewer&&!isAdmin));
- if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();loadApprovedViewers();}
+ if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();loadApprovedViewers();loadAuditLog();}
  const own=data.players.find(p=>p.auth_user_id===session?.user?.id);
  $('ownPlayerProfile').classList.toggle('hide',!own);
  if(own){$('ownBladerName').value=own.name||'';$('ownBladerCombos').value=own.combos||'';$('ownBladerDecks').value=own.decks||'';}
@@ -642,6 +654,23 @@ async function refreshAuth(){
   }
   showAuth();
  }catch(e){banner('Authentication check failed: '+e.message,'error');}
+}
+
+async function loadAuditLog(){
+ if(!isAdmin)return;
+ const target=$('auditLogList');if(!target)return;
+ target.textContent='Loading activity…';
+ try{
+  const {data:rows,error}=await sb.from('admin_activity_log').select('id,actor_email,action,entity_table,record_id,details,created_at').order('created_at',{ascending:false}).limit(500);
+  if(error)throw error;
+  const email=($('auditEmailFilter')?.value||'').trim().toLowerCase(),action=$('auditActionFilter')?.value||'';
+  const filtered=(rows||[]).filter(x=>(!email||(x.actor_email||'').toLowerCase().includes(email))&&(!action||x.action===action));
+  target.innerHTML=filtered.length?table(['When','Email','Action','Area','Details'],filtered.map(x=>{
+   const d=x.details||{},summary=d.summary||d.name||d.email||d.tournament_name||d.player_name||'Record '+String(x.record_id||'').slice(0,8);
+   const details=JSON.stringify(d).slice(0,500);
+   return row([E(new Date(x.created_at).toLocaleString()),E(x.actor_email||'Unknown email'),'<span class="audit-action audit-'+E(x.action.toLowerCase())+'">'+E(x.action)+'</span>',E(x.entity_table),'<details><summary>'+E(summary)+'</summary><pre>'+E(details)+'</pre></details>']);
+  })):'<div class="empty">No activity found for this filter.</div>';
+ }catch(err){target.textContent='Could not load audit log: '+err.message+'. Run the Activity Audit Log SQL migration in Supabase first.';}
 }
 async function loadApprovedViewers(){
  if(!isAdmin)return;
@@ -741,7 +770,7 @@ document.addEventListener('change',async e=>{
  await loadAll(true);renderTournamentManager();banner('Player group assignment updated.','success');
 });
 
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error){$('loginError').textContent=error.message;return;}$('loginPassword').value='';$('loginError').textContent='';await refreshAuth();if(isAdmin){banner('Admin login successful. You can manage tournament data and approved viewers.','success');await loadAll();}else if(isViewer){banner('Approved viewer login successful. Full details are now available in view-only mode.','success');await loadAll();}else{banner('This email is not approved for full details. You can still view the public dashboard.','error');await loadAll();}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error){$('loginError').textContent=error.message;return;}$('loginPassword').value='';$('loginError').textContent='';await refreshAuth();if(session?.user){const {error:logError}=await sb.from('admin_activity_log').insert({actor_user_id:session.user.id,actor_email:session.user.email,action:'LOGIN',entity_table:'auth',details:{summary:'Successful sign-in'}});if(logError)console.warn('Login audit log failed:',logError.message);}if(isAdmin){banner('Admin login successful. You can manage tournament data and approved viewers.','success');await loadAll();}else if(isViewer){banner('Approved viewer login successful. Full details are now available in view-only mode.','success');await loadAll();}else{banner('This email is not approved for full details. You can still view the public dashboard.','error');await loadAll();}});
 $('signupForm').addEventListener('submit',async e=>{e.preventDefault();$('signupMessage').textContent='Creating account…';const email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value;const {data:result,error}=await sb.auth.signUp({email,password});if(error){$('signupMessage').textContent=error.message;return;}$('signupPassword').value='';$('signupMessage').textContent=result.session?'Account created. Sign in with your approved email.':'Account created. Check your email for a verification link, then return here and sign in. Your email must first be approved by the BFB X administrator.';});
 
 $('playerSignupForm').addEventListener('submit',async e=>{
@@ -765,6 +794,7 @@ $('ownPlayerForm').addEventListener('submit',async e=>{
 $('viewerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;const full_name=$('viewerName').value.trim(),email=$('viewerEmail').value.trim().toLowerCase();if(!full_name||!email)return;const {error}=await sb.from('approved_viewers').upsert({full_name,email},{onConflict:'email'});if(error){banner('Could not approve email: '+error.message,'error');return;}$('viewerForm').reset();await loadApprovedViewers();banner('Email approved. Ask this person to create an account on the website using this exact email, verify it, then sign in.','success');});
 async function signOut(){await sb.auth.signOut();session=null;isAdmin=false;isViewer=false;showAuth();setView('overview');await loadAll();banner('Signed out. Only the public dashboard is now available.','success');}
 $('signOutBtn').addEventListener('click',signOut);$('notAdminSignOut').addEventListener('click',signOut);$('memberSignOut').addEventListener('click',signOut);$('refreshBtn').addEventListener('click',()=>loadAll(true));
+$('refreshAuditLog').addEventListener('click',loadAuditLog);$('auditEmailFilter').addEventListener('input',loadAuditLog);$('auditActionFilter').addEventListener('change',loadAuditLog);
 function field(id){return $(id).value.trim();}
 function optional(id){return field(id)||null;}
 async function write(tableName,id,payload){if(!isAdmin)throw new Error('Admin permission required.');const q=id?sb.from(tableName).update(payload).eq('id',id):sb.from(tableName).insert(payload);const {error}=await q;if(error)throw error;}
