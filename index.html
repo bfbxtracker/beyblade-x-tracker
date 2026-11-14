@@ -108,6 +108,39 @@ a,.player-link,.eyebrow,.hero-kicker{color:#43BEC6}
 .tag{background:#10292b;color:#43BEC6}
 table th{color:#43BEC6}
 tr{border-color:#263638}
+
+/* BFB X Tracker global palette: Black + Macaw Blue Green */
+:root{color-scheme:dark!important;--bg:#050505!important;--panel:#0c1011!important;--panel2:#11191a!important;--border:#263638!important;--fg:#edfafa!important;--muted:#9bb5b7!important;--blue:#43BEC6!important;--blue2:#2b9da5!important;--pale:#10292b!important;--gold:#43BEC6!important;--shadow:0 8px 24px rgba(0,0,0,.32)!important}
+html,body{background:#050505!important;color:#edfafa!important}
+body{font-weight:400!important}
+h1,h2,h3,h4,h5,h6,strong,b,th,.nav button,.primary{font-weight:600!important}
+p,span,label,input,select,textarea,button,td,li,small,.muted{font-weight:400}
+.panel,.card,.notice,.loginbox,.modal,.dropdown,.tournament-hero{background:#0c1011!important;color:#edfafa!important;border-color:#263638!important}
+button,input,select,textarea{background:#0b1112!important;color:#edfafa!important;border-color:#304447!important}
+button.primary,.primary,.nav button.active,button.active{background:#43BEC6!important;color:#041719!important;border-color:#43BEC6!important}
+a,.eyebrow,.hero-kicker,.accent{color:#43BEC6!important}
+table th{background:#11191a!important;color:#43BEC6!important}
+tr,td,th{border-color:#263638!important}
+.tag,.pill{background:#10292b!important;color:#43BEC6!important;border-color:#2b666a!important}
+.tournament-page-heading h2{font-size:34px;margin:8px 0 24px;color:#edfafa;font-weight:600}
+.tournament-page-heading p{display:flex;align-items:center;gap:9px;color:#9bb5b7;font-size:13px;margin:0 0 18px}
+.accent-line{display:inline-block;width:21px;height:4px;background:#43BEC6;transform:skew(-18deg)}
+.tournament-organizer{margin:20px 0 10px;color:#43BEC6;font-weight:600;display:flex;align-items:center;gap:8px}
+.tournament-organizer:before{content:"";width:5px;height:15px;background:#43BEC6;transform:skew(-12deg)}
+.tournament-directory-card{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:15px 16px;margin:7px 0;background:#0c1011!important;border:1px solid #263638;border-left:3px solid #43BEC6;border-radius:3px;color:#edfafa;cursor:pointer;min-height:69px}
+.tournament-directory-card:hover{background:#11191a!important;border-color:#43BEC6}
+.tournament-directory-card strong{display:block;font-size:16px;margin-bottom:4px;font-weight:600}
+.tournament-directory-card small{display:block;color:#9bb5b7;font-size:12px}
+.tournament-directory-card .chevron{font-size:23px;color:#43BEC6;padding-left:12px}
+.tournament-workspace-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.tournament-workspace-head h2{margin:0 0 5px;font-weight:600}
+.tournament-tabs{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;margin:0 0 18px;border-bottom:1px solid #263638;padding-bottom:10px}
+.tournament-tabs button{flex:1 1 0;min-width:0;white-space:nowrap;padding:12px 7px;border:1px solid #304447;background:#0c1011;color:#9bb5b7;font-size:clamp(11px,1.6vw,14px);font-weight:500}
+.tournament-tabs button.active{background:#43BEC6;color:#041719;border-color:#43BEC6}
+.tournament-group-card{border:1px solid #304447;border-left:4px solid #43BEC6;background:#101819;border-radius:5px;padding:15px;margin:12px 0}
+.tournament-blader-chip{display:inline-block;padding:7px 10px;margin:4px;background:#10292b;border:1px solid #2c5558;border-radius:3px;color:#e7fbfc}
+@media(max-width:520px){.tournament-tabs{gap:3px}.tournament-tabs button{padding:9px 2px;font-size:10px}}
+
 </style>
 </head>
 <body>
@@ -121,7 +154,20 @@ tr{border-color:#263638}
 <section id="rankings" class="view hide"><div class="panel"><h2>Player Rankings</h2><p class="muted">Ranked by wins, win rate, then point difference. A draw counts as a match played.</p><div id="rankingsTable"></div></div></section>
 <section id="combos" class="view hide"><div class="panel"><h2>Beyblade Combo Database</h2><div id="combosTable"></div></div></section>
 <section id="matches" class="view hide"><div class="panel"><h2>Match History</h2><div id="matchesTable"></div></div></section>
-<section id="tournaments" class="view hide"><div class="panel"><h2>Tournament Leaderboard</h2><label for="tournamentFilter">Select tournament</label><select id="tournamentFilter"></select><div id="tournamentTable"></div></div></section>
+<section id="tournaments" class="view hide">
+ <div id="tournamentDirectory">
+  <div class="tournament-page-heading"><div class="hero-kicker">BEYBLADE X</div><h2>Tournaments</h2><p><span class="accent-line"></span><strong>Watch</strong><span id="tournamentCount">0 tournaments</span></p></div>
+  <div id="tournamentCards"></div>
+ </div>
+ <div id="tournamentWorkspace" class="hide">
+  <div class="tournament-workspace-head"><button type="button" class="ghost" id="backToTournaments">← All tournaments</button><div><h2 id="selectedTournamentName">Tournament</h2><p id="selectedTournamentMeta" class="muted"></p></div></div>
+  <nav class="tournament-tabs" aria-label="Tournament sections">
+   <button type="button" data-tournament-tab="groups" class="active">Groups</button><button type="button" data-tournament-tab="matches">Matches</button><button type="button" data-tournament-tab="table">Table</button><button type="button" data-tournament-tab="bracket">Bracket</button><button type="button" data-tournament-tab="bladers">Bladers</button>
+  </nav>
+  <div id="tournamentTabContent" class="panel"></div>
+ </div>
+ <select id="tournamentFilter" class="hide" aria-hidden="true"></select><div id="tournamentTable" class="hide"></div>
+</section>
 <section id="admin" class="view hide"><div id="loginPanel" class="panel loginbox"><h2>Member / Admin Login</h2><p>Only emails approved by the BFB X administrator can open full player, combo, match and tournament details. Everyone else can view the public dashboard only.</p><form id="loginForm"><label>Email</label><input id="loginEmail" type="email" required autocomplete="username"><label>Password</label><input id="loginPassword" type="password" required autocomplete="current-password"><div class="actions"><button type="submit" class="primary">Sign in</button></div></form>
 <p id="loginError" class="muted"></p>
 <details class="profile-signup" style="margin-top:16px">
@@ -217,17 +263,51 @@ $('matchesTable').innerHTML=table(['Date','Tournament','Round','Players','Combos
 options('tournamentFilter',data.tournaments,'Select a tournament');renderTournament();
 if(isAdmin){populateAdminOptions();renderAdminLists();}
 }
+
+let selectedTournamentId=null,selectedTournamentTab='groups';
 function renderTournament(){
- const id=$('tournamentFilter').value;
- if(!id){$('tournamentTable').innerHTML='<div class="empty">Select a tournament to see its standings and groups.</div>';return;}
- const s=winStats(data.matches.filter(m=>m.tournament_id===id)).filter(x=>x.played);
- let out='<h3>Overall standings</h3>'+table(['Rank','Player','Played','W','L','D','Points','Win %'],s.map((x,i)=>row([`<span class="rank">${i+1}</span>`,E(x.name),x.played,x.w,x.l,x.d,x.points,x.rate.toFixed(1)+'%'])));
+ const host=$('tournamentCards');if(!host)return;
+ const list=[...data.tournaments].sort((a,b)=>(b.tournament_date||'').localeCompare(a.tournament_date||''));
+ $('tournamentCount').textContent=list.length+' tournaments';
+ if(!list.length){host.innerHTML='<div class="empty">No tournaments have been added yet.</div>';return;}
+ const buckets=new Map();
+ list.forEach(t=>{const owner=t.organizer||t.organizer_name||t.created_by_name||'BFB Community';if(!buckets.has(owner))buckets.set(owner,[]);buckets.get(owner).push(t);});
+ host.innerHTML=[...buckets.entries()].map(([owner,items])=>'<div class="tournament-organizer">'+E(owner)+'</div>'+items.map(t=>'<button type="button" class="tournament-directory-card" data-open-tournament="'+E(t.id)+'"><span><strong>'+E(t.name)+'</strong><small>'+E(t.format||'Tournament')+' · '+E(displayDate(t.tournament_date)||'Date not set')+'</small></span><span class="chevron">›</span></button>').join('')).join('');
+}
+function openTournamentWorkspace(id){
+ const t=data.tournaments.find(x=>x.id===id);if(!t)return;
+ selectedTournamentId=id;selectedTournamentTab='groups';
+ $('tournamentDirectory').classList.add('hide');$('tournamentWorkspace').classList.remove('hide');
+ $('selectedTournamentName').textContent=t.name;
+ $('selectedTournamentMeta').textContent=[t.format,displayDate(t.tournament_date),t.location].filter(Boolean).join(' · ');
+ renderTournamentTab();
+}
+function renderTournamentTab(){
+ const id=selectedTournamentId,t=data.tournaments.find(x=>x.id===id);if(!t)return;
+ document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
- if(entries.length){out+='<h3 style="margin-top:18px">Registered participants</h3>'+table(['Player','Group'],entries.map(p=>row([E(pName(p.player_id)),E(groups.find(g=>g.id===p.group_id)?.name||'Unassigned')])));}
- if(groups.length){out+='<h3 style="margin-top:18px">Group stage</h3>';for(const g of groups){const members=entries.filter(p=>p.group_id===g.id);const ids=new Set(members.map(p=>p.player_id));const groupMatches=data.matches.filter(m=>m.tournament_id===id&&m.group_id===g.id);const stats=winStats(groupMatches).filter(x=>ids.has(x.id)&&x.played);out+=`<div class="panel" style="margin:10px 0"><h4>${E(g.name)}</h4>${members.length?table(['Player','Played','W','L','D','Points','Win %'],stats.map((x,i)=>row([E(x.name),x.played,x.w,x.l,x.d,x.points,x.rate.toFixed(1)+'%']))):'<div class="empty">No players assigned to this group yet.</div>'}</div>`;}}
- $('tournamentTable').innerHTML=out;
+ const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
+ const stats=winStats(matches);let out='';
+ if(selectedTournamentTab==='groups'){
+  out='<h3>Groups</h3><p class="muted">Players registered in each group.</p>';
+  if(!groups.length)out+='<div class="empty">No groups have been created for this tournament yet.</div>';
+  groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map(e=>'<span class="tournament-blader-chip">'+E(pName(e.player_id))+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+'</div>';});
+  const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+E(pName(e.player_id))+'</span>').join('')+'</div>';
+ }else if(selectedTournamentTab==='matches'){
+  out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),E(pName(m.player1_id)),m.player1_points+'–'+m.player2_points,E(pName(m.player2_id)),displayDate(m.match_date)])));
+ }else if(selectedTournamentTab==='table'){
+  out='<h3>Standings</h3><p class="muted">Ranked by wins, then points and match margin.</p>'+table(['#','Blader','P','W','L','D','Points','Win %'],stats.filter(x=>x.played).sort((a,b)=>b.w-a.w||b.points-a.points||b.diff-a.diff).map((x,i)=>row([i+1,playerButton(x.id,x.name),x.played,x.w,x.l,x.d,x.points,x.rate.toFixed(1)+'%'])));
+ }else if(selectedTournamentTab==='bracket'){
+  const rounds=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
+  out='<h3>Bracket</h3><p class="muted">Knockout results recorded by admins.</p>';
+  out+=rounds.length?table(['Round','Match','Score','Winner'],rounds.map(m=>row([E(m.round_name),E(pName(m.player1_id))+' vs '+E(pName(m.player2_id)),m.player1_points+'–'+m.player2_points,E(Number(m.player1_points)>Number(m.player2_points)?pName(m.player1_id):Number(m.player2_points)>Number(m.player1_points)?pName(m.player2_id):'Draw')]))):'<div class="empty">No knockout matches have been recorded yet.</div>';
+ }else{
+  out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([playerButton(e.player_id,pName(e.player_id)),x.played,x.w,x.l,x.points]);}));
+ }
+ $('tournamentTabContent').innerHTML=out;
 }
+
 function populateAdminOptions(){options('comboOwner',data.players,'No owner');options('matchP1',data.players,'Choose player 1');options('matchP2',data.players,'Choose player 2');options('matchC1',data.combos,'No combo');options('matchC2',data.combos,'No combo');options('matchTournament',data.tournaments,'Friendly / no tournament');void populateMatchGroups();let old=$('matchFinish').value;$('matchFinish').innerHTML='<option value="">Not specified</option>'+data.scoring.map(x=>`<option value="${E(x.finish_type)}">${E(x.finish_type)} (${x.points} pts)</option>`).join('');if(data.scoring.some(x=>x.finish_type===old))$('matchFinish').value=old;}
 function editButtons(type,id){return `<div class="button-row"><button class="small" data-edit="${type}" data-id="${E(id)}">Edit</button><button class="small danger" data-delete="${type}" data-id="${E(id)}">Delete</button></div>`;}
 function renderAdminLists(){
@@ -404,6 +484,10 @@ case 'match':x=data.matches.find(v=>v.id===id);if(!x)return;$('matchId').value=x
 window.scrollTo({top:document.querySelector('#adminPanel').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});banner('Record loaded for editing. Change the fields and click Update.','success');}
 const tableFor={player:'players',combo:'combos',tournament:'tournaments',match:'matches'};
 document.addEventListener('click',async e=>{
+const tournamentCard=e.target.closest('[data-open-tournament]');if(tournamentCard){openTournamentWorkspace(tournamentCard.dataset.openTournament);return;}
+const tournamentTab=e.target.closest('[data-tournament-tab]');if(tournamentTab){selectedTournamentTab=tournamentTab.dataset.tournamentTab;renderTournamentTab();return;}
+if(e.target.closest('#backToTournaments')){$('tournamentWorkspace').classList.add('hide');$('tournamentDirectory').classList.remove('hide');selectedTournamentId=null;return;}
+
 const removeParticipant=e.target.closest('[data-remove-participant]');if(removeParticipant&&isAdmin){if(!confirm('Remove this player from the tournament? Their player profile and match history will remain.'))return;const {error}=await sb.from('tournament_participants').delete().eq('id',removeParticipant.dataset.removeParticipant);if(error)banner('Could not remove participant: '+error.message,'error');else{const keep=$('tournamentManagerSelect').value;await loadAll(true);$('tournamentManagerSelect').value=keep;renderTournamentManager();}return;}
 const deleteGroup=e.target.closest('[data-delete-group]');if(deleteGroup&&isAdmin){if(!confirm('Delete this group? Its players will remain registered but become unassigned.'))return;const {error}=await sb.from('tournament_groups').delete().eq('id',deleteGroup.dataset.deleteGroup);if(error)banner('Could not delete group: '+error.message,'error');else{const keep=$('tournamentManagerSelect').value;await loadAll(true);$('tournamentManagerSelect').value=keep;renderTournamentManager();}return;}
 const removeViewer=e.target.closest('[data-remove-viewer]');if(removeViewer&&isAdmin){if(!confirm('Remove this approved viewer? They will lose access to full details.'))return;const {error}=await sb.from('approved_viewers').delete().eq('id',removeViewer.dataset.removeViewer);if(error)banner('Could not remove viewer: '+error.message,'error');else{await loadApprovedViewers();banner('Viewer access removed.','success');}return;}const profile=e.target.closest('[data-profile]');if(profile){openPlayerProfile(profile.dataset.profile);return;}const go=e.target.closest('[data-go]');if(go){setView(go.dataset.go);return;}const reset=e.target.closest('[data-reset]');if(reset){({player:resetPlayer,combo:resetCombo,tournament:resetTournament,match:resetMatch})[reset.dataset.reset]?.();return;}const edit=e.target.closest('[data-edit]');if(edit){fillEdit(edit.dataset.edit,edit.dataset.id);return;}const del=e.target.closest('[data-delete]');if(del&&isAdmin){const tableName=tableFor[del.dataset.delete];if(!tableName||!confirm('Delete this '+del.dataset.delete+'? This cannot be undone.'))return;const {error}=await sb.from(tableName).delete().eq('id',del.dataset.id);if(error)banner('Could not delete: '+error.message+' (A match may still reference this player.)','error');else await loadAll(true);}});
