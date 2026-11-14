@@ -279,6 +279,19 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-stage-final{gap:70px}
 @media(max-width:760px){.bx-bracket-tree{grid-template-columns:repeat(4,minmax(158px,1fr));gap:16px}.bx-bracket-round{min-width:158px}}
 
+
+/* Admin-only in-tournament stage editors */
+.bx-admin-editor{margin:16px 0;padding:15px;border:1px solid #43BEC6;border-radius:6px;background:#0b1415}
+.bx-admin-editor h3,.bx-admin-stage-editors>h3{margin:0 0 5px;color:#43BEC6;font-size:15px}
+.bx-admin-editor p{font-size:12px;color:#9bb5b7;margin:0 0 12px}
+.bx-admin-editor form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;margin:10px 0}
+.bx-admin-editor label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#9bb5b7}
+.bx-admin-editor input,.bx-admin-editor select{width:100%;min-width:0;background:#050909;color:#effafa;border:1px solid #304447;border-radius:4px;padding:9px}
+.bx-admin-editor button{min-height:36px}
+.bx-admin-stage-editors{margin-top:22px;padding-top:14px;border-top:1px solid #263638}
+.bx-admin-stage-editors>.bx-admin-editor{margin-top:12px}
+.bx-admin-editor button:disabled{opacity:.45;cursor:not-allowed}
+
 </style>
 </head>
 <body>
@@ -432,6 +445,19 @@ function openTournamentWorkspace(id){
 }
 
 let selectedTableGroup='all';
+
+function tournamentAdminGroupControls(tid,groups,entries){
+ if(!isAdmin)return '';
+ const unregistered=data.players.filter(p=>!entries.some(e=>e.player_id===p.id));
+ return '<section class="bx-admin-editor"><h3>Admin · Manage group stage</h3><p>Add a blader to this tournament and place them directly into a group.</p><form data-admin-group-form data-tournament-id="'+E(tid)+'"><label>Blader<select name="player_id" required><option value="">Choose blader</option>'+unregistered.map(p=>'<option value="'+E(p.id)+'">'+E(p.name)+'</option>').join('')+'</select></label><label>Group<select name="group_id" required><option value="">Choose group</option>'+groups.map(g=>'<option value="'+E(g.id)+'">'+E(g.name)+'</option>').join('')+'</select></label><button class="primary" type="submit" '+(!groups.length||!unregistered.length?'disabled':'')+'>Add to group stage</button></form><form data-admin-create-group data-tournament-id="'+E(tid)+'"><label>New group name<input name="group_name" maxlength="60" placeholder="Group C" required></label><button type="submit">Create group</button></form></section>';
+}
+function tournamentAdminKnockoutControls(tid,entries,stage){
+ if(!isAdmin)return '';
+ const opts=entries.map(e=>'<option value="'+E(e.player_id)+'">'+E(pName(e.player_id))+'</option>').join('');
+ const roundLabels={r16:'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
+ const label=roundLabels[stage];
+ return '<section class="bx-admin-editor"><h3>Admin · Add '+label+' match</h3><p>Choose two registered tournament bladers and record the offline result.</p><form data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><label>Blader 1<select name="player1_id" required><option value="">Choose blader</option>'+opts+'</select></label><label>Blader 2<select name="player2_id" required><option value="">Choose blader</option>'+opts+'</select></label><label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label><label>Match date<input name="match_date" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label><label>Notes<input name="notes" placeholder="Optional match notes"></label><button class="primary" type="submit" '+(entries.length<2?'disabled':'')+'>Save '+label+' result</button></form></section>';
+}
 function renderTournamentTab(){
  const id=selectedTournamentId,t=data.tournaments.find(x=>x.id===id);if(!t)return;
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
@@ -473,6 +499,7 @@ function renderTournamentTab(){
    if(!groups.length)out+='<div class="empty">No groups have been created for this tournament yet.</div>';
    groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+'</div>';});
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
+   out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
    out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),displayDate(m.match_date)])));
   }else if(selectedTournamentTab==='bracket'){
@@ -506,6 +533,7 @@ function renderTournamentTab(){
     out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
    }
    if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
+   if(isAdmin){out+='<div class="bx-admin-stage-editors"><h3>Manage knockout rounds</h3>'+['r16','quarter','semi','final'].map(stage=>tournamentAdminKnockoutControls(id,entries,stage)).join('')+'</div>';}
   }else{
    out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([playerButton(e.player_id,pName(e.player_id)),x.played,x.w,x.l,x.points]);}));
   }
@@ -636,6 +664,39 @@ $('createTournamentGroup').addEventListener('click',async()=>{
  const {error}=await sb.from('tournament_groups').insert({tournament_id,name,sort_order});
  if(error)throw error;$('newTournamentGroupName').value='';await loadAll(true);$('tournamentManagerSelect').value=tournament_id;renderTournamentManager();banner(name+' created. You can now assign players to it.','success');
  }catch(err){banner('Could not create group: '+err.message,'error');}
+});
+
+document.addEventListener('submit',async e=>{
+ const groupForm=e.target.closest('[data-admin-group-form]');
+ const createGroupForm=e.target.closest('[data-admin-create-group]');
+ const knockoutForm=e.target.closest('[data-admin-knockout-form]');
+ if(!groupForm&&!createGroupForm&&!knockoutForm)return;
+ e.preventDefault();if(!isAdmin){banner('Only tournament admins can make these changes.','error');return;}
+ try{
+  if(groupForm){
+   const fd=new FormData(groupForm),tournament_id=groupForm.dataset.tournamentId,player_id=fd.get('player_id'),group_id=fd.get('group_id');
+   if(!player_id||!group_id)throw new Error('Choose a blader and group.');
+   const {error}=await sb.from('tournament_participants').upsert({tournament_id,player_id,group_id},{onConflict:'tournament_id,player_id'});
+   if(error)throw error;
+   await loadAll();selectedTournamentId=tournament_id;renderTournamentTab();banner('Blader added to the group stage.','success');
+  }else if(createGroupForm){
+   const fd=new FormData(createGroupForm),tournament_id=createGroupForm.dataset.tournamentId,name=String(fd.get('group_name')||'').trim();
+   if(!name)throw new Error('Enter a group name.');
+   if(data.tournament_groups.some(g=>g.tournament_id===tournament_id&&g.name.toLowerCase()===name.toLowerCase()))throw new Error('That group already exists.');
+   const sort_order=data.tournament_groups.filter(g=>g.tournament_id===tournament_id).length+1;
+   const {error}=await sb.from('tournament_groups').insert({tournament_id,name,sort_order});if(error)throw error;
+   await loadAll();selectedTournamentId=tournament_id;renderTournamentTab();banner(name+' created.','success');
+  }else if(knockoutForm){
+   const fd=new FormData(knockoutForm),tournament_id=knockoutForm.dataset.tournamentId;
+   const player1_id=String(fd.get('player1_id')||''),player2_id=String(fd.get('player2_id')||'');
+   if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different bladers.');
+   const player1_points=Number(fd.get('player1_points')),player2_points=Number(fd.get('player2_points'));
+   if(!Number.isInteger(player1_points)||!Number.isInteger(player2_points)||player1_points<0||player2_points<0)throw new Error('Scores must be non-negative whole numbers.');
+   const {error}=await sb.from('matches').insert({tournament_id,match_date:fd.get('match_date')||null,round_name:fd.get('round_name'),player1_id,player2_id,player1_points,player2_points,notes:String(fd.get('notes')||'').trim()||null});
+   if(error)throw error;
+   await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='bracket';renderTournamentTab();banner('Knockout match saved.','success');
+  }
+ }catch(err){banner('Could not save tournament change: '+err.message,'error');}
 });
 document.addEventListener('change',async e=>{
  const sel=e.target.closest('[data-assign-participant]');if(!sel||!isAdmin)return;
