@@ -415,7 +415,7 @@ function options(id,items,emptyLabel,selected=null){const el=$(id),old=selected=
 function playerButton(id,name){return `<button type="button" class="player-link" data-profile="${E(id)}">${E(name)}</button>`;}
 
 function openPlayerProfile(id){
- const p=data.players.find(x=>x.id===id);if(!p)return;
+ const p=data.players.find(x=>x.id===id);if(!p)return;window.bfbxCurrentProfileId=id;
  const st=winStats().find(x=>x.id===id)||{played:0,w:0,l:0,d:0,points:0,against:0,rate:0,diff:0};
  const played=data.matches.filter(m=>m.player1_id===id||m.player2_id===id).sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||''));
  const tournamentIds=[...new Set(played.map(m=>m.tournament_id).filter(Boolean))];
@@ -434,7 +434,7 @@ function openPlayerProfile(id){
  '<section class="blader-profile-section"><h3>Finishes</h3><div class="finish-count-grid">'+(finishes.size?[...finishes.entries()].map(([name,count])=>'<div class="finish-count-card"><b>'+count+'</b><span>'+E(name)+'</span><small>recorded matches</small></div>').join(''):'<div class="empty">No finish types recorded.</div>')+'</div></section>'+
  '<section class="blader-profile-section"><h3>Match by match</h3><p class="muted">Each recorded match, opponent, score and notes.</p>'+matchHtml+'</section>'+
  '<section class="blader-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.tournament_date)])))+'</section>';
- $('profileBackButton').addEventListener('click',()=>setView('players'));
+ $('profileBackButton').addEventListener('click',()=>{window.bfbxCurrentProfileId=null;setView('players');});
  setView('playerProfile');
 }
 
@@ -463,7 +463,7 @@ function renderTournament(){
 }
 function openTournamentWorkspace(id){
  const t=data.tournaments.find(x=>x.id===id);if(!t)return;
- selectedTournamentId=id;selectedTournamentTab='groups';selectedTableGroup='all';
+ selectedTournamentId=id;selectedTournamentTab='groups';selectedTableGroup='all';saveNavigationState();
  $('tournamentDirectory').classList.add('hide');$('tournamentWorkspace').classList.remove('hide');
  $('selectedTournamentName').textContent=t.name;
  $('selectedTournamentMeta').textContent=[t.format,displayDate(t.tournament_date),t.location].filter(Boolean).join(' · ');
@@ -665,7 +665,9 @@ async function loadAll(showMessage=false){
  }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
  finally{busy=false;}
 }
-function setView(view){if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(view)&&!isViewer&&!isAdmin){view='overview';banner('Full details are restricted. Sign in using an approved email to continue.','error');}currentView=view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('.view').forEach(el=>el.classList.toggle('hide',el.id!==view));if(view==='admin'&&isAdmin)renderScoring();}
+function saveNavigationState(){try{localStorage.setItem('bfbx_navigation_state',JSON.stringify({view:currentView||'overview',tournamentId:selectedTournamentId||null,tournamentTab:selectedTournamentTab||'groups',tableGroup:selectedTableGroup||'all',bracketMode:document.querySelector('[data-bracket-panel]:not(.hide)')?.dataset.bracketPanel||'tree',profileId:window.bfbxCurrentProfileId||null}));}catch(e){console.warn('Could not save page state',e);}}
+function readNavigationState(){try{return JSON.parse(localStorage.getItem('bfbx_navigation_state')||'{}');}catch(e){return {};}}
+function setView(view){if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(view)&&!isViewer&&!isAdmin){view='overview';banner('Full details are restricted. Sign in using an approved email to continue.','error');}currentView=view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('.view').forEach(el=>el.classList.toggle('hide',el.id!==view));if(view==='admin'&&isAdmin)renderScoring();saveNavigationState();}
 function showAuth(){
  $('loginPanel').classList.toggle('hide',!!session);
  $('memberPanel').classList.toggle('hide',!session||(!isViewer&&!isAdmin));
@@ -856,10 +858,10 @@ window.scrollTo({top:document.querySelector('#adminPanel').getBoundingClientRect
 const tableFor={player:'players',combo:'combos',tournament:'tournaments',match:'matches'};
 document.addEventListener('click',async e=>{
 const tournamentCard=e.target.closest('[data-open-tournament]');if(tournamentCard){openTournamentWorkspace(tournamentCard.dataset.openTournament);return;}
-const bracketView=e.target.closest('[data-bracket-view]');if(bracketView){const mode=bracketView.dataset.bracketView;document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b===bracketView));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!==mode));return;}
-const tableGroup=e.target.closest('[data-table-group]');if(tableGroup){selectedTableGroup=tableGroup.dataset.tableGroup;renderTournamentTab();return;}
-const tournamentTab=e.target.closest('[data-tournament-tab]');if(tournamentTab){selectedTournamentTab=tournamentTab.dataset.tournamentTab;renderTournamentTab();return;}
-if(e.target.closest('#backToTournaments')){$('tournamentWorkspace').classList.add('hide');$('tournamentDirectory').classList.remove('hide');selectedTournamentId=null;return;}
+const bracketView=e.target.closest('[data-bracket-view]');if(bracketView){const mode=bracketView.dataset.bracketView;document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b===bracketView));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!==mode));saveNavigationState();return;}
+const tableGroup=e.target.closest('[data-table-group]');if(tableGroup){selectedTableGroup=tableGroup.dataset.tableGroup;renderTournamentTab();saveNavigationState();return;}
+const tournamentTab=e.target.closest('[data-tournament-tab]');if(tournamentTab){selectedTournamentTab=tournamentTab.dataset.tournamentTab;renderTournamentTab();saveNavigationState();return;}
+if(e.target.closest('#backToTournaments')){$('tournamentWorkspace').classList.add('hide');$('tournamentDirectory').classList.remove('hide');selectedTournamentId=null;saveNavigationState();return;}
 
 const removeParticipant=e.target.closest('[data-remove-participant]');if(removeParticipant&&isAdmin){if(!confirm('Remove this player from the tournament? Their player profile and match history will remain.'))return;const {error}=await sb.from('tournament_participants').delete().eq('id',removeParticipant.dataset.removeParticipant);if(error)banner('Could not remove participant: '+error.message,'error');else{const keep=$('tournamentManagerSelect').value;await loadAll(true);$('tournamentManagerSelect').value=keep;renderTournamentManager();}return;}
 const deleteGroup=e.target.closest('[data-delete-group]');if(deleteGroup&&isAdmin){if(!confirm('Delete this group? Its players will remain registered but become unassigned.'))return;const {error}=await sb.from('tournament_groups').delete().eq('id',deleteGroup.dataset.deleteGroup);if(error)banner('Could not delete group: '+error.message,'error');else{const keep=$('tournamentManagerSelect').value;await loadAll(true);$('tournamentManagerSelect').value=keep;renderTournamentManager();}return;}
@@ -867,6 +869,10 @@ const removeViewer=e.target.closest('[data-remove-viewer]');if(removeViewer&&isA
 $('exportBackup').addEventListener('click',()=>{const backup={exported_at:new Date().toISOString(),source:'supabase-beyblade-x',...data};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='beyblade-x-cloud-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
 $('matchDate').value=new Date().toLocaleDateString('en-CA');
 await refreshAuth();await loadAll();
+const savedNav=readNavigationState();
+if(savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
+else if(savedNav.view==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
+else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){setView(savedNav.view);}
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll();},15000);
 </script>
 </body></html>
