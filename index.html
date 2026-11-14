@@ -312,6 +312,19 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-bracket-round{z-index:1}
 .bx-bracket-match{z-index:2}
 
+
+/* Compact, independently scrollable admin activity log */
+#auditLogList{max-height:340px;overflow-y:auto;overflow-x:auto;overscroll-behavior:contain;border:1px solid #263638;border-radius:6px;background:#080d0e;scrollbar-width:thin;scrollbar-color:#43BEC6 #101819}
+#auditLogList .table-scroll{overflow:visible;max-height:none}
+#auditLogList table{width:100%;min-width:680px;border-collapse:separate;border-spacing:0}
+#auditLogList thead th{position:sticky;top:0;z-index:2;background:#101819;color:#43BEC6;box-shadow:0 1px 0 #304447}
+#auditLogList th,#auditLogList td{padding:8px 10px;font-size:11px;vertical-align:top}
+#auditLogList tbody tr:nth-child(even){background:rgba(67,190,198,.035)}
+#auditLogList tbody tr:hover{background:rgba(67,190,198,.08)}
+#auditLogList details{min-width:130px}
+#auditLogList pre{max-width:380px;max-height:150px}
+@media(max-width:700px){#auditLogList{max-height:280px}#auditLogList th,#auditLogList td{padding:7px;font-size:10px}}
+
 </style>
 </head>
 <body>
