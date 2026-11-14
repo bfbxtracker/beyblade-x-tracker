@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="BFB X Tracker — community player profiles, rankings, Beyblade combos, match history and tournament standings.">
+<meta name="theme-color" content="#1E272C">
+<title>BFB X Tracker | Community League</title>
+<style>
+:root{color-scheme:light;--bg:#f4f7fb;--panel:#fff;--panel2:#edf4ff;--border:#dce5f1;--fg:#14243a;--muted:#65758b;--blue:#1769d2;--blue2:#0e4fa8;--pale:#eaf3ff;--gold:#b77912;--danger:#c43c52;--shadow:0 8px 24px rgba(26,55,94,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--fg);padding:9px 13px;font-weight:700;transition:.15s}button:hover{border-color:var(--blue);color:var(--blue)}button:disabled{opacity:.5;cursor:not-allowed}.primary{background:var(--blue);border-color:var(--blue);color:#fff}.primary:hover{background:var(--blue2);color:#fff}.danger{color:var(--danger);border-color:#edc7ce}.small{font-size:12px;padding:5px 9px}.ghost{background:transparent}.top{background:#fff;border-bottom:1px solid var(--border)}.wrap{max-width:1180px;margin:auto;padding:0 20px}.top .wrap{padding-top:20px;padding-bottom:18px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{width:78px;height:78px;flex:0 0 78px;object-fit:contain;display:block}.eyebrow{color:var(--blue);font-weight:850;letter-spacing:2.2px;font-size:10px}.head{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}h1{font-size:clamp(27px,4vw,39px);letter-spacing:-1.3px;margin:2px 0 0;line-height:1.1;color:#102744}h1 span{color:var(--blue)}p{color:var(--muted);margin:5px 0}.pill{border:1px solid #c8dcf7;color:var(--blue);background:#f1f7ff;border-radius:30px;padding:6px 11px;font-size:11px;font-weight:800;letter-spacing:.5px}.nav{display:flex;gap:7px;flex-wrap:wrap;padding:17px 0 12px}.nav button{background:transparent}.nav button.active{background:var(--blue);color:#fff;border-color:var(--blue)}.notice{margin:8px 0 18px;border:1px solid #cbdff8;background:#eff6ff;border-radius:11px;padding:10px 13px;color:#214b7d}.error{border-color:#edc7ce;background:#fff0f2;color:#9d263b}.success{border-color:#c4e7d2;background:#effaf3;color:#17623a}.hide{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:14px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:8px 0 17px}.card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:17px;box-shadow:var(--shadow)}.stat-title{font-size:11px;color:var(--muted);letter-spacing:1.1px;text-transform:uppercase;font-weight:750}.stat-value{font-size:31px;font-weight:850;margin-top:5px;color:#15375f}h2{font-size:19px;margin:0 0 11px;color:#17385f}h3{font-size:16px;margin:0 0 9px;color:#1b3d66}.muted{font-size:12px;color:var(--muted)}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{border-bottom:1px solid var(--border);padding:10px 9px;text-align:left}th{color:var(--muted);font-weight:750;background:#f8fafd}td strong{color:var(--fg)}.rank{color:var(--blue);font-weight:900}.empty{text-align:center;padding:22px;color:var(--muted)}label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:9px 0 5px}input,select,textarea{width:100%;padding:10px;background:#fff;color:var(--fg);border:1px solid var(--border);border-radius:9px;min-width:0}input:focus,select:focus,textarea:focus{outline:2px solid #9cc5f4;border-color:var(--blue)}option{background:#fff}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:5px 12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.section{margin:0 0 16px}.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.admin-grid .wide{grid-column:1/-1}.tag{display:inline-block;padding:2px 8px;border-radius:30px;background:#eaf3ff;color:#1555a1;font-size:11px}.footer{color:var(--muted);font-size:12px;padding:25px 0 35px}.statusline{font-size:12px;color:var(--muted);padding-bottom:8px}.button-row{display:flex;gap:7px}.loginbox{max-width:500px;margin:auto}.authnote{color:#187044;font-size:13px}.spinner{display:inline-block;border:2px solid #bfd3eb;border-top-color:var(--blue);border-radius:50%;width:13px;height:13px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+/* BFB X branding and dashboard */
+.tournament-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:168px;padding:25px 28px;margin:8px 0 17px;border-radius:18px;background:linear-gradient(110deg,#0c3268 0%,#1769d2 56%,#5b9bea 100%);color:#fff;box-shadow:0 12px 28px rgba(23,105,210,.17)}.tournament-hero:after{content:"BFB X";position:absolute;right:18px;bottom:-28px;font-size:clamp(72px,14vw,150px);font-weight:950;letter-spacing:-10px;color:#ffffff12;pointer-events:none}.tournament-hero h2{color:#fff;font-size:clamp(22px,4vw,32px);margin:3px 0}.tournament-hero p{color:#e4efff;max-width:600px}.hero-kicker{font-size:10px;letter-spacing:2px;font-weight:850;color:#c9e0ff}.hero-chip{border:1px solid #ffffff55;background:#ffffff18;border-radius:30px;padding:8px 12px;font-size:11px;font-weight:800;white-space:nowrap;z-index:1}.player-link{border:0;background:transparent;color:var(--blue);padding:0;font-weight:750;text-align:left}.player-link:hover{text-decoration:underline;background:transparent}.profile-head{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:16px}.avatar{width:62px;height:62px;border-radius:18px;background:linear-gradient(145deg,#e8f2ff,#c9e0ff);display:grid;place-items:center;color:#1555a1;font-size:24px;font-weight:900}.profile-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0}.profile-stat{border:1px solid var(--border);border-radius:12px;padding:12px;background:#f8fbff}.profile-stat b{display:block;font-size:22px;color:#15375f}.profile-stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.hero-actions{display:flex;gap:8px;flex-wrap:wrap;z-index:1}.hero-actions button{background:#fff;color:#1454a3;border-color:#fff}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:640px){.wrap{padding-left:13px;padding-right:13px}.top .wrap{padding-top:14px;padding-bottom:14px}.brand-mark{width:62px;height:62px;flex-basis:62px}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:13px 0 10px}.nav button{width:100%;padding:10px 7px;font-size:13px}.tournament-hero{padding:19px;min-height:150px;align-items:flex-start;flex-direction:column}.tournament-hero:after{right:8px;bottom:-16px;font-size:76px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat-value{font-size:27px}.card,.panel{padding:14px;border-radius:13px}.admin-grid{grid-template-columns:minmax(0,1fr)}.admin-grid .wide{grid-column:auto}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.table-scroll{margin:0 -4px}.profile-head{align-items:flex-start}.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* BLACK PEARL + MALIBU THEME */
+:root{
+ color-scheme:dark;
+ --bg:#1E272C;
+ --panel:#26343B;
+ --panel2:#31434C;
+ --border:#40545E;
+ --fg:#F1F7FA;
+ --muted:#B0C0C8;
+ --blue:#7DC8F7;
+ --blue2:#A5DBFA;
+ --pale:#314956;
+ --gold:#F2C879;
+ --danger:#FF8995;
+ --shadow:0 10px 28px rgba(0,0,0,.22);
+}
+body{background:var(--bg)!important;color:var(--fg)!important}
+.top{background:#172126!important;border-color:var(--border)!important}
+h1,h2,h3,.stat-value,.profile-stat b{color:var(--fg)!important}
+h1 span,.eyebrow,.rank,.player-link{color:var(--blue)!important}
+p,.muted,.footer,.statusline{color:var(--muted)!important}
+.card,.panel{background:var(--panel)!important;border-color:var(--border)!important;box-shadow:var(--shadow)!important}
+button{background:#26343B!important;color:var(--fg)!important;border-color:var(--border)!important}
+button:hover{border-color:var(--blue)!important;color:var(--blue)!important}
+button.primary,.nav button.active{background:var(--blue)!important;color:#14232B!important;border-color:var(--blue)!important}
+button.primary:hover{background:var(--blue2)!important;color:#14232B!important}
+button.danger{color:var(--danger)!important;border-color:#80515A!important}
+.nav button{background:transparent!important;color:var(--muted)!important}
+.nav button.active{color:#14232B!important}
+.pill,.tag{background:#314956!important;border-color:#52758A!important;color:var(--blue)!important}
+.notice{background:#263B46!important;border-color:#52758A!important;color:#D8EEFA!important}
+.notice p{color:#D8EEFA!important}
+.notice.error{background:#442A31!important;border-color:#89505B!important;color:#FFDCE1!important}
+.notice.success{background:#243D35!important;border-color:#477E69!important;color:#D5F5E7!important}
+input,select,textarea{background:#172126!important;color:var(--fg)!important;border-color:var(--border)!important}
+input::placeholder,textarea::placeholder{color:#91A5AF!important}
+input:focus,select:focus,textarea:focus{outline:2px solid #7DC8F7!important;border-color:#7DC8F7!important}
+option{background:#1E272C!important;color:#F1F7FA!important}
+th{background:#31434C!important;color:#D5E2E8!important}
+td,th{border-color:var(--border)!important}
+td strong{color:var(--fg)!important}
+.tournament-hero{background:linear-gradient(112deg,#172126 0%,#263F4B 58%,#7DC8F7 150%)!important;box-shadow:0 12px 28px rgba(0,0,0,.25)!important}
+.tournament-hero h2{color:#F5FAFC!important}
+.tournament-hero p{color:#D8EAF3!important}
+.hero-kicker{color:#A9DFFF!important}
+.hero-chip{color:#F5FAFC!important;border-color:#7DC8F788!important;background:#1E272C55!important}
+.hero-actions button{background:#7DC8F7!important;color:#172126!important;border-color:#7DC8F7!important}
+.avatar{background:linear-gradient(145deg,#405E6D,#26343B)!important;color:#A5DBFA!important}
+.profile-stat{background:#31434C!important;border-color:var(--border)!important}
+.spinner{border-color:#52758A!important;border-top-color:#7DC8F7!important}
+.authnote{color:#9DE3C4!important}
+.empty{color:var(--muted)!important}
+@media(max-width:640px){
+ .nav button{background:#26343B!important;color:var(--fg)!important;border-color:var(--border)!important}
+ .nav button.active{background:#7DC8F7!important;color:#14232B!important}
+}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="head"><div class="brand"><img class="brand-mark" src="bfb-fans-bd-logo.png" alt="Beyblade Fans BD logo"><div><div class="eyebrow">BATTLE • COMMUNITY • COMPETE</div><h1>BFB <span>X TRACKER</span></h1><p>Player profiles · Rankings · Combos · Tournament results</p></div></div><div class="pill">● CLOUD CONNECTED</div></div></div></header>
+<main class="wrap">
+<div class="nav" id="nav"><button data-view="overview" class="active">Dashboard</button><button data-view="players" class="detail-nav hide">Players</button><button data-view="rankings" class="detail-nav hide">Rankings</button><button data-view="combos" class="detail-nav hide">Combos</button><button data-view="matches" class="detail-nav hide">Matches</button><button data-view="tournaments" class="detail-nav hide">Tournaments</button><button data-view="admin">Admin Login</button></div>
+<div id="banner" class="notice">Connecting to your shared Supabase database…</div><div id="lastSync" class="statusline"></div>
+<section id="overview" class="view"><div class="tournament-hero"><div><div class="hero-kicker">BFB X COMMUNITY LEAGUE</div><h2 id="heroTournamentTitle">Your Beyblade X arena starts here.</h2><p id="heroTournamentSub">Follow competitors, compare combos and track every tournament result in one place.</p><div class="hero-actions"><button type="button" onclick="document.querySelector('[data-view=players]').click()">Explore players</button><button type="button" onclick="document.querySelector('[data-view=tournaments]').click()">View tournaments</button></div></div><div class="hero-chip">BFB X • OFFICIAL COMMUNITY TRACKER</div></div><div class="stats" id="stats"></div><div class="grid"><div class="panel"><div class="section-head"><h2>Top Players</h2><button class="small ghost" data-go="rankings">Full rankings →</button></div><div id="topPlayers"></div></div><div class="panel"><h2>Latest Matches</h2><div id="recentMatches"></div></div></div></section>
+<section id="players" class="view hide"><div class="panel"><div class="section-head"><div><h2>Player Directory</h2><p class="muted">Open a player profile to view their competitive record.</p></div></div><div id="playersDirectory"></div></div></section>
+<section id="playerProfile" class="view hide"><div class="panel"><div class="actions" style="margin-top:0;margin-bottom:14px"><button type="button" class="ghost" id="backToPlayers">← Back to players</button></div><div id="playerProfileContent"></div></div></section>
+<section id="rankings" class="view hide"><div class="panel"><h2>Player Rankings</h2><p class="muted">Ranked by wins, win rate, then point difference. A draw counts as a match played.</p><div id="rankingsTable"></div></div></section>
+<section id="combos" class="view hide"><div class="panel"><h2>Beyblade Combo Database</h2><div id="combosTable"></div></div></section>
+<section id="matches" class="view hide"><div class="panel"><h2>Match History</h2><div id="matchesTable"></div></div></section>
+<section id="tournaments" class="view hide"><div class="panel"><h2>Tournament Leaderboard</h2><label for="tournamentFilter">Select tournament</label><select id="tournamentFilter"></select><div id="tournamentTable"></div></div></section>
+<section id="admin" class="view hide"><div id="loginPanel" class="panel loginbox"><h2>Member / Admin Login</h2><p>Only emails approved by the BFB X administrator can open full player, combo, match and tournament details. Everyone else can view the public dashboard only.</p><form id="loginForm"><label>Email</label><input id="loginEmail" type="email" required autocomplete="username"><label>Password</label><input id="loginPassword" type="password" required autocomplete="current-password"><div class="actions"><button type="submit" class="primary">Sign in</button></div></form><p id="loginError" class="muted"></p><details style="margin-top:14px"><summary style="cursor:pointer;color:var(--blue);font-weight:750">Approved viewer? Create your account</summary><p class="muted">Your email must already have been added by the administrator. Use that exact email address.</p><form id="signupForm"><label>Approved email</label><input id="signupEmail" type="email" required autocomplete="email"><label>Create password</label><input id="signupPassword" type="password" required minlength="8" autocomplete="new-password"><div class="actions"><button type="submit" class="primary">Create viewer account</button></div></form><p id="signupMessage" class="muted"></p></details></div>
+<div id="memberPanel" class="panel loginbox hide"><h2>Welcome to BFB X Tracker</h2><p id="memberEmail" class="authnote"></p><p>You have approved view-only access to full player profiles, rankings, combos, match history and tournament details.</p><button id="memberSignOut" class="danger">Sign out</button></div>
+<div id="notAdminPanel" class="panel loginbox hide"><h2>Dashboard-only access</h2><p>You are signed in, but this email has not been approved for full details. Contact the BFB X administrator if you need access.</p><button id="notAdminSignOut">Sign out</button></div>
+<div id="adminPanel" class="hide"><div class="panel section"><div class="head"><div><h2>Admin Control Center</h2><div id="adminEmail" class="authnote"></div></div><div class="actions"><button id="refreshBtn">Refresh now</button><button id="signOutBtn" class="danger">Sign out</button></div></div></div>
+<div class="panel section"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div></div>
+<div class="admin-grid">
+<div class="panel"><h3>Player</h3><form id="playerForm"><input type="hidden" id="playerId"><label>Name *</label><input id="playerName" required maxlength="100"><label>Team / Club</label><input id="playerTeam" maxlength="100"><label>City / Location</label><input id="playerLocation" maxlength="100"><label>Notes</label><input id="playerNotes" maxlength="500"><div class="actions"><button class="primary" type="submit" id="playerSave">Add player</button><button type="button" class="ghost" data-reset="player">Clear</button></div></form><h3 style="margin-top:19px">Existing players</h3><div id="adminPlayers"></div></div>
+<div class="panel"><h3>Beyblade Combo</h3><form id="comboForm"><input type="hidden" id="comboId"><label>Combo name *</label><input id="comboName" required placeholder="Example: Phoenix Wing 9-60P"><div class="form-grid"><div><label>Blade</label><input id="comboBlade"></div><div><label>Ratchet</label><input id="comboRatchet"></div><div><label>Bit</label><input id="comboBit"></div><div><label>Type</label><select id="comboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div></div><label>Owner</label><select id="comboOwner"></select><label>Notes</label><input id="comboNotes"><div class="actions"><button class="primary" type="submit" id="comboSave">Add combo</button><button type="button" class="ghost" data-reset="combo">Clear</button></div></form><h3 style="margin-top:19px">Existing combos</h3><div id="adminCombos"></div></div>
+<div class="panel"><h3>Tournament</h3><form id="tournamentForm"><input type="hidden" id="tournamentId"><label>Name *</label><input id="tournamentName" required><div class="form-grid"><div><label>Date</label><input id="tournamentDate" type="date"></div><div><label>Location</label><input id="tournamentLocation"></div></div><label>Format</label><select id="tournamentFormat"><option>Round Robin</option><option>Single Elimination</option><option>Double Elimination</option><option>Swiss</option><option>Other</option></select><label>Notes</label><input id="tournamentNotes"><div class="actions"><button class="primary" type="submit" id="tournamentSave">Add tournament</button><button type="button" class="ghost" data-reset="tournament">Clear</button></div></form><h3 style="margin-top:19px">Existing tournaments</h3><div id="adminTournaments"></div></div>
+<div class="panel"><h3>Custom Finish Scoring</h3><p class="muted">Set the points for each finish. When recording a match, choose the winner and click “Apply finish points”. You can also enter scores manually.</p><div id="scoringInputs"></div><div class="actions"><button class="primary" id="saveScoring">Save scoring</button></div></div>
+<div class="panel wide"><h3>Record / Edit Match</h3><form id="matchForm"><input type="hidden" id="matchId"><div class="form-grid"><div><label>Date *</label><input id="matchDate" type="date" required></div><div><label>Tournament</label><select id="matchTournament"></select></div><div><label>Round</label><input id="matchRound" placeholder="Final / Round 1"></div><div><label>Player 1 *</label><select id="matchP1" required></select></div><div><label>Player 2 *</label><select id="matchP2" required></select></div><div><label>Player 1 Combo</label><select id="matchC1"></select></div><div><label>Player 2 Combo</label><select id="matchC2"></select></div><div><label>Finish type</label><select id="matchFinish"></select></div><div><label>Finish winner</label><select id="matchWinner"><option value="1">Player 1</option><option value="2">Player 2</option></select></div><div><label>Player 1 points *</label><input id="matchS1" type="number" min="0" step="1" value="0" required></div><div><label>Player 2 points *</label><input id="matchS2" type="number" min="0" step="1" value="0" required></div></div><label>Notes</label><input id="matchNotes"><div class="actions"><button type="button" id="applyPoints">Apply finish points</button><button class="primary" type="submit" id="matchSave">Save match</button><button type="button" class="ghost" data-reset="match">Clear</button></div></form><h3 style="margin-top:19px">Existing matches</h3><div id="adminMatches"></div></div>
+<div class="panel wide"><h3>Backup</h3><p class="muted">Export the current shared records as a JSON backup. This does not remove data from Supabase.</p><button id="exportBackup">Export cloud data (JSON)</button></div>
+</div></div></section>
+</main><footer class="wrap footer">BFB X Tracker • Unofficial fan-made community platform. Not affiliated with Takara Tomy, Hasbro, or the Beyblade brand owners. Public data refreshes approximately every 15 seconds.</footer>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const SUPABASE_URL='https://wlxilsrypqrscjanbsgh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_WgbFmUFUJpz5A6YGUw5tfA_nxebIDGf';
+const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id);
+const E=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const data={players:[],combos:[],tournaments:[],matches:[],scoring:[]};
+let session=null,isAdmin=false,isViewer=false,currentView='overview',busy=false,publicSummary=null;
+const keys=['players','combos','tournaments','matches','scoring'];
+function banner(message,kind='info'){const el=$('banner');el.className='notice'+(kind==='error'?' error':kind==='success'?' success':'');el.textContent=message;}
+function displayDate(s){if(!s)return '—';return E(s);}
+function pName(id){return data.players.find(p=>p.id===id)?.name||'Unknown player';}
+function cName(id){return data.combos.find(c=>c.id===id)?.name||'—';}
+function tName(id){return data.tournaments.find(t=>t.id===id)?.name||'Friendly / Other';}
+function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,against:0}]));for(const x of matches){let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;a.played++;b.played++;a.points+=x.player1_points;b.points+=x.player2_points;a.against+=x.player2_points;b.against+=x.player1_points;if(x.player1_points>x.player2_points){a.w++;b.l++}else if(x.player1_points<x.player2_points){a.l++;b.w++}else{a.d++;b.d++}}return [...m.values()].map(x=>({...x,rate:x.played?100*x.w/x.played:0,diff:x.points-x.against})).sort((a,b)=>b.w-a.w||b.rate-a.rate||b.diff-a.diff||a.name.localeCompare(b.name));}
+function table(headers,rows){if(!rows.length)return '<div class="empty">No records yet.</div>';return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${E(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;}
+function row(cells){return '<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';}
+function options(id,items,emptyLabel,selected=null){const el=$(id),old=selected===null?el.value:selected;el.innerHTML=`<option value="">${E(emptyLabel)}</option>`+items.map(x=>`<option value="${E(x.id)}">${E(x.name)}</option>`).join('');if(items.some(x=>x.id===old))el.value=old;}
+function playerButton(id,name){return `<button type="button" class="player-link" data-profile="${E(id)}">${E(name)}</button>`;}
+function openPlayerProfile(id){const p=data.players.find(x=>x.id===id);if(!p)return;const st=winStats().find(x=>x.id===id)||{played:0,w:0,l:0,d:0,points:0,rate:0,diff:0};const played=data.matches.filter(m=>m.player1_id===id||m.player2_id===id).sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||''));const owned=data.combos.filter(c=>c.owner_id===id);$('playerProfileContent').innerHTML=`<div class="profile-head"><div class="avatar">${E((p.name||'?').trim().slice(0,1).toUpperCase())}</div><div><div class="eyebrow">BFB X COMPETITOR PROFILE</div><h2 style="font-size:25px;margin:2px 0">${E(p.name)}</h2><p>${E(p.team||'Independent player')}${p.location?' · '+E(p.location):''}</p></div></div><div class="profile-stat-grid"><div class="profile-stat"><b>${st.played}</b><span>Matches</span></div><div class="profile-stat"><b>${st.w}</b><span>Wins</span></div><div class="profile-stat"><b>${st.rate.toFixed(1)}%</b><span>Win rate</span></div><div class="profile-stat"><b>${st.points}</b><span>Points scored</span></div></div>${p.notes?`<p>${E(p.notes)}</p>`:''}<div class="grid"><div><h3>Registered combos</h3>${table(['Combo','Blade','Ratchet','Bit','Type'],owned.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type)])))}</div><div><h3>Match history</h3>${table(['Date','Opponent','Score','Result'],played.map(m=>{const first=m.player1_id===id,opp=first?m.player2_id:m.player1_id,a=first?m.player1_points:m.player2_points,b=first?m.player2_points:m.player1_points;return row([displayDate(m.match_date),playerButton(opp,pName(opp)),`${a}–${b}`,a>b?'<span class="tag">Win</span>':a<b?'<span class="tag">Loss</span>':'<span class="tag">Draw</span>']);}))}</div></div>`;setView('playerProfile');}
+function render(){const s=winStats();$('stats').innerHTML=[['Players',data.players.length],['Combos',data.combos.length],['Matches',data.matches.length],['Tournaments',data.tournaments.length]].map(([label,value])=>`<div class="card"><div class="stat-title">${label}</div><div class="stat-value">${value}</div></div>`).join('');
+const featured=[...data.tournaments].sort((a,b)=>(b.tournament_date||'').localeCompare(a.tournament_date||''))[0];$('heroTournamentTitle').textContent=featured?featured.name:'Your Beyblade X arena starts here.';$('heroTournamentSub').textContent=featured?`${featured.tournament_date||'Date to be announced'}${featured.location?' · '+featured.location:''}${featured.format?' · '+featured.format:''} — follow the standings and match results here.`:'Follow competitors, compare combos and track every tournament result in one place.';
+$('topPlayers').innerHTML=table(['#','Player','W-L-D','Win %'],s.slice(0,5).map((x,i)=>row([`<span class="rank">${i+1}</span>`,playerButton(x.id,x.name),`${x.w}-${x.l}-${x.d}`,x.rate.toFixed(1)+'%'])));
+$('playersDirectory').innerHTML=table(['Player','Team / Club','Matches','Wins','Win rate','Profile'],s.map(x=>row([playerButton(x.id,x.name),E(x.team||'—'),x.played,x.w,x.rate.toFixed(1)+'%',`<button type="button" class="small" data-profile="${E(x.id)}">View profile</button>`])));
+const latest=[...data.matches].sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||'')||(b.created_at||'').localeCompare(a.created_at||''));
+$('recentMatches').innerHTML=table(['Players','Score','Tournament'],latest.slice(0,6).map(x=>row([`${playerButton(x.player1_id,pName(x.player1_id))} vs ${playerButton(x.player2_id,pName(x.player2_id))}`,`${x.player1_points}–${x.player2_points}`,E(tName(x.tournament_id))])));
+$('rankingsTable').innerHTML=table(['Rank','Player','Team','Played','Wins','Losses','Draws','Points','Win %'],s.map((x,i)=>row([`<span class="rank">${i+1}</span>`,playerButton(x.id,x.name),E(x.team),x.played,x.w,x.l,x.d,x.points,x.rate.toFixed(1)+'%'])));
+$('combosTable').innerHTML=table(['Combo','Blade','Ratchet','Bit','Type','Owner'],data.combos.map(x=>row([`<strong>${E(x.name)}</strong>`,E(x.blade),E(x.ratchet),E(x.bit),`<span class="tag">${E(x.type)}</span>`,E(pName(x.owner_id))])));
+$('matchesTable').innerHTML=table(['Date','Tournament','Round','Players','Combos','Score','Finish'],latest.map(x=>row([displayDate(x.match_date),E(tName(x.tournament_id)),E(x.round_name),`${E(pName(x.player1_id))} vs ${E(pName(x.player2_id))}`,`${E(cName(x.combo1_id))} / ${E(cName(x.combo2_id))}`,`<strong>${x.player1_points}–${x.player2_points}</strong>`,E(x.finish_type)])));
+options('tournamentFilter',data.tournaments,'Select a tournament');renderTournament();
+if(isAdmin){populateAdminOptions();renderAdminLists();}
+}
+function renderTournament(){const id=$('tournamentFilter').value;if(!id){$('tournamentTable').innerHTML='<div class="empty">Select a tournament to see its standings.</div>';return;}const s=winStats(data.matches.filter(m=>m.tournament_id===id)).filter(x=>x.played);$('tournamentTable').innerHTML=table(['Rank','Player','Played','W','L','D','Points','Win %'],s.map((x,i)=>row([`<span class="rank">${i+1}</span>`,E(x.name),x.played,x.w,x.l,x.d,x.points,x.rate.toFixed(1)+'%'])));}
+function populateAdminOptions(){options('comboOwner',data.players,'No owner');options('matchP1',data.players,'Choose player 1');options('matchP2',data.players,'Choose player 2');options('matchC1',data.combos,'No combo');options('matchC2',data.combos,'No combo');options('matchTournament',data.tournaments,'Friendly / no tournament');let old=$('matchFinish').value;$('matchFinish').innerHTML='<option value="">Not specified</option>'+data.scoring.map(x=>`<option value="${E(x.finish_type)}">${E(x.finish_type)} (${x.points} pts)</option>`).join('');if(data.scoring.some(x=>x.finish_type===old))$('matchFinish').value=old;}
+function editButtons(type,id){return `<div class="button-row"><button class="small" data-edit="${type}" data-id="${E(id)}">Edit</button><button class="small danger" data-delete="${type}" data-id="${E(id)}">Delete</button></div>`;}
+function renderAdminLists(){
+$('adminPlayers').innerHTML=table(['Name','Actions'],data.players.map(x=>row([E(x.name),editButtons('player',x.id)])));
+$('adminCombos').innerHTML=table(['Combo','Actions'],data.combos.map(x=>row([E(x.name),editButtons('combo',x.id)])));
+$('adminTournaments').innerHTML=table(['Tournament','Actions'],data.tournaments.map(x=>row([E(x.name),editButtons('tournament',x.id)])));
+$('adminMatches').innerHTML=table(['Match','Score','Actions'],[...data.matches].reverse().map(x=>row([`${E(pName(x.player1_id))} vs ${E(pName(x.player2_id))}`,`${x.player1_points}–${x.player2_points}`,editButtons('match',x.id)])));
+}
+function renderScoring(){ $('scoringInputs').innerHTML=data.scoring.map(x=>`<div class="form-grid"><div><label>${E(x.finish_type)}</label><input type="number" min="0" step="1" data-score-id="${E(x.id)}" value="${x.points}"></div></div>`).join('');}
+function renderPublicDashboard(summary){
+ publicSummary=summary||{};
+ const cards=[['Players',summary?.players_count??0],['Combos',summary?.combos_count??0],['Matches',summary?.matches_count??0],['Tournaments',summary?.tournaments_count??0]];
+ $('stats').innerHTML=cards.map(([label,value])=>`<div class="card"><div class="stat-title">${label}</div><div class="stat-value">${value}</div></div>`).join('');
+ $('heroTournamentTitle').textContent='Welcome to BFB X Tracker';
+ $('heroTournamentSub').textContent='Public community dashboard. Approved members can sign in to view player profiles, rankings, Beyblade combos, match history and tournament details.';
+ $('topPlayers').innerHTML='<div class="empty">Player rankings are available to approved viewers. Sign in with an approved email to view them.</div>';
+ $('recentMatches').innerHTML='<div class="empty">Match-by-match results are restricted to approved viewers.</div>';
+}
+async function loadAll(showMessage=false){
+ if(busy)return;busy=true;
+ try{
+  if(!isViewer&&!isAdmin){
+   const {data:summary,error}=await sb.rpc('get_public_dashboard');
+   if(error)throw new Error('Public dashboard: '+error.message);
+   data.players=[];data.combos=[];data.tournaments=[];data.matches=[];data.scoring=[];
+   renderPublicDashboard(summary);
+   $('lastSync').textContent='Public dashboard · Updated '+new Date().toLocaleTimeString();
+   banner('You are viewing the public dashboard. Sign in with an approved email to unlock full details.','success');
+   return;
+  }
+  const results=await Promise.all(keys.map(t=>sb.from(t).select('*')));
+  for(let i=0;i<keys.length;i++){if(results[i].error)throw new Error(`${keys[i]}: ${results[i].error.message}`);data[keys[i]]=results[i].data||[];}
+  data.players.sort((a,b)=>a.name.localeCompare(b.name));data.combos.sort((a,b)=>a.name.localeCompare(b.name));data.tournaments.sort((a,b)=>(b.tournament_date||'').localeCompare(a.tournament_date||''));data.matches.sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''));
+  render();$('lastSync').textContent='Last updated: '+new Date().toLocaleTimeString();
+  if(showMessage)banner('Database updated successfully. Approved members can see these records.','success');
+  else banner('Connected. Full details are visible to approved members only.','success');
+ }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
+ finally{busy=false;}
+}
+function setView(view){if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(view)&&!isViewer&&!isAdmin){view='overview';banner('Full details are restricted. Sign in using an approved email to continue.','error');}currentView=view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('.view').forEach(el=>el.classList.toggle('hide',el.id!==view));if(view==='admin'&&isAdmin)renderScoring();}
+function showAuth(){
+ $('loginPanel').classList.toggle('hide',!!session);
+ $('memberPanel').classList.toggle('hide',!session||(!isViewer&&!isAdmin));
+ $('notAdminPanel').classList.toggle('hide',!session||isViewer||isAdmin);
+ $('adminPanel').classList.toggle('hide',!isAdmin);
+ $('adminEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
+ $('memberEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
+ document.querySelector('[data-view="admin"]').textContent=isAdmin?'Admin Dashboard':(isViewer?'Member Account':'Member / Admin Login');
+ document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!isViewer&&!isAdmin));
+ if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();loadApprovedViewers();}
+}
+async function refreshAuth(){
+ try{
+  const {data:{session:s},error}=await sb.auth.getSession();if(error)throw error;
+  session=s;isAdmin=false;isViewer=false;
+  if(session){
+   const r=await sb.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
+   if(r.error)throw r.error;
+   isAdmin=!!r.data;
+   if(!isAdmin){const v=await sb.rpc('is_bx_approved_viewer');if(v.error)throw v.error;isViewer=!!v.data;}
+   else isViewer=true;
+  }
+  showAuth();
+ }catch(e){banner('Authentication check failed: '+e.message,'error');}
+}
+async function loadApprovedViewers(){
+ if(!isAdmin)return;
+ const {data:rows,error}=await sb.from('approved_viewers').select('id,full_name,email,created_at').order('created_at',{ascending:false});
+ if(error){$('viewerList').textContent='Could not load approved viewers: '+error.message;return;}
+ $('viewerList').innerHTML=table(['Name','Email','Added','Action'],(rows||[]).map(v=>row([E(v.full_name),E(v.email),E((v.created_at||'').slice(0,10)),`<button class="small danger" data-remove-viewer="${E(v.id)}">Remove</button>`])));
+}
+$('nav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)setView(b.dataset.view);});$('backToPlayers').addEventListener('click',()=>setView('players'));$('tournamentFilter').addEventListener('change',renderTournament);
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error){$('loginError').textContent=error.message;return;}$('loginPassword').value='';$('loginError').textContent='';await refreshAuth();if(isAdmin){banner('Admin login successful. You can manage tournament data and approved viewers.','success');await loadAll();}else if(isViewer){banner('Approved viewer login successful. Full details are now available in view-only mode.','success');await loadAll();}else{banner('This email is not approved for full details. You can still view the public dashboard.','error');await loadAll();}});
+$('signupForm').addEventListener('submit',async e=>{e.preventDefault();$('signupMessage').textContent='Creating account…';const email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value;const {data:result,error}=await sb.auth.signUp({email,password});if(error){$('signupMessage').textContent=error.message;return;}$('signupPassword').value='';$('signupMessage').textContent=result.session?'Account created. Sign in with your approved email.':'Account created. Check your email for a verification link, then return here and sign in. Your email must first be approved by the BFB X administrator.';});
+$('viewerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;const full_name=$('viewerName').value.trim(),email=$('viewerEmail').value.trim().toLowerCase();if(!full_name||!email)return;const {error}=await sb.from('approved_viewers').upsert({full_name,email},{onConflict:'email'});if(error){banner('Could not approve email: '+error.message,'error');return;}$('viewerForm').reset();await loadApprovedViewers();banner('Email approved. Ask this person to create an account on the website using this exact email, verify it, then sign in.','success');});
+async function signOut(){await sb.auth.signOut();session=null;isAdmin=false;isViewer=false;showAuth();setView('overview');await loadAll();banner('Signed out. Only the public dashboard is now available.','success');}
+$('signOutBtn').addEventListener('click',signOut);$('notAdminSignOut').addEventListener('click',signOut);$('memberSignOut').addEventListener('click',signOut);$('refreshBtn').addEventListener('click',()=>loadAll(true));
+function field(id){return $(id).value.trim();}
+function optional(id){return field(id)||null;}
+async function write(tableName,id,payload){if(!isAdmin)throw new Error('Admin permission required.');const q=id?sb.from(tableName).update(payload).eq('id',id):sb.from(tableName).insert(payload);const {error}=await q;if(error)throw error;}
+async function handleSave(e,tableName,idField,build,reset){e.preventDefault();try{await write(tableName,field(idField)||null,build());reset();await loadAll(true);}catch(err){banner('Could not save: '+err.message,'error');}}
+function resetPlayer(){$('playerForm').reset();$('playerId').value='';$('playerSave').textContent='Add player';}
+function resetCombo(){$('comboForm').reset();$('comboId').value='';$('comboSave').textContent='Add combo';}
+function resetTournament(){$('tournamentForm').reset();$('tournamentId').value='';$('tournamentSave').textContent='Add tournament';}
+function resetMatch(){$('matchForm').reset();$('matchId').value='';$('matchSave').textContent='Save match';$('matchDate').value=new Date().toLocaleDateString('en-CA');}
+$('playerForm').addEventListener('submit',e=>handleSave(e,'players','playerId',()=>({name:field('playerName'),team:optional('playerTeam'),location:optional('playerLocation'),notes:optional('playerNotes')}),resetPlayer));
+$('comboForm').addEventListener('submit',e=>handleSave(e,'combos','comboId',()=>({name:field('comboName'),blade:optional('comboBlade'),ratchet:optional('comboRatchet'),bit:optional('comboBit'),type:field('comboType'),owner_id:optional('comboOwner'),notes:optional('comboNotes')}),resetCombo));
+$('tournamentForm').addEventListener('submit',e=>handleSave(e,'tournaments','tournamentId',()=>({name:field('tournamentName'),tournament_date:optional('tournamentDate'),location:optional('tournamentLocation'),format:field('tournamentFormat'),notes:optional('tournamentNotes')}),resetTournament));
+$('matchForm').addEventListener('submit',e=>handleSave(e,'matches','matchId',()=>{const p1=field('matchP1'),p2=field('matchP2'),s1=Number(field('matchS1')),s2=Number(field('matchS2'));if(!p1||!p2||p1===p2)throw new Error('Choose two different players.');if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)throw new Error('Scores must be whole numbers of 0 or more.');return {match_date:field('matchDate'),tournament_id:optional('matchTournament'),round_name:optional('matchRound'),player1_id:p1,player2_id:p2,combo1_id:optional('matchC1'),combo2_id:optional('matchC2'),player1_points:s1,player2_points:s2,finish_type:optional('matchFinish'),notes:optional('matchNotes')};},resetMatch));
+$('applyPoints').addEventListener('click',()=>{const item=data.scoring.find(x=>x.finish_type===field('matchFinish'));if(!item){banner('Choose a finish type before applying points.','error');return;}const n=Number(item.points);$('matchS1').value=field('matchWinner')==='1'?n:0;$('matchS2').value=field('matchWinner')==='2'?n:0;banner('Finish points applied. You can still change the score before saving.','success');});
+$('saveScoring').addEventListener('click',async()=>{if(!isAdmin)return;try{for(const el of document.querySelectorAll('[data-score-id]')){const points=Number(el.value);if(!Number.isInteger(points)||points<0)throw new Error('Points must be non-negative whole numbers.');const {error}=await sb.from('scoring').update({points}).eq('id',el.dataset.scoreId);if(error)throw error;}await loadAll(true);renderScoring();}catch(e){banner('Could not save scoring: '+e.message,'error');}});
+function fillEdit(type,id){let x;switch(type){case 'player':x=data.players.find(v=>v.id===id);if(!x)return;$('playerId').value=x.id;$('playerName').value=x.name;$('playerTeam').value=x.team||'';$('playerLocation').value=x.location||'';$('playerNotes').value=x.notes||'';$('playerSave').textContent='Update player';break;
+case 'combo':x=data.combos.find(v=>v.id===id);if(!x)return;$('comboId').value=x.id;$('comboName').value=x.name;$('comboBlade').value=x.blade||'';$('comboRatchet').value=x.ratchet||'';$('comboBit').value=x.bit||'';$('comboType').value=x.type||'Attack';$('comboOwner').value=x.owner_id||'';$('comboNotes').value=x.notes||'';$('comboSave').textContent='Update combo';break;
+case 'tournament':x=data.tournaments.find(v=>v.id===id);if(!x)return;$('tournamentId').value=x.id;$('tournamentName').value=x.name;$('tournamentDate').value=x.tournament_date||'';$('tournamentLocation').value=x.location||'';$('tournamentFormat').value=x.format||'Other';$('tournamentNotes').value=x.notes||'';$('tournamentSave').textContent='Update tournament';break;
+case 'match':x=data.matches.find(v=>v.id===id);if(!x)return;$('matchId').value=x.id;$('matchDate').value=x.match_date||'';$('matchTournament').value=x.tournament_id||'';$('matchRound').value=x.round_name||'';$('matchP1').value=x.player1_id;$('matchP2').value=x.player2_id;$('matchC1').value=x.combo1_id||'';$('matchC2').value=x.combo2_id||'';$('matchS1').value=x.player1_points;$('matchS2').value=x.player2_points;$('matchFinish').value=x.finish_type||'';$('matchNotes').value=x.notes||'';$('matchSave').textContent='Update match';break;}
+window.scrollTo({top:document.querySelector('#adminPanel').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});banner('Record loaded for editing. Change the fields and click Update.','success');}
+const tableFor={player:'players',combo:'combos',tournament:'tournaments',match:'matches'};
+document.addEventListener('click',async e=>{const removeViewer=e.target.closest('[data-remove-viewer]');if(removeViewer&&isAdmin){if(!confirm('Remove this approved viewer? They will lose access to full details.'))return;const {error}=await sb.from('approved_viewers').delete().eq('id',removeViewer.dataset.removeViewer);if(error)banner('Could not remove viewer: '+error.message,'error');else{await loadApprovedViewers();banner('Viewer access removed.','success');}return;}const profile=e.target.closest('[data-profile]');if(profile){openPlayerProfile(profile.dataset.profile);return;}const go=e.target.closest('[data-go]');if(go){setView(go.dataset.go);return;}const reset=e.target.closest('[data-reset]');if(reset){({player:resetPlayer,combo:resetCombo,tournament:resetTournament,match:resetMatch})[reset.dataset.reset]?.();return;}const edit=e.target.closest('[data-edit]');if(edit){fillEdit(edit.dataset.edit,edit.dataset.id);return;}const del=e.target.closest('[data-delete]');if(del&&isAdmin){const tableName=tableFor[del.dataset.delete];if(!tableName||!confirm('Delete this '+del.dataset.delete+'? This cannot be undone.'))return;const {error}=await sb.from(tableName).delete().eq('id',del.dataset.id);if(error)banner('Could not delete: '+error.message+' (A match may still reference this player.)','error');else await loadAll(true);}});
+$('exportBackup').addEventListener('click',()=>{const backup={exported_at:new Date().toISOString(),source:'supabase-beyblade-x',...data};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='beyblade-x-cloud-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
+$('matchDate').value=new Date().toLocaleDateString('en-CA');
+await refreshAuth();await loadAll();
+setInterval(()=>{if(document.visibilityState==='visible')void loadAll();},15000);
+</script>
+</body></html>
