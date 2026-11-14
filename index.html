@@ -231,6 +231,39 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .blader-match-notes{font-size:12px;color:#b9d0d1;margin:7px 0 0}
 @media(max-width:680px){.profile-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.standings-filter{gap:3px}.standings-filter button{padding:9px 4px;font-size:12px}}
 
+
+/* Original BFB knockout bracket presentation */
+.bx-bracket-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+.bx-bracket-head h2{font-size:25px;margin:0;color:#eefafa}
+.bx-bracket-toggle{display:flex;gap:4px}
+.bx-bracket-toggle button{background:#080c0d;color:#9bb5b7;border-radius:4px;font-size:12px;padding:7px 12px}
+.bx-bracket-toggle button.active{background:#43BEC6;color:#041719;border-color:#43BEC6}
+.bx-champion{display:flex;align-items:center;gap:14px;padding:16px;margin:12px 0 20px;border:1px solid #43BEC6;border-radius:5px;background:linear-gradient(110deg,rgba(67,190,198,.16),rgba(67,190,198,.025))}
+.bx-cup{font-size:30px}
+.bx-champion small{font-size:10px;letter-spacing:1px;color:#43BEC6}
+.bx-champion h2{margin:2px 0;font-size:23px}
+.bx-champion h2 .player-link{font-size:inherit;font-weight:700;color:#f2ffff}
+.bx-champion p{font-size:12px;margin:0}
+.bx-bracket-tree{display:flex;align-items:stretch;gap:22px;overflow-x:auto;padding:8px 0 15px}
+.bx-bracket-round{flex:1 0 175px;min-width:175px;display:flex;flex-direction:column;justify-content:space-around;gap:15px;position:relative}
+.bx-bracket-round h3{color:#43BEC6;margin:0 0 -12px;font-size:14px}
+.bx-bracket-round>small{font-size:10px;color:#9bb5b7;margin-top:-12px}
+.bx-bracket-match{position:relative;background:#101819;border:1px solid #34494b;border-left:3px solid #43BEC6;border-radius:4px;padding:8px 9px;min-width:0}
+.bx-bracket-match:after{content:"";position:absolute;right:-12px;top:50%;width:10px;border-top:1px solid #43BEC6;opacity:.7}
+.bx-bracket-round:last-child .bx-bracket-match:after{display:none}
+.bx-match-code{font-size:9px;color:#9bb5b7;margin-bottom:4px}
+.bx-match-player{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:4px 0;border-top:1px solid rgba(67,190,198,.12);min-width:0}
+.bx-match-player .player-link{padding:0;border:0;background:none;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:#c3d0d0}
+.bx-match-player b{font-size:13px;color:#9bb5b7}
+.bx-match-player.is-winner .player-link,.bx-match-player.is-winner b{color:#43BEC6;font-weight:700}
+.bx-match-date{font-size:9px;color:#7f999a;margin-top:4px}
+.bx-third-place{display:flex;align-items:flex-start;gap:14px;border-top:1px solid #263638;padding-top:14px;margin-top:10px;flex-wrap:wrap}
+.bx-third-place>div:first-child{min-width:140px}
+.bx-third-place h3{margin:0;color:#43BEC6}
+.bx-third-place small{color:#9bb5b7;font-size:10px}
+.bx-third-place .bx-bracket-match{flex:1 1 220px;max-width:360px}
+@media(max-width:600px){.bx-bracket-head{align-items:flex-start;flex-wrap:wrap}.bx-bracket-tree{gap:15px}.bx-bracket-round{flex-basis:155px;min-width:155px}.bx-champion h2{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -428,9 +461,27 @@ function renderTournamentTab(){
   }else if(selectedTournamentTab==='matches'){
    out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),displayDate(m.match_date)])));
   }else if(selectedTournamentTab==='bracket'){
-   const rounds=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
-   out='<h3>Bracket</h3><p class="muted">Knockout results recorded by admins.</p>';
-   out+=rounds.length?table(['Round','Match','Score','Winner'],rounds.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id))+' vs '+playerButton(m.player2_id,pName(m.player2_id)),m.player1_points+'–'+m.player2_points,E(Number(m.player1_points)>Number(m.player2_points)?pName(m.player1_id):Number(m.player2_points)>Number(m.player1_points)?pName(m.player2_id):'Draw')]))):'<div class="empty">No knockout matches have been recorded yet.</div>';
+   const knockout=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
+   const stageRank=name=>{const n=(name||'').toLowerCase();if(/third|3rd|bronze/.test(n))return -1;if(/final/.test(n)&&!/semi|quarter/.test(n))return 100;if(/semi/.test(n))return 50;if(/quarter/.test(n))return 25;const r=n.match(/round\\s*(\\d+)/);return r?Number(r[1]):10;};
+   const winnerOf=m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;
+   const loserOf=m=>{const w=winnerOf(m);return w===m.player1_id?m.player2_id:w===m.player2_id?m.player1_id:null;};
+   const third=knockout.filter(m=>stageRank(m.round_name)===-1);
+   const main=knockout.filter(m=>stageRank(m.round_name)!==-1);
+   const roundNames=[...new Set(main.map(m=>m.round_name||'Knockout'))].sort((a,b)=>stageRank(a)-stageRank(b));
+   const finalMatch=[...main].sort((a,b)=>stageRank(b.round_name)-stageRank(a.round_name))[0];
+   const champ=finalMatch?winnerOf(finalMatch):null,runner=finalMatch?loserOf(finalMatch):null;
+   const matchCard=m=>{
+    const w=winnerOf(m),p1=m.player1_id,p2=m.player2_id;
+    return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Knockout')+'</div><div class="bx-match-player '+(w===p1?'is-winner':'')+'">'+playerButton(p1,pName(p1))+'<b>'+E(m.player1_points)+'</b></div><div class="bx-match-player '+(w===p2?'is-winner':'')+'">'+playerButton(p2,pName(p2))+'<b>'+E(m.player2_points)+'</b></div>'+(m.match_date?'<div class="bx-match-date">'+E(displayDate(m.match_date))+'</div>':'')+'</div>';
+   };
+   out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Tournament progression · recorded results</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
+   if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+E(pName(runner))+'</p></div></div>';
+   if(!knockout.length)out+='<div class="empty">No knockout matches have been recorded yet. Add match records with a knockout round name (for example, Quarter-final, Semi-final or Final) to build the bracket.</div>';
+   else{
+    out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+roundNames.map(name=>'<section class="bx-bracket-round"><h3>'+E(name)+'</h3><small>First to recorded score</small>'+main.filter(m=>m.round_name===name).map(matchCard).join('')+'</section>').join('')+'</div>';
+    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
+   }
+   if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
   }else{
    out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([playerButton(e.player_id,pName(e.player_id)),x.played,x.w,x.l,x.points]);}));
   }
@@ -615,6 +666,7 @@ window.scrollTo({top:document.querySelector('#adminPanel').getBoundingClientRect
 const tableFor={player:'players',combo:'combos',tournament:'tournaments',match:'matches'};
 document.addEventListener('click',async e=>{
 const tournamentCard=e.target.closest('[data-open-tournament]');if(tournamentCard){openTournamentWorkspace(tournamentCard.dataset.openTournament);return;}
+const bracketView=e.target.closest('[data-bracket-view]');if(bracketView){const mode=bracketView.dataset.bracketView;document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b===bracketView));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!==mode));return;}
 const tableGroup=e.target.closest('[data-table-group]');if(tableGroup){selectedTableGroup=tableGroup.dataset.tableGroup;renderTournamentTab();return;}
 const tournamentTab=e.target.closest('[data-tournament-tab]');if(tournamentTab){selectedTournamentTab=tournamentTab.dataset.tournamentTab;renderTournamentTab();return;}
 if(e.target.closest('#backToTournaments')){$('tournamentWorkspace').classList.add('hide');$('tournamentDirectory').classList.remove('hide');selectedTournamentId=null;return;}
