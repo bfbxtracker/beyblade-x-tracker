@@ -462,7 +462,7 @@ function renderTournamentTab(){
    out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),displayDate(m.match_date)])));
   }else if(selectedTournamentTab==='bracket'){
    const knockout=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
-   const stageRank=name=>{const n=(name||'').toLowerCase();if(/third|3rd|bronze/.test(n))return -1;if(/final/.test(n)&&!/semi|quarter/.test(n))return 100;if(/semi/.test(n))return 50;if(/quarter/.test(n))return 25;const r=n.match(/round\\s*(\\d+)/);return r?Number(r[1]):10;};
+   const stageRank=name=>{const n=(name||'').toLowerCase();if(/third|3rd|bronze/.test(n))return -1;if(/final/.test(n)&&!/semi|quarter/.test(n))return 100;if(/semi/.test(n))return 50;if(/quarter/.test(n))return 25;const r=n.match(/round\s*(\d+)/);return r?Number(r[1]):10;};
    const winnerOf=m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;
    const loserOf=m=>{const w=winnerOf(m);return w===m.player1_id?m.player2_id:w===m.player2_id?m.player1_id:null;};
    const third=knockout.filter(m=>stageRank(m.round_name)===-1);
