@@ -396,13 +396,26 @@ function renderTournamentTab(){
   const activeGroups=selectedTableGroup==='all'?groups:groups.filter(g=>g.id===selectedTableGroup);
   const overallStats=winStats(groupMatches);
   const eligible=entries.map(e=>e.player_id);
+  const calcGroup=(gm)=>{
+   const map=new Map();
+   gm.forEach(m=>{
+    const sides=[[m.player1_id,Number(m.player1_points),Number(m.player2_points)],[m.player2_id,Number(m.player2_points),Number(m.player1_points)]];
+    sides.forEach(([pid,forPts,againstPts])=>{
+     if(!eligible.includes(pid))return;
+     if(!map.has(pid))map.set(pid,{id:pid,name:pName(pid),played:0,w:0,l:0,points:0,against:0,winMargin:0});
+     const x=map.get(pid);x.played++;x.points+=forPts;x.against+=againstPts;
+     if(forPts>againstPts){x.w++;x.winMargin+=forPts-againstPts;}else if(forPts<againstPts)x.l++;
+    });
+   });
+   return [...map.values()].map(x=>({...x,diff:x.points-x.against})).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff||a.name.localeCompare(b.name));
+  };
   const groupRows=activeGroups.map(g=>{
-   const gm=groupMatches.filter(m=>m.group_id===g.id),st=winStats(gm).filter(x=>eligible.includes(x.id)&&x.played>0).sort((a,b)=>b.w-a.w||b.diff-a.diff||b.points-a.points||a.name.localeCompare(b.name));
-   const rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>',playerButton(x.id,x.name),x.played,x.w,x.l,x.diff>0?'+'+x.diff:x.diff]));
-   return '<div class="standings-group-card" style="--group-accent:'+ (groups.indexOf(g)%2?'#43BEC6':'#43BEC6') +'"><h3>'+E(g.name)+'</h3>'+table(['','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
+   const gm=groupMatches.filter(m=>m.group_id===g.id),st=calcGroup(gm);
+   const rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>',playerButton(x.id,x.name),x.played,x.w,x.l,x.winMargin,x.diff>0?'+'+x.diff:x.diff]));
+   return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
   }).join('');
-  const best=overallStats.filter(x=>eligible.includes(x.id)&&x.played>0).sort((a,b)=>b.w-a.w||b.diff-a.diff)[0];
-  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total point margin across recorded group matches. Tap a blader name to open their full record.</p>';
+  const best=groups.flatMap(g=>calcGroup(groupMatches.filter(m=>m.group_id===g.id))).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff)[0];
+  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total margin across won matches only. The +/− column shows overall points difference. Tap a blader name to open their full record.</p>';
   if(best)out+='<div class="standings-champion"><span class="champion-cup">♕</span><div><small>TOURNAMENT LEADER</small><h3>'+playerButton(best.id,best.name)+'</h3><p>Best group-stage record — '+best.w+' wins, margin '+best.diff+'</p></div></div>';
   out+='<div class="standings-filter"><button type="button" data-table-group="all" class="'+(selectedTableGroup==='all'?'active':'')+'">All</button>'+groups.map(g=>'<button type="button" data-table-group="'+E(g.id)+'" class="'+(selectedTableGroup===g.id?'active':'')+'">'+E(g.name)+'</button>').join('')+'</div>'+ (groupRows||'<div class="empty">No group match results have been recorded yet.</div>')+'</div>';
  }else{
