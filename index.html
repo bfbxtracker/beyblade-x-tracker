@@ -650,6 +650,14 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-match-blade-fallback{font-size:7px;line-height:1.1;text-align:center;overflow-wrap:anywhere;padding:2px;color:#A8BDCC}
 
 
+/* Show each selected Blader's compact three-Blade deck below their name */
+.bx-tree-slot{align-items:flex-start}
+.bx-tree-slot-content{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1}
+.bx-tree-slot-content .bx-tree-slot-label{width:100%}
+.bx-tree-slot-content .bx-match-deck-blades{display:flex;gap:4px;margin:1px 0 0;padding:0}
+.bx-tree-slot-content .bx-match-blade-only{width:25px;height:25px;flex:0 0 25px;border-radius:4px}
+.bx-tree-slot-content .bx-match-blade-only img{width:22px;height:22px}
+.bx-tree-slot-score{padding-top:2px}
 /* Clean, non-overlapping knockout tree with simple Blader slots */
 .bx-bracket-tree{display:grid!important;grid-template-columns:repeat(4,minmax(190px,1fr))!important;align-items:center;gap:22px!important;overflow-x:auto!important;overflow-y:visible!important;padding:18px 8px 24px!important;min-width:0}
 .bx-bracket-round{min-width:190px!important;width:auto!important;max-width:none!important;flex:none!important;display:flex;flex-direction:column;justify-content:space-around;gap:18px!important;position:relative;box-sizing:border-box}
@@ -1070,7 +1078,7 @@ function renderTournamentTab(){
    const champ=finalMatch?winnerOf(finalMatch):null,runner=finalMatch?loserOf(finalMatch):null;
    const matchCard=m=>{
     const w=winnerOf(m),p1=m.player1_id,p2=m.player2_id;
-    const slot=(pid,score,deck,number)=>'<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&w===pid?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(deck||[]))+'" title="Drag Blader and deck to the next round"':'')+'><span class="bx-tree-slot-label">'+(pid?playerButton(pid,pName(pid)):'Blader '+number)+'</span><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';
+    const slot=(pid,score,deck,number)=>'<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&w===pid?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(deck||[]))+'" title="Drag Blader and deck to the next round"':'')+'><div class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+(pid?playerButton(pid,pName(pid)):'Blader '+number)+'</span>'+(pid?renderKnockoutDeck(deck):'')+'</div><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';
     return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Match')+'</div>'+slot(p1,m.player1_points,m.player1_deck,1)+slot(p2,m.player2_points,m.player2_deck,2)+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
    };
    out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Follow each round through to the champion.</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
