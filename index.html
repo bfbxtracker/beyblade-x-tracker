@@ -12,6 +12,39 @@
 .tournament-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:168px;padding:25px 28px;margin:8px 0 17px;border-radius:18px;background:linear-gradient(110deg,#0c3268 0%,#1769d2 56%,#5b9bea 100%);color:#fff;box-shadow:0 12px 28px rgba(23,105,210,.17)}.tournament-hero:after{content:"BFB X TRACKER";position:absolute;right:18px;bottom:-28px;font-size:clamp(72px,14vw,150px);font-weight:950;letter-spacing:-10px;color:#ffffff12;pointer-events:none}.tournament-hero h2{color:#fff;font-size:clamp(22px,4vw,32px);margin:3px 0}.tournament-hero p{color:#F1F7FA;max-width:600px}.hero-kicker{font-size:10px;letter-spacing:2px;font-weight:850;color:#D8E9FF}.hero-chip{border:1px solid #ffffff55;background:#ffffff18;border-radius:30px;padding:8px 12px;font-size:11px;font-weight:800;white-space:nowrap;z-index:1}.player-link{border:0;background:transparent;color:var(--blue);padding:0;font-weight:750;text-align:left}.player-link:hover{text-decoration:underline;background:transparent}.profile-head{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:16px}.avatar{width:62px;height:62px;border-radius:18px;background:linear-gradient(145deg,#e8f2ff,#D8E9FF);display:grid;place-items:center;color:#1555a1;font-size:24px;font-weight:900}.profile-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0}.profile-stat{border:1px solid var(--border);border-radius:12px;padding:12px;background:#f8fbff}.profile-stat b{display:block;font-size:22px;color:#15375f}.profile-stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.hero-actions{display:flex;gap:8px;flex-wrap:wrap;z-index:1}.hero-actions button{background:#fff;color:#1454a3;border-color:#fff}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 @media(max-width:640px){.wrap{padding-left:13px;padding-right:13px}.top .wrap{padding-top:14px;padding-bottom:14px}.brand-mark{width:62px;height:62px;flex-basis:62px}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:13px 0 10px}.nav button{width:100%;padding:10px 7px;font-size:13px}.tournament-hero{padding:19px;min-height:150px;align-items:flex-start;flex-direction:column}.tournament-hero:after{right:8px;bottom:-16px;font-size:76px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat-value{font-size:27px}.card,.panel{padding:14px;border-radius:13px}.admin-grid{grid-template-columns:minmax(0,1fr)}.admin-grid .wide{grid-column:auto}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.table-scroll{margin:0 -4px}.profile-head{align-items:flex-start}.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* Full-width tournament setup and manager */
+#adminPanel>.admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+#adminPanel>.admin-grid>.panel{min-width:0}
+#adminPanel>.tournament-admin-panel{display:block;width:100%;max-width:none;grid-column:1/-1;margin:0 0 16px;padding:24px}
+#adminPanel>.tournament-admin-panel #tournamentForm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px;align-items:end}
+#adminPanel>.tournament-admin-panel #tournamentForm>input[type=hidden]{display:none}
+#adminPanel>.tournament-admin-panel #tournamentForm>label:first-of-type,
+#adminPanel>.tournament-admin-panel #tournamentForm>#tournamentName{grid-column:span 2}
+#adminPanel>.tournament-admin-panel #tournamentForm>.form-grid{grid-column:span 2;grid-template-columns:repeat(2,minmax(0,1fr))}
+#adminPanel>.tournament-admin-panel #tournamentForm>label,
+#adminPanel>.tournament-admin-panel #tournamentForm>input,
+#adminPanel>.tournament-admin-panel #tournamentForm>select{min-width:0}
+#adminPanel>.tournament-admin-panel #tournamentForm>.actions{grid-column:1/-1}
+#adminPanel>.tournament-admin-panel #tournamentManagerBody{width:100%}
+#adminPanel>.tournament-admin-panel #tournamentManagerBody>.form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+#adminPanel>.tournament-admin-panel #tournamentPlayerPicker{min-height:240px!important}
+#adminPanel>.tournament-admin-panel #tournamentParticipantManager,
+#adminPanel>.tournament-admin-panel #tournamentGroupManager{width:100%;max-height:390px;overflow:auto}
+#adminPanel>.tournament-admin-panel #adminTournaments{max-height:260px;overflow:auto}
+@media(max-width:900px){
+ #adminPanel>.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #adminPanel>.tournament-admin-panel #tournamentForm{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ #adminPanel>.admin-grid{grid-template-columns:minmax(0,1fr)}
+ #adminPanel>.tournament-admin-panel{padding:15px}
+ #adminPanel>.tournament-admin-panel #tournamentForm{grid-template-columns:minmax(0,1fr)}
+ #adminPanel>.tournament-admin-panel #tournamentForm>label:first-of-type,
+ #adminPanel>.tournament-admin-panel #tournamentForm>#tournamentName,
+ #adminPanel>.tournament-admin-panel #tournamentForm>.form-grid{grid-column:1}
+ #adminPanel>.tournament-admin-panel #tournamentManagerBody>.form-grid{grid-template-columns:minmax(0,1fr)}
+}
+
 /* BLACK PEARL + MALIBU THEME */
 :root{
  color-scheme:dark;
@@ -435,8 +468,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div class="admin-grid">
 <div class="panel"><h3>Player profile</h3><form id="playerForm"><input type="hidden" id="playerId"><label>Blader name *</label><input id="playerName" required maxlength="100"><label>Combos</label><textarea id="playerCombos" rows="3" maxlength="2000" placeholder="Enter combos"></textarea><label>Decks</label><textarea id="playerDecks" rows="3" maxlength="2000" placeholder="Enter decks"></textarea><div class="actions"><button class="primary" type="submit" id="playerSave">Add player</button><button type="button" class="ghost" data-reset="player">Clear</button></div></form><h3 style="margin-top:19px">Existing players</h3><div id="adminPlayers"></div></div>
 <div class="panel"><h3>Beyblade Combo</h3><form id="comboForm"><input type="hidden" id="comboId"><label>Combo name *</label><input id="comboName" required placeholder="Example: Phoenix Wing 9-60P"><div class="form-grid"><div><label>Blade</label><input id="comboBlade"></div><div><label>Ratchet</label><input id="comboRatchet"></div><div><label>Bit</label><input id="comboBit"></div><div><label>Type</label><select id="comboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div></div><label>Owner</label><select id="comboOwner"></select><label>Notes</label><input id="comboNotes"><div class="actions"><button class="primary" type="submit" id="comboSave">Add combo</button><button type="button" class="ghost" data-reset="combo">Clear</button></div></form><h3 style="margin-top:19px">Existing combos</h3><div id="adminCombos"></div></div>
-<div class="panel"><h3>Custom Finish Scoring</h3><p class="muted">Set the points for each finish. When recording a match, choose the winner and click “Apply finish points”. You can also enter scores manually.</p><div id="scoringInputs"></div><div class="actions"><button class="primary" id="saveScoring">Save scoring</button></div>
-<div class="panel wide"><h3>Tournament &amp; Tournament Manager</h3><form id="tournamentForm"><input type="hidden" id="tournamentId"><label>Name *</label><input id="tournamentName" required><div class="form-grid"><div><label>Date</label><input id="tournamentDate" type="date"></div><div><label>Location</label><input id="tournamentLocation"></div></div><label>Format</label><select id="tournamentFormat"><option>Round Robin</option><option>Single Elimination</option><option>Double Elimination</option><option>Swiss</option><option>Other</option></select><label>Notes</label><input id="tournamentNotes"><div class="actions"><button class="primary" type="submit" id="tournamentSave">Add tournament</button><button type="button" class="ghost" data-reset="tournament">Clear</button></div></form><h3 style="margin-top:19px">Existing tournaments</h3><div id="adminTournaments"></div>
+<div class="panel"><h3>Custom Finish Scoring</h3><p class="muted">Set the points for each finish. When recording a match, choose the winner and click “Apply finish points”. You can also enter scores manually.</p><div id="scoringInputs"></div><div class="actions"><button class="primary" id="saveScoring">Save scoring</button></div></div>
+</div>
+<div class="panel wide tournament-admin-panel"><h3>Tournament &amp; Tournament Manager</h3><form id="tournamentForm"><input type="hidden" id="tournamentId"><label>Name *</label><input id="tournamentName" required><div class="form-grid"><div><label>Date</label><input id="tournamentDate" type="date"></div><div><label>Location</label><input id="tournamentLocation"></div></div><label>Format</label><select id="tournamentFormat"><option>Round Robin</option><option>Single Elimination</option><option>Double Elimination</option><option>Swiss</option><option>Other</option></select><label>Notes</label><input id="tournamentNotes"><div class="actions"><button class="primary" type="submit" id="tournamentSave">Add tournament</button><button type="button" class="ghost" data-reset="tournament">Clear</button></div></form><h3 style="margin-top:19px">Existing tournaments</h3><div id="adminTournaments"></div>
 <div class="panel" style="margin-top:20px;background:var(--panel2);padding:24px">
 <h3>Tournament Manager</h3>
 <p class="muted">Register any number of players, create groups, and move players between groups. Changes are shared with approved viewers.</p>
@@ -451,8 +485,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div id="tournamentParticipantManager"></div>
 <h4 style="margin:18px 0 8px">Groups</h4>
 <div id="tournamentGroupManager"></div>
-</div></div></div>
-</div>
+</div></div>
 <div class="panel wide"><h3>Record / Edit Match</h3><form id="matchForm"><input type="hidden" id="matchId"><div class="form-grid"><div><label>Date *</label><input id="matchDate" type="date" required></div><div><label>Tournament</label><select id="matchTournament"></select></div><div><label>Group (optional)</label><select id="matchGroup"><option value="">No group / knockout</option></select></div><div><label>Round</label><input id="matchRound" placeholder="Final / Round 1"></div><div><label>Player 1 *</label><select id="matchP1" required></select></div><div><label>Player 2 *</label><select id="matchP2" required></select></div><div><label>Player 1 Combo</label><select id="matchC1"></select></div><div><label>Player 2 Combo</label><select id="matchC2"></select></div><div><label>Finish type</label><select id="matchFinish"></select></div><div><label>Finish winner</label><select id="matchWinner"><option value="1">Player 1</option><option value="2">Player 2</option></select></div><div><label>Player 1 points *</label><input id="matchS1" type="number" min="0" step="1" value="0" required></div><div><label>Player 2 points *</label><input id="matchS2" type="number" min="0" step="1" value="0" required></div></div><label>Notes</label><input id="matchNotes"><div class="actions"><button type="button" id="applyPoints">Apply finish points</button><button class="primary" type="submit" id="matchSave">Save match</button><button type="button" class="ghost" data-reset="match">Clear</button></div></form><h3 style="margin-top:19px">Existing matches</h3><div id="adminMatches"></div></div>
 
 </div>
