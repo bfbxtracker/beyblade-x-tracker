@@ -574,6 +574,35 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
  .bx-bracket-round-editor .bx-knockout-deck-parts .blade-picker-trigger{font-size:11px;padding:7px}
 }
 
+
+/* Round of 16 admin editor sits above the bracket as a compact horizontal table */
+.bx-r16-admin-top{width:100%;margin:12px 0 18px;position:relative;z-index:5}
+.bx-r16-admin-top .bx-bracket-round-editor{width:100%;max-width:none;margin:0;box-sizing:border-box}
+.bx-r16-admin-top .bx-bracket-round-editor>h4{font-size:14px;margin-bottom:5px}
+.bx-r16-admin-top .bx-bracket-round-editor>p{margin-bottom:10px}
+.bx-r16-admin-top .bx-knockout-compact-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bx-r16-admin-top .bx-knockout-blader-block{min-width:0;padding:10px;overflow:visible}
+.bx-r16-admin-top .bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 84px}
+.bx-r16-admin-top .bx-knockout-deck-slot{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;align-items:center}
+.bx-r16-admin-top .bx-knockout-deck-parts{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.bx-r16-admin-top .bx-knockout-deck-parts .blade-picker-field{position:relative;min-width:0}
+.bx-r16-admin-top .bx-knockout-deck-parts .blade-picker-trigger{min-height:38px;padding:7px;font-size:11px}
+.bx-r16-admin-top .bx-knockout-deck-parts .blade-picker-trigger>span:first-child{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+.bx-r16-admin-top .blade-picker{position:absolute;top:calc(100% + 4px);left:0;width:min(310px,calc(100vw - 48px));max-width:calc(100vw - 48px);z-index:1000;box-sizing:border-box}
+.bx-r16-admin-top .blade-picker input[type=search]{width:100%;min-height:40px;padding:9px 11px;font-size:13px;box-sizing:border-box}
+.bx-r16-admin-top .blade-picker-options{max-height:280px;min-height:100px}
+.bx-r16-admin-top .blade-picker-options .blade-option{min-height:60px;padding:7px 9px}
+.bx-r16-admin-top .blade-picker-options .blade-option img{width:50px;height:50px}
+.bx-r16-admin-top .bx-knockout-compact-form>.primary{grid-column:1/-1;justify-self:start}
+.bx-bracket-tree .bx-stage-r16 .bx-bracket-round-editor{display:none!important}
+@media(max-width:720px){
+ .bx-r16-admin-top .bx-knockout-compact-form{grid-template-columns:minmax(0,1fr)}
+ .bx-r16-admin-top .bx-knockout-compact-form>.primary{grid-column:1}
+ .bx-r16-admin-top .bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 76px}
+ .bx-r16-admin-top .bx-knockout-deck-parts{gap:5px}
+ .bx-r16-admin-top .bx-knockout-deck-parts .blade-picker-trigger{font-size:10px;padding:6px}
+}
+
 /* Winner drag-and-drop progression between knockout rounds */
 .bx-bracket-match [data-knockout-winner]{cursor:grab;position:relative;border:1px dashed transparent;border-radius:4px;padding:4px}
 .bx-bracket-match [data-knockout-winner]:hover{border-color:#7DC8F7;background:rgba(125,200,247,.08)}
@@ -988,8 +1017,10 @@ function renderTournamentTab(){
     return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Knockout')+'</div>'+winnerRow(p1,m.player1_points,m.player1_deck)+renderKnockoutDeck(m.player1_deck)+winnerRow(p2,m.player2_points,m.player2_deck)+renderKnockoutDeck(m.player2_deck)+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Replace / edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
    };
    out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Follow each round through to the champion.</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
+   const r16Matches=main.filter(m=>stageOf(m.round_name)==='r16').sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
+   if(isAdmin)out+='<section class="bx-r16-admin-top">'+tournamentAdminKnockoutControls(id,entries,'r16',r16Matches)+'</section>';
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+E(pName(runner))+'</p></div></div>';
-   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+(stageMatches.length?stageMatches.map(matchCard).join(''):'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>')+(isAdmin?tournamentAdminKnockoutControls(id,entries,stage.id,stageMatches):'')+'</section>';}).join('')+'</div>';
+   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+(stageMatches.length?stageMatches.map(matchCard).join(''):'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>')+(isAdmin&&stage.id!=='r16'?tournamentAdminKnockoutControls(id,entries,stage.id,stageMatches):'')+'</section>';}).join('')+'</div>';
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
    if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
   }else{
