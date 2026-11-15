@@ -846,6 +846,10 @@ async function refreshAuth(){
    if(!isAdmin){const v=await sb.rpc('is_bx_approved_viewer');if(v.error)throw v.error;isViewer=!!v.data;}
    else isViewer=true;
   }
+  // Always discard the temporary View As preview on a fresh page load.
+  // Restore the real experience from the authenticated account's database role.
+  viewAs=isAdmin?'admin':isViewer?'member':'public';
+  document.body.classList.remove('view-as-member','view-as-public','view-as-admin');
   showAuth();
  }catch(e){banner('Authentication check failed: '+e.message,'error');}
 }
@@ -1117,7 +1121,8 @@ $('matchDate').value=new Date().toLocaleDateString('en-CA');
 await refreshAuth();await loadAll();await applyViewAs();
 renderBladePicker('');renderRatchetPicker('');renderBitPicker('');
 const savedNav=readNavigationState();
-if(savedNav.view==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
+if(!isAdmin&&savedNav.view==='admin'){setView('overview');}
+else if(savedNav.view==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
 else if(savedNav.view==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
 else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){selectedTournamentId=savedNav.view==='tournaments'?selectedTournamentId:null;setView(savedNav.view);}
 
