@@ -546,7 +546,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div class="panel section" id="superAdminOnly"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div>
 
 </div>
-<div class="panel section">
+<div class="panel section" id="superAdminAuditOnly">
  <div class="head"><div><h3>Activity & Login Audit Log</h3><p class="muted">See which account signed in, what records changed, who changed them, and when.</p></div><button type="button" id="refreshAuditLog">Refresh log</button></div>
  <div class="form-grid"><div><label for="auditEmailFilter">Filter by email</label><input id="auditEmailFilter" placeholder="name@example.com"></div><div><label for="auditActionFilter">Filter by action</label><select id="auditActionFilter"><option value="">All activity</option><option value="LOGIN">Logins</option><option value="INSERT">Created</option><option value="UPDATE">Updated</option><option value="DELETE">Deleted</option></select></div></div>
  <div id="auditLogList" style="margin-top:12px">Run the audit-log SQL migration, then refresh this panel.</div>
