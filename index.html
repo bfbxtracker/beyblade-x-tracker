@@ -753,22 +753,23 @@ function knockoutDeckPickerMarkup(side,slot,part){
  const cap=part[0].toUpperCase()+part.slice(1),id='ko'+side+slot+cap;
  return '<div class="blade-picker-field"><label>'+E(cap)+(part==='ratchet'?' (Optional)':'')+'</label><input type="hidden" name="'+id+'" id="'+id+'"><button type="button" id="'+id+'Trigger" class="blade-picker-trigger" aria-expanded="false"><span id="'+id+'Selected">Choose '+cap+'</span><span class="blade-picker-arrow">▾</span></button><div id="'+id+'Picker" class="blade-picker hide"><input id="'+id+'Search" type="search" placeholder="Search '+cap+'…" autocomplete="off"><div class="blade-picker-count" id="'+id+'Count"></div><div class="blade-picker-options" id="'+id+'Options"></div></div></div>';
 }
-function renderKnockoutDeckPicker(side,slot,part,selected=''){
- const cap=part[0].toUpperCase()+part.slice(1),id='ko'+side+slot+cap,q=($(id+'Search')?.value||'').trim().toLowerCase();
- const source=part==='blade'?BLADE_CATALOG:part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG;
+function renderKnockoutDeckPicker(form,side,slot,part,selected=''){
+ const cap=part[0].toUpperCase()+part.slice(1),id='ko'+side+slot+cap,field=form.querySelector('#'+id),label=form.querySelector('#'+id+'Selected'),search=form.querySelector('#'+id+'Search'),count=form.querySelector('#'+id+'Count'),options=form.querySelector('#'+id+'Options');
+ if(!field||!label||!search||!count||!options)return;
+ const q=(search.value||'').trim().toLowerCase(),source=part==='blade'?BLADE_CATALOG:part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG;
  const items=source.filter(x=>part==='blade'?(!q||x.name.toLowerCase().includes(q)||x.series.toLowerCase().includes(q)):part==='ratchet'?(!q||x.name.toLowerCase().includes(q)):(!q||x.code.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)));
- $(id).value=selected||'';$(id+'Selected').textContent=selected||('Choose '+cap);
+ field.value=selected||'';label.textContent=selected||('Choose '+cap);
  const none=part==='ratchet'?'<button type="button" class="blade-option" data-ko-deck-side="'+side+'" data-ko-deck-slot="'+slot+'" data-ko-deck-part="ratchet" data-ko-deck-value="">No Ratchet</button>':'';
- $(id+'Count').textContent=items.length+(part==='ratchet'?1:0)+' '+cap+'s shown';
- $(id+'Options').innerHTML=none+items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name,sub=part==='blade'?x.series:cap;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-ko-deck-side="'+side+'" data-ko-deck-slot="'+slot+'" data-ko-deck-part="'+part+'" data-ko-deck-value="'+E(value)+'"><img loading="lazy" decoding="async" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';}).join('')||none||'<div class="empty">No matching '+cap+'s.</div>';
+ count.textContent=items.length+(part==='ratchet'?1:0)+' '+cap+'s shown';
+ options.innerHTML=none+items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name,sub=part==='blade'?x.series:cap;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-ko-deck-side="'+side+'" data-ko-deck-slot="'+slot+'" data-ko-deck-part="'+part+'" data-ko-deck-value="'+E(value)+'"><img loading="lazy" decoding="async" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';}).join('')||none||'<div class="empty">No matching '+cap+'s.</div>';
 }
 function initKnockoutDeckPickers(form){
  ['1','2'].forEach(side=>[1,2,3].forEach(slot=>['blade','ratchet','bit'].forEach(part=>{
-  const id='ko'+side+slot+part[0].toUpperCase()+part.slice(1),trigger=$(id+'Trigger'),search=$(id+'Search');
-  trigger?.addEventListener('click',()=>{const panel=$(id+'Picker'),open=panel.classList.contains('hide');form.querySelectorAll('.blade-picker').forEach(x=>x.classList.add('hide'));panel.classList.toggle('hide',!open);if(open){search.focus();renderKnockoutDeckPicker(side,slot,part,$(id).value);}});
-  search?.addEventListener('input',()=>renderKnockoutDeckPicker(side,slot,part,$(id).value));
-  $(id+'Options')?.addEventListener('click',e=>{const opt=e.target.closest('[data-ko-deck-value]');if(!opt)return;renderKnockoutDeckPicker(side,slot,part,opt.dataset.koDeckValue);search.value='';$(id+'Picker').classList.add('hide');});
-  renderKnockoutDeckPicker(side,slot,part,'');
+  const id='ko'+side+slot+part[0].toUpperCase()+part.slice(1),trigger=form.querySelector('#'+id+'Trigger'),search=form.querySelector('#'+id+'Search'),panel=form.querySelector('#'+id+'Picker'),options=form.querySelector('#'+id+'Options'),field=form.querySelector('#'+id);
+  trigger?.addEventListener('click',()=>{const open=panel.classList.contains('hide');form.querySelectorAll('.blade-picker').forEach(x=>x.classList.add('hide'));panel.classList.toggle('hide',!open);trigger.setAttribute('aria-expanded',String(open));if(open){renderKnockoutDeckPicker(form,side,slot,part,field.value);search.focus();}});
+  search?.addEventListener('input',()=>renderKnockoutDeckPicker(form,side,slot,part,field.value));
+  options?.addEventListener('click',e=>{const opt=e.target.closest('[data-ko-deck-value]');if(!opt)return;renderKnockoutDeckPicker(form,side,slot,part,opt.dataset.koDeckValue);search.value='';panel.classList.add('hide');trigger.setAttribute('aria-expanded','false');});
+  renderKnockoutDeckPicker(form,side,slot,part,field.value);
  })));
 }
 function readKnockoutDeck(fd,side){
@@ -855,7 +856,7 @@ function tournamentAdminGroupControls(tid,groups,entries){
 function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(!isAdmin)return '';
  const capacity={r16:8,quarter:4,semi:2,final:1}[stage],roundLabels={r16:'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
- const label=roundLabels[stage],opts=entries.map(e=>'<option value="'+E(e.player_id)+'">'+E(pName(e.player_id))+'</option>').join(''),full=stageMatches.length>=capacity;
+ const label=roundLabels[stage],opts=data.players.map(p=>'<option value="'+E(p.id)+'">'+E(p.name)+'</option>').join(''),full=stageMatches.length>=capacity;
  const previous={quarter:'Round of 16',semi:'Quarter-final',final:'Semi-final'}[stage];
  const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' · Deck</h4>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>'+slot+'</strong><div class="bx-knockout-deck-parts">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
  const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+'<select name="player'+number+'_id" '+(previous?'':'required')+' '+(previous?'':'')+'><option value="">'+(previous?'Waiting for winner':'Choose Blader')+'</option>'+opts+'</select>'+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
