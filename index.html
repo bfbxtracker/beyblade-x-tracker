@@ -557,6 +557,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-knockout-dropzone.has-winner{border-style:solid;color:#b5f2d1;border-color:#39d98a;background:rgba(57,217,138,.08)}
 .bx-knockout-auto-stage .bx-knockout-player-head select{display:none}
 @media(max-width:620px){.bx-knockout-dropzone{min-height:40px;font-size:11px}}
+
+.bx-bracket-match [data-knockout-winner].bx-tap-selected{border-color:#39d98a;background:rgba(57,217,138,.12)}
+.bx-knockout-dropzone.is-tap-target{border-style:solid;box-shadow:0 0 0 2px rgba(125,200,247,.14)}
 </style>
 </head>
 <body>
@@ -856,7 +859,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const previous={quarter:'Round of 16',semi:'Quarter-final',final:'Semi-final'}[stage];
  const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' · Deck</h4>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>'+slot+'</strong><div class="bx-knockout-deck-parts">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
  const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+'<select name="player'+number+'_id" '+(previous?'':'required')+' '+(previous?'':'')+'><option value="">'+(previous?'Waiting for winner':'Choose Blader')+'</option>'+opts+'</select>'+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots'+(previous?' · Drag each winner from '+previous+' into a Blader slot; their full deck comes with them.':'')+'</p><form class="bx-knockout-compact-form '+(previous?'bx-knockout-auto-stage':'')+'" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots'+(previous?' · Drag or tap each winner from '+previous+' into a Blader slot; their full deck comes with them.':'')+'</p><form class="bx-knockout-compact-form '+(previous?'bx-knockout-auto-stage':'')+'" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
 
 function drawBracketConnectors(){
@@ -1364,13 +1367,10 @@ document.addEventListener('dragleave',e=>{
  const zone=e.target.closest('[data-knockout-drop-side]');
  if(zone&&!zone.contains(e.relatedTarget))zone.classList.remove('is-drag-over');
 });
-document.addEventListener('drop',e=>{
- const zone=e.target.closest('[data-knockout-drop-side]');
- if(!zone||!isAdmin)return;
- e.preventDefault();zone.classList.remove('is-drag-over');
- let payload;try{payload=JSON.parse(e.dataTransfer.getData('application/x-bfbx-knockout-winner')||'{}');}catch{return;}
+let pendingKnockoutWinner=null;
+function applyKnockoutWinnerToZone(zone,payload){
  const form=zone.closest('form[data-admin-knockout-form]'),side=zone.dataset.knockoutDropSide;
- if(!form||!payload.playerId)return;
+ if(!form||!payload?.playerId)return;
  const select=form.elements.namedItem('player'+side+'_id');
  if(!select||![...select.options].some(o=>o.value===payload.playerId)){banner('That winner is not registered in this tournament.','error');return;}
  select.value=payload.playerId;
@@ -1386,6 +1386,32 @@ document.addEventListener('drop',e=>{
    if(chosen)chosen.textContent=part[key]||('Choose '+cap);
   });
  });
+}
+document.addEventListener('drop',e=>{
+ const zone=e.target.closest('[data-knockout-drop-side]');
+ if(!zone||!isAdmin)return;
+ e.preventDefault();zone.classList.remove('is-drag-over');
+ let payload;try{payload=JSON.parse(e.dataTransfer.getData('application/x-bfbx-knockout-winner')||'{}');}catch{return;}
+ applyKnockoutWinnerToZone(zone,payload);
+});
+/* Touch-friendly fallback: tap a winner, then tap the destination slot */
+document.addEventListener('click',e=>{
+ const source=e.target.closest('[data-knockout-winner]');
+ if(source&&isAdmin){
+  e.preventDefault();e.stopImmediatePropagation();
+  pendingKnockoutWinner={playerId:source.dataset.knockoutWinner,name:source.dataset.knockoutPlayerName,deck:JSON.parse(source.dataset.knockoutDeck||'[]')};
+  document.querySelectorAll('[data-knockout-winner]').forEach(x=>x.classList.toggle('bx-tap-selected',x===source));
+  document.querySelectorAll('[data-knockout-drop-side]').forEach(x=>x.classList.add('is-tap-target'));
+  return;
+ }
+ const zone=e.target.closest('[data-knockout-drop-side]');
+ if(zone&&isAdmin&&pendingKnockoutWinner){
+  e.preventDefault();e.stopImmediatePropagation();
+  applyKnockoutWinnerToZone(zone,pendingKnockoutWinner);
+  pendingKnockoutWinner=null;
+  document.querySelectorAll('[data-knockout-winner]').forEach(x=>x.classList.remove('bx-tap-selected'));
+  document.querySelectorAll('[data-knockout-drop-side]').forEach(x=>x.classList.remove('is-tap-target'));
+ }
 });
 
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error){$('loginError').textContent=error.message;return;}$('loginPassword').value='';$('loginError').textContent='';await refreshAuth();if(session?.user){const {error:logError}=await sb.from('admin_activity_log').insert({actor_user_id:session.user.id,actor_email:session.user.email,action:'LOGIN',entity_table:'auth',details:{summary:'Successful sign-in'}});if(logError)console.warn('Login audit log failed:',logError.message);}if(isAdmin){banner('Admin login successful. You can manage tournament data and approved viewers.','success');await loadAll();if(session?.user?.user_metadata?.player_profile){try{await ensureMyPlayer();await loadAll(true);}catch(err){banner('Signed in, but the Blader profile could not be synced: '+err.message,'error');}}}else if(isViewer){banner('Approved viewer login successful. Full details are now available in view-only mode.','success');await loadAll();if(session?.user?.user_metadata?.player_profile){try{await ensureMyPlayer();await loadAll(true);}catch(err){banner('Signed in, but the Blader profile could not be synced: '+err.message,'error');}}}else{banner('This email is not approved for full details. You can still view the public dashboard.','error');await loadAll();}});
