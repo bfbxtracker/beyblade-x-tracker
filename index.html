@@ -603,6 +603,17 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
  .bx-r16-admin-top .bx-knockout-deck-parts .blade-picker-trigger{font-size:10px;padding:6px}
 }
 
+
+/* Later-round editors are drop-and-score only; decks come from Round of 16 */
+.bx-knockout-auto-stage .bx-knockout-deck-builder{display:none!important}
+.bx-knockout-auto-stage .bx-knockout-blader-block{padding:10px}
+.bx-knockout-auto-stage .bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 84px}
+.bx-knockout-auto-stage .bx-knockout-player-head select{display:none!important}
+.bx-knockout-auto-stage .bx-knockout-dropzone{min-height:54px;margin-top:7px;font-size:12px}
+.bx-knockout-auto-stage .bx-knockout-compact-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bx-knockout-auto-stage .bx-knockout-compact-form>.primary{grid-column:1/-1;justify-self:start}
+@media(max-width:620px){.bx-knockout-auto-stage .bx-knockout-compact-form{grid-template-columns:minmax(0,1fr)}.bx-knockout-auto-stage .bx-knockout-compact-form>.primary{grid-column:1}}
+
 /* Winner drag-and-drop progression between knockout rounds */
 .bx-bracket-match [data-knockout-winner]{cursor:grab;position:relative;border:1px dashed transparent;border-radius:4px;padding:4px}
 .bx-bracket-match [data-knockout-winner]:hover{border-color:#7DC8F7;background:rgba(125,200,247,.08)}
@@ -914,11 +925,14 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const capacity={r16:8,quarter:4,semi:2,final:1}[stage],roundLabels={r16:'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
  const label=roundLabels[stage],opts=data.players.map(p=>'<option value="'+E(p.id)+'">'+E(p.name)+'</option>').join(''),full=stageMatches.length>=capacity;
  const previous={quarter:'Round of 16',semi:'Quarter-final',final:'Semi-final'}[stage];
+ const hiddenDeck=number=>[1,2,3].map(slot=>['blade','ratchet','bit'].map(part=>'<input type="hidden" name="ko'+number+slot+part[0].toUpperCase()+part.slice(1)+'">').join('')).join('');
  const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' · Deck</h4>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>'+slot+'</strong><div class="bx-knockout-deck-parts">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
- const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+'<select name="player'+number+'_id" '+(previous?'':'required')+' '+(previous?'':'')+'><option value="">'+(previous?'Waiting for winner':'Choose Blader')+'</option>'+opts+'</select>'+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots'+(previous?' · Drag or tap each winner from '+previous+' into a Blader slot; their full deck comes with them.':'')+'</p><form class="bx-knockout-compact-form '+(previous?'bx-knockout-auto-stage':'')+'" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+'<select name="player'+number+'_id" '+(previous?'':'required')+'><option value="">'+(previous?'Waiting for winner':'Choose Blader')+'</option>'+opts+'</select>'+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
+ if(previous){
+  return '<div class="bx-admin-editor bx-bracket-round-editor bx-knockout-auto-stage"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · Drag a completed winner from '+previous+' into each slot. Their saved deck transfers automatically.</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+hiddenDeck(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+hiddenDeck(2)+'</div><button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ }
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
-
 function drawBracketConnectors(){
  const tree=document.querySelector('.bx-bracket-tree');if(!tree)return;
  tree.querySelectorAll('.bx-bracket-connectors').forEach(x=>x.remove());
