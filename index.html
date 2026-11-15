@@ -627,6 +627,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 
 .bx-bracket-match [data-knockout-winner].bx-tap-selected{border-color:#39d98a;background:rgba(57,217,138,.12)}
 .bx-knockout-dropzone.is-tap-target{border-style:solid;box-shadow:0 0 0 2px rgba(125,200,247,.14)}
+
+/* Compact bracket deck preview: show only the three Blade images */
+.bx-match-deck-blades{display:flex;align-items:center;gap:5px;margin:3px 0 7px;padding:2px 0}
+.bx-match-blade-only{display:flex;align-items:center;justify-content:center;width:31px;height:31px;flex:0 0 31px;border:1px solid #294B78;border-radius:5px;background:#101b20;overflow:hidden}
+.bx-match-blade-only img{display:block;width:27px;height:27px;object-fit:contain}
+.bx-match-blade-fallback{font-size:7px;line-height:1.1;text-align:center;overflow-wrap:anywhere;padding:2px;color:#A8BDCC}
+
 </style>
 </head>
 <body>
@@ -847,7 +854,7 @@ function readKnockoutDeck(fd,side){
 function renderKnockoutDeck(deck){
  let parts=[];try{parts=Array.isArray(deck)?deck:JSON.parse(deck||'[]');}catch{}
  if(!parts.length)return '';
- return '<div class="bx-match-deck">'+parts.map((part,i)=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(part.blade||'').toLowerCase()),ratchet=RATCHET_CATALOG.find(x=>x.name.toLowerCase()===String(part.ratchet||'').toLowerCase()),bit=BIT_CATALOG.find(x=>x.code.toLowerCase()===String(part.bit||'').toLowerCase());return '<div class="bx-match-deck-combo"><b>Combo '+(i+1)+'</b>'+[['Blade',part.blade,blade?.image],['Ratchet',part.ratchet,ratchet?.image],['Bit',part.bit,bit?.image]].filter(x=>x[1]).map(x=>'<span><img loading="lazy" decoding="async" src="'+E(x[2]||'')+'" alt=""><small>'+E(x[0])+'</small><strong>'+E(x[1])+'</strong></span>').join('')+'</div>';}).join('')+'</div>';
+ return '<div class="bx-match-deck bx-match-deck-blades" aria-label="Three Beyblade deck">'+parts.slice(0,3).map((part,i)=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(part.blade||'').toLowerCase());return '<span class="bx-match-blade-only" title="Combo '+(i+1)+': '+E(part.blade||'Blade')+'">'+(blade?.image?'<img loading="lazy" decoding="async" src="'+E(blade.image)+'" alt="'+E(part.blade||'Blade')+'">':'<span class="bx-match-blade-fallback">'+E(part.blade||'—')+'</span>')+'</span>';}).join('')+'</div>';
 }
 function tName(id){return data.tournaments.find(t=>t.id===id)?.name||'Friendly / Other';}
 function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,against:0}]));for(const x of matches){let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;a.played++;b.played++;a.points+=Number(x.player1_points)||0;b.points+=Number(x.player2_points)||0;a.against+=Number(x.player2_points)||0;b.against+=Number(x.player1_points)||0;if(x.player1_points>x.player2_points){a.w++;b.l++}else if(x.player1_points<x.player2_points){a.l++;b.w++}else{a.d++;b.d++}}return [...m.values()].map(x=>{const manual=x.standing_played!==null&&x.standing_played!==undefined;const played=manual?Number(x.standing_played)||0:x.played,w=manual?Number(x.standing_wins)||0:x.w,l=manual?Number(x.standing_losses)||0:x.l,d=manual?Number(x.standing_draws)||0:x.d,points=3*w+d;return {...x,played,w,l,d,points,rate:played?100*w/played:0,diff:x.points-x.against,hasStandingResults:played>0||w>0||l>0||d>0};}).sort((a,b)=>b.points-a.points||b.w-a.w||b.rate-a.rate||b.played-a.played||a.name.localeCompare(b.name));}
