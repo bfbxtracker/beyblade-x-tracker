@@ -620,7 +620,7 @@ function openPlayerProfile(id){
  '<section class="my-profile-section"><h3>Finishes</h3><div class="finish-count-grid">'+(finishes.size?[...finishes.entries()].map(([name,count])=>'<div class="finish-count-card"><b>'+count+'</b><span>'+E(name)+'</span><small>recorded matches</small></div>').join(''):'<div class="empty">No finish types recorded.</div>')+'</div></section>'+
  '<section class="my-profile-section"><h3>Match by match</h3>'+matchHtml+'</section>'+
  '<section class="my-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.tournament_date)])))+'</section></div>';
- $('profileBackButton').addEventListener('click',()=>{window.bfbxCurrentProfileId=null;setView('players');});
+ $('backToPlayers').onclick=()=>{window.bfbxCurrentProfileId=null;setView('players');};
  setView('playerProfile');
 }
 function render(){const s=winStats();const uniqueWinners=new Set(data.matches.filter(m=>Number(m.player1_points)!==Number(m.player2_points)).map(m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:m.player2_id));$('stats').innerHTML=[['Tournaments',data.tournaments.length],['Bladers',data.players.length],['Matches recorded',data.matches.length],['Match winners',uniqueWinners.size],['Combos',data.combos.length]].map(([label,value])=>`<div class="card"><div class="stat-title">${label}</div><div class="stat-value">${value}</div></div>`).join('');
