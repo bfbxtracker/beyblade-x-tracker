@@ -932,7 +932,10 @@ function renderTournamentTab(){
   }
  }
  $('tournamentTabContent').innerHTML=out;
- if(selectedTournamentTab==='bracket'&&typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(drawBracketConnectors));
+ if(selectedTournamentTab==='bracket'){
+  document.querySelectorAll('[data-admin-knockout-form]').forEach(initKnockoutDeckPickers);
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(drawBracketConnectors));
+ }
 }
 
 function updateMatchPlayerViewerHints(){['matchP1','matchP2'].forEach(id=>{const name=$(id).value.trim().toLowerCase(),p=data.players.find(x=>x.name.trim().toLowerCase()===name);const hint=$(id+'ViewerHint');if(hint)hint.textContent=p?.viewer_name?'Viewer: '+p.viewer_name:'';});}
