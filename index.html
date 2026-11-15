@@ -526,6 +526,26 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
  font-size:10px!important;
 }
 
+
+/* Compact admin-only knockout match editor */
+.bx-knockout-compact-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.bx-knockout-compact-form>.primary{grid-column:1/-1;justify-self:start}
+.bx-knockout-blader-block{min-width:0;border:1px solid #294B78;border-radius:7px;padding:8px;background:rgba(8,13,20,.55)}
+.bx-knockout-player-head{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:7px;align-items:end}
+.bx-knockout-player-head label{margin:0;font-size:10px}
+.bx-knockout-player-head select,.bx-knockout-player-head input{padding:7px 8px;font-size:12px;min-height:34px}
+.bx-knockout-deck-builder{margin:7px 0 0;padding:6px;border-radius:6px}
+.bx-knockout-deck-builder h4{font-size:12px;margin:0 0 4px}
+.bx-knockout-deck-slot{display:grid;grid-template-columns:18px minmax(0,1fr);gap:5px;align-items:center;padding:5px 0;margin:0}
+.bx-knockout-deck-slot>strong{font-size:11px;margin:0;color:#7DC8F7;text-align:center}
+.bx-knockout-deck-parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
+.bx-knockout-deck-parts .blade-picker-field{min-width:0}
+.bx-knockout-deck-parts .blade-picker-field label{font-size:9px;margin:0 0 2px}
+.bx-knockout-deck-parts .blade-picker-trigger{min-height:31px;padding:4px 6px;font-size:10px;gap:3px}
+.bx-knockout-deck-parts .blade-picker-trigger>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bx-bracket-round-editor>h4{margin-bottom:3px}
+.bx-bracket-round-editor>p{margin-bottom:7px}
+@media(max-width:620px){.bx-knockout-compact-form{grid-template-columns:minmax(0,1fr);gap:8px}.bx-knockout-compact-form>.primary{grid-column:1}.bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 68px}.bx-knockout-deck-parts{gap:4px}.bx-knockout-deck-parts .blade-picker-trigger{font-size:9px;padding:4px}}
 </style>
 </head>
 <body>
@@ -822,8 +842,9 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(!isAdmin)return '';
  const capacity={r16:8,quarter:4,semi:2,final:1}[stage],roundLabels={r16:'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
  const label=roundLabels[stage],opts=entries.map(e=>'<option value="'+E(e.player_id)+'">'+E(pName(e.player_id))+'</option>').join(''),full=stageMatches.length>=capacity;
- const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' Deck</h4><p>Create a three-combo deck using the same Blade, Ratchet and Bit image pickers as the profile deck builder.</p>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>Combo '+slot+'</strong><div class="form-grid">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches added · '+(capacity*2)+' Blader slots total</p><form data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><label>Blader 1<select name="player1_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label>'+side(1)+'<label>Blader 2<select name="player2_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label>'+side(2)+'<button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' · Deck</h4>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>'+slot+'</strong><div class="bx-knockout-deck-parts">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
+ const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+'<select name="player'+number+'_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
 
 function drawBracketConnectors(){
