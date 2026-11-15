@@ -6,7 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
   headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,12 +50,12 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Enter a message of up to 1,500 characters." }, 400);
     }
 
-    // Queries run with the signed-in user's RLS context. No service-role key,
-    // admin audit rows, private account details, or write operations are used.
+    // Run reads as the signed-in user so the project's existing RLS policies apply.
+    // Deliberately exclude account details, player locations, admin logs, and free-text notes.
     const [players, combos, tournaments, matches, groups, participants, scoring] = await Promise.all([
-      supabase.from("players").select("id,name,team,location,combos,decks").limit(100),
-      supabase.from("combos").select("id,name,blade,ratchet,bit,type,owner_id,notes").limit(150),
-      supabase.from("tournaments").select("id,name,tournament_date,location,format,notes")
+      supabase.from("players").select("id,name,team,combos,decks").limit(100),
+      supabase.from("combos").select("id,name,blade,ratchet,bit,type,owner_id").limit(150),
+      supabase.from("tournaments").select("id,name,tournament_date,location,format")
         .order("tournament_date", { ascending: false }).limit(50),
       supabase.from("matches").select("match_date,tournament_id,group_id,round_name,player1_id,player2_id,player1_points,player2_points,finish_type")
         .order("match_date", { ascending: false }).limit(150),
