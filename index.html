@@ -426,7 +426,11 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-actions button{font-weight:800!important}
 
 .blade-picker-field{position:relative;min-width:0}.blade-picker-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:#fff;color:var(--fg);border:1px solid var(--border);padding:10px 12px;border-radius:9px;min-height:42px}.blade-picker-arrow{font-size:13px;transition:transform .15s ease}.blade-picker-trigger[aria-expanded=true] .blade-picker-arrow{transform:rotate(180deg)}.blade-selected-label{font-size:12px;font-weight:800;color:var(--blue);margin:5px 0 8px}.blade-picker-field>input[type=search]{width:100%;margin-bottom:7px;background:#071014;color:#f4f8fb;border-color:#34505e}.blade-picker{position:relative;z-index:1;width:100%;padding:9px;background:#10191e;border:1px solid #34505e;border-radius:12px;box-shadow:0 8px 22px #0005;display:flex;flex-direction:column;gap:7px}.blade-picker-count{font-size:11px;color:#9bb3c2}.blade-picker-options{overflow-y:auto;display:grid;grid-template-columns:1fr;gap:5px;max-height:300px;min-height:100px}.blade-option{display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px;text-align:left;background:#17242b;color:#f5f8fa;border:1px solid #2a414d;border-radius:8px}.blade-option:hover,.blade-option.active{background:#203b4a;border-color:#48a9e8}.blade-option img{width:48px;height:48px;object-fit:contain;background:#fff;border-radius:7px;flex:none}.blade-option strong{display:block;font-size:12px}.blade-option small{display:block;color:#a9bfcb;font-size:10px;margin-top:2px}.blade-picker-footer{border-top:1px solid #2a414d;padding-top:6px}.blade-picker-footer button{width:100%}.blade-picker-trigger img{width:30px;height:30px;object-fit:contain;background:#fff;border-radius:5px;vertical-align:middle;margin-right:8px}.blade-picker-trigger .selected-blade{display:flex;align-items:center;min-width:0}.blade-picker-trigger .selected-blade img{flex:none}.blade-picker-trigger .selected-blade span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.managed-bg-text-editor{margin:14px 0 18px;padding:14px;border:1px solid var(--border);border-radius:9px;background:#0b1113}.managed-bg-text-editor label{margin-top:0}.managed-bg-text-editor input{max-width:520px}\n</style>
+.managed-bg-text-editor{margin:14px 0 18px;padding:14px;border:1px solid var(--border);border-radius:9px;background:#0b1113}.managed-bg-text-editor label{margin-top:0}.managed-bg-text-editor input{max-width:520px}\n
+/* Personal blader profile card */
+.my-profile-card{position:relative;padding:8px 2px 4px}.my-profile-card-head{display:flex;align-items:center;gap:14px;padding-right:105px;margin-bottom:18px}.my-profile-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:50%;object-fit:cover;border:2px solid #7DC8F7;background:#15232b;display:grid;place-items:center;font-size:26px;font-weight:900;color:#dff5ff}.my-profile-card-head h3{margin:3px 0;font-size:24px}.my-profile-edit{position:absolute;right:0;top:5px;min-height:34px;padding:7px 13px;font-size:12px}.my-profile-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin:14px 0}.my-profile-meta>div,.my-profile-stat{border:1px solid #26394A;background:#101819;padding:10px;border-radius:5px}.my-profile-meta small,.my-profile-stat small{display:block;color:#A8BDCC;font-size:11px;margin-bottom:4px}.my-profile-combos{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}.my-profile-combo{border:1px solid #26394A;background:#0b1214;padding:10px;border-radius:6px;min-width:0}.my-profile-combo img{display:block;width:100%;height:90px;object-fit:contain;margin:0 auto 7px}.my-profile-combo strong{display:block;overflow-wrap:anywhere}.my-profile-combo small{display:block;color:#A8BDCC;margin-top:4px}.my-profile-section{border-top:1px solid #26394A;padding-top:13px;margin-top:16px}.my-profile-section h3{font-size:14px;margin:0 0 10px;color:#7DC8F7}
+@media(max-width:520px){.my-profile-card-head{padding-right:0;align-items:flex-start}.my-profile-edit{position:static;margin-left:auto;flex:0 0 auto}.my-profile-card-head h3{font-size:20px}.my-profile-avatar{width:64px;height:64px;flex-basis:64px}}
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap"><div class="head"><div class="brand"><img class="brand-mark" src="./bfb-fans-bd-logo.webp" alt="Beyblade Fans BD logo"><div class="brand-copy"><div class="brand-shoot">3 2 1 Go SHOOT</div><h1>BEYFANS <span>X BD</span></h1></div></div><div class="header-tools">
@@ -449,8 +453,10 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <section id="myProfile" class="view hide">
  <div class="panel">
   <div class="section-head"><div><h2>My Blader Profile</h2><p>Manage your blader identity and combos. Changes are saved to your account.</p></div><span class="tag">PERSONAL PROFILE</span></div>
-  <form id="myProfileForm">
-   <label>Blader name *</label><input id="myProfileName" required maxlength="100" placeholder="Your blader name">
+  <div id="myProfileCard"></div>
+   <form id="myProfileForm" class="hide">
+   <label>Profile picture (optional)</label><input id="myProfilePhoto" type="file" accept="image/png,image/jpeg,image/webp"><small class="muted">JPG, PNG or WebP · maximum 2 MB</small>
+    <label>Blader name *</label><input id="myProfileName" required maxlength="100" placeholder="Your blader name">
    <label>Team / club (optional)</label><input id="myProfileTeam" maxlength="120" placeholder="Leave blank if you do not have a team">
    <label>Location *</label><input id="myProfileLocation" required maxlength="120" placeholder="City / area">
    
@@ -873,7 +879,23 @@ document.addEventListener('click',e=>{['blade','ratchet','bit'].forEach(part=>{c
 function renderMyComboPickers(){['blade','ratchet','bit'].forEach(part=>renderMyPartPicker(part,$('myCombo'+part[0].toUpperCase()+part.slice(1)).value));}
 function myOwnedPlayer(){return data.players.find(p=>p.auth_user_id===session?.user?.id)||null;}
 function renderMyProfile(){
- const p=myOwnedPlayer();
+ const p=myOwnedPlayer(),form=$('myProfileForm'),card=$('myProfileCard');
+ if(!p){form.classList.remove('hide');card.innerHTML='<div class="empty">Complete your profile to publish your Blader card.</div>';}
+ else{
+  form.classList.add('hide');
+  const st=winStats().find(x=>x.id===p.id)||{played:0,w:0,l:0,d:0,points:0,against:0,rate:0,diff:0};
+  const ranking=winStats().findIndex(x=>x.id===p.id)+1;
+  const tournamentCount=new Set(data.tournament_participants.filter(x=>x.player_id===p.id).map(x=>x.tournament_id)).size;
+  const combos=data.combos.filter(c=>c.owner_id===p.id);
+  const photo=p.profile_image_url?'<img class="my-profile-avatar" src="'+E(p.profile_image_url)+'" alt="'+E(p.name)+' profile picture">':'<div class="my-profile-avatar">'+E((p.name||'?').trim().slice(0,1).toUpperCase())+'</div>';
+  const comboCards=combos.length?combos.map(c=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(c.blade||'').toLowerCase());const image=blade?.image||'';return '<div class="my-profile-combo">'+(image?'<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(image)+'" alt="'+E(c.blade)+'">':'<div class="empty">Blade image unavailable</div>')+'<strong>'+E(c.name)+'</strong><small>'+E(c.ratchet||'—')+' · '+E(c.bit||'—')+'</small></div>';}).join(''):'<div class="empty">No combos added yet.</div>';
+  card.innerHTML='<div class="my-profile-card"><button type="button" class="ghost my-profile-edit" id="editMyProfile">Edit Profile</button><div class="my-profile-card-head">'+photo+'<div><small class="muted">BLADER NAME</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · ')||'')+'</div></div></div>'+
+  (p.notes?'<div class="my-profile-section"><h3>Blader Details</h3><p>'+E(p.notes)+'</p></div>':'')+
+  '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+
+  '<div class="my-profile-stat"><small>Ranking</small><b>'+(ranking?'#'+ranking:'—')+'</b></div><div class="my-profile-stat"><small>Score % (Win rate)</small><b>'+st.rate.toFixed(1)+'%</b></div><div class="my-profile-stat"><small>Points scored</small><b>'+st.points+'</b></div><div class="my-profile-stat"><small>Matches</small><b>'+st.played+'</b></div><div class="my-profile-stat"><small>W - L - D</small><b>'+st.w+' - '+st.l+' - '+st.d+'</b></div><div class="my-profile-stat"><small>Tournaments played</small><b>'+tournamentCount+'</b></div></div></div>'+
+  '<div class="my-profile-section"><h3>My Beyblade Combos</h3><div class="my-profile-combos">'+comboCards+'</div></div></div>';
+  $('editMyProfile').addEventListener('click',()=>form.classList.remove('hide'));
+ }
  $('myProfileName').value=p?.name||session?.user?.user_metadata?.blader_name||'';
  $('myProfileTeam').value=p?.team||'';
  $('myProfileLocation').value=p?.location||'';
@@ -891,10 +913,12 @@ async function ensureMyPlayer(){
 }
 $('myProfileForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
- try{let p=myOwnedPlayer();const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:'',notes:optional('myProfileNotes')};
+ try{let p=myOwnedPlayer();const file=$('myProfilePhoto').files?.[0];let profile_image_url=p?.profile_image_url||null;
+ if(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP image.');if(file.size>2097152)throw new Error('Profile picture must be 2 MB or smaller.');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/profile-'+Date.now()+'.'+ext;const upload=await sb.storage.from('blader-profile-pictures').upload(path,file,{upsert:true,contentType:file.type});if(upload.error)throw upload.error;profile_image_url=sb.storage.from('blader-profile-pictures').getPublicUrl(path).data.publicUrl;}
+ const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:field('myProfileLocation'),decks:'',notes:optional('myProfileNotes'),profile_image_url};
  if(p){const {error}=await sb.from('players').update(payload).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;Object.assign(p,payload);}
  else {const {data:created,error}=await sb.from('players').insert({...payload,auth_user_id:session.user.id}).select('*').single();if(error)throw error;data.players.push(created);}
- $('myProfileMessage').textContent='Your blader profile has been saved.';renderMyProfile();render();
+ $('myProfilePhoto').value='';$('myProfileMessage').textContent='Your blader profile has been saved.';form.classList.add('hide');renderMyProfile();render();
  }catch(err){$('myProfileMessage').textContent='Could not save profile: '+err.message;}
 });
 $('myComboForm').addEventListener('submit',async e=>{
