@@ -1031,7 +1031,7 @@ function renderBladePicker(selected=''){
  const q=($('comboBladeSearch')?.value||'').trim().toLowerCase();
  const items=BLADE_CATALOG.filter(b=>!q||b.name.toLowerCase().includes(q)||b.series.toLowerCase().includes(q));
  $('comboBladeCount').textContent=items.length+' of '+BLADE_CATALOG.length+' Blades shown';
- $('comboBladeOptions').innerHTML=items.map(b=>'<button type="button" class="blade-option '+(b.name===selected?'active':'')+'" data-blade-name="'+E(b.name)+'"><img loading="lazy" src="'+E(b.image)+'" alt="'+E(b.name)+'"><span><strong>'+E(b.name)+'</strong><small>'+E(b.series)+'</small></span></button>').join('')||'<div class="empty">No matching Blades.</div>';
+ $('comboBladeOptions').innerHTML=items.map(b=>'<button type="button" class="blade-option '+(b.name===selected?'active':'')+'" data-blade-name="'+E(b.name)+'"><img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(b.image)+'" alt="'+E(b.name)+'"><span><strong>'+E(b.name)+'</strong><small>'+E(b.series)+'</small></span></button>').join('')||'<div class="empty">No matching Blades.</div>';
 }
 $('comboBladeSearch').addEventListener('input',()=>renderBladePicker($('comboBlade').value));
 $('comboBladeOptions').addEventListener('click',e=>{const option=e.target.closest('[data-blade-name]');if(!option)return;const chosen=option.dataset.bladeName;$('comboBladeSearch').value='';renderBladePicker(chosen);setBladePickerOpen(false);});
