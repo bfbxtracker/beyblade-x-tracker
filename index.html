@@ -367,6 +367,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-banner-placeholder small{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0}
 .hero-banner-upload{position:absolute;left:12px;right:12px;bottom:12px;text-align:center;padding:10px;border:1px solid #43BEC6;border-radius:7px;background:#050909ef;color:#43BEC6;font-size:12px;font-weight:700;cursor:pointer}
 @media(max-width:650px){.tournament-hero{grid-template-columns:1fr;padding:0;gap:12px}.hero-info-square,.hero-banner-square{width:100%;max-height:none}.hero-info-square{aspect-ratio:1/1}.hero-banner-square{aspect-ratio:1/1}}
+/* Public dashboard: readable non-clickable top-player list */
+.public-top-players{display:grid;gap:6px}
+.public-top-player{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid #263638;border-radius:7px;background:#0b1112}
+.public-top-player strong{font-size:13px;font-weight:650;color:var(--fg)}
+.public-rank{font-size:13px;font-weight:800;color:#43BEC6}
+.public-wins{font-size:11px;color:#43BEC6;white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -686,12 +693,16 @@ async function populateMatchGroups(){
 function renderScoring(){ $('scoringInputs').innerHTML=data.scoring.map(x=>`<div class="form-grid"><div><label>${E(x.finish_type)}</label><input type="number" min="0" step="1" data-score-id="${E(x.id)}" value="${x.points}"></div></div>`).join('');}
 function renderPublicDashboard(summary){
  publicSummary=summary||{};
- const cards=[['Players',summary?.players_count??0],['Combos',summary?.combos_count??0],['Matches',summary?.matches_count??0],['Tournaments',summary?.tournaments_count??0]];
+ const cards=[['Tournaments',summary?.tournaments_count??0],['Bladers',summary?.players_count??0],['Match records',summary?.matches_count??0],['Match winners',summary?.winners_count??0],['Combos',summary?.combos_count??0]];
  $('stats').innerHTML=cards.map(([label,value])=>`<div class="card"><div class="stat-title">${label}</div><div class="stat-value">${value}</div></div>`).join('');
- $('heroTournamentTitle').textContent='Welcome to BFB X Tracker';
- $('heroTournamentSub').textContent='Public community dashboard. Approved members can sign in to view player profiles, rankings, Beyblade combos, match history and tournament details.';
- $('topPlayers').innerHTML='<div class="empty">Player rankings are available to approved viewers. Sign in with an approved email to view them.</div>';
- $('recentMatches').innerHTML='<div class="empty">Match-by-match results are restricted to approved viewers.</div>';
+ const featured=summary?.featured_tournament||null;
+ $('heroTournamentTitle').textContent=featured?.name||'Welcome to BFB X Tracker';
+ $('heroTournamentSub').textContent=featured?[featured.tournament_date,featured.location,featured.format].filter(Boolean).join(' · ')+' — tournament records and offline play.':'BFB X Tournament Center · Tournament records · Offline play.';
+ const bannerImg=$('heroTournamentBanner'),placeholder=$('heroBannerPlaceholder'),upload=$('heroBannerUploadLabel');
+ if(bannerImg&&placeholder){if(featured?.banner_image_url){bannerImg.src=featured.banner_image_url;bannerImg.classList.remove('hide');placeholder.classList.add('hide');}else{bannerImg.removeAttribute('src');bannerImg.classList.add('hide');placeholder.classList.remove('hide');}if(upload)upload.classList.add('hide');}
+ const leaders=Array.isArray(summary?.top_players)?summary.top_players:[];
+ $('topPlayers').innerHTML=leaders.length?'<div class="public-top-players">'+leaders.map((p,i)=>'<div class="public-top-player"><span class="public-rank">'+(i+1)+'</span><strong>'+E(p.name||'Blader')+'</strong><span class="public-wins">'+Number(p.wins||0)+' wins</span></div>').join('')+'</div>':'<div class="empty">No player records yet.</div>';
+ $('recentMatches').innerHTML='';
 }
 async function loadAll(showMessage=false){
  if(busy)return;busy=true;
