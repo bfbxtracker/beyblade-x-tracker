@@ -887,7 +887,7 @@ async function ensureMyPlayer(){
  let p=myOwnedPlayer();if(p)return p;
  const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
  if(!name)throw new Error('Enter your blader name and save your profile first.');
- const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:optional('myProfileDecks'),notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
+ const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:field('myProfileDecks')||'',notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
  if(error)throw error;data.players.push(created);return created;
 }
 $('myProfileForm').addEventListener('submit',async e=>{
@@ -1116,7 +1116,7 @@ $('ownPlayerForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!session?.user)return;
  const row=data.players.find(p=>p.auth_user_id===session.user.id);
  if(!row){$('ownPlayerMessage').textContent='No linked player profile was found for this account.';return;}
- const payload={name:field('ownBladerName'),combos:optional('ownBladerCombos'),decks:optional('ownBladerDecks')};
+ const payload={name:field('ownBladerName'),combos:optional('ownBladerCombos'),decks:field('ownBladerDecks')||''};
  const {error}=await sb.from('players').update(payload).eq('id',row.id).eq('auth_user_id',session.user.id);
  if(error){$('ownPlayerMessage').textContent='Could not save profile: '+error.message;return;}
  $('ownPlayerMessage').textContent='Your profile has been saved.';await loadAll();
@@ -1133,7 +1133,7 @@ function resetPlayer(){$('playerForm').reset();$('playerId').value='';$('playerS
 function resetCombo(){$('comboForm').reset();$('comboId').value='';$('comboSave').textContent='Add combo';renderBladePicker('');renderRatchetPicker('');renderBitPicker('');$('comboBladeSearch').value='';$('comboRatchetSearch').value='';$('comboBitSearch').value='';setBladePickerOpen(false);setRatchetPickerOpen(false);setBitPickerOpen(false);}
 function resetTournament(){$('tournamentForm').reset();$('tournamentId').value='';$('tournamentSave').textContent='Add tournament';}
 function resetMatch(){$('matchForm').reset();$('matchId').value='';$('matchSave').textContent='Save match';$('matchDate').value=new Date().toLocaleDateString('en-CA');$('matchGroup').value='';}
-$('playerForm').addEventListener('submit',e=>handleSave(e,'players','playerId',()=>({name:field('playerName'),combos:optional('playerCombos'),decks:optional('playerDecks'),team:optional('playerTeam'),location:optional('playerLocation'),notes:optional('playerNotes')}),resetPlayer));
+$('playerForm').addEventListener('submit',e=>handleSave(e,'players','playerId',()=>({name:field('playerName'),combos:optional('playerCombos'),decks:field('playerDecks')||'',team:optional('playerTeam'),location:optional('playerLocation'),notes:optional('playerNotes')}),resetPlayer));
 $('comboForm').addEventListener('submit',e=>handleSave(e,'combos','comboId',()=>({name:field('comboName'),blade:optional('comboBlade'),ratchet:optional('comboRatchet'),bit:optional('comboBit'),type:field('comboType'),owner_id:optional('comboOwner'),notes:optional('comboNotes')}),resetCombo));
 function setBladePickerOpen(open){
  const panel=$('comboBladePicker'),trigger=$('comboBladeTrigger');
