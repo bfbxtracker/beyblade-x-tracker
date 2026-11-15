@@ -1034,6 +1034,6 @@ if(savedNav.view==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t
 else if(savedNav.view==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
 else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){selectedTournamentId=savedNav.view==='tournaments'?selectedTournamentId:null;setView(savedNav.view);}
 
-setInterval(()=>{if(document.visibilityState==='visible')void loadAll().then(applyViewAs);},15000);
+setInterval(()=>{if(document.visibilityState==='visible')void loadAll().then(applyViewAs);},900000);
 </script>
 </body></html>
