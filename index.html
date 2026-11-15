@@ -326,24 +326,31 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 @media(max-width:700px){#auditLogList{max-height:280px}#auditLogList th,#auditLogList td{padding:7px;font-size:10px}}
 
 
-/* Compact scroll areas for admin record directories */
+/* Admin directory layout: three compact columns with no horizontal swiping */
+#adminPanel .admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+#adminPanel .admin-grid>.panel{min-width:0;overflow:hidden}
 #adminPlayers,#adminCombos,#adminTournaments,#adminMatches,
 #viewerList,#tournamentParticipantManager,#tournamentGroupManager{
- max-height:230px;overflow:auto;overscroll-behavior:contain;
+ max-height:230px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
  border:1px solid var(--border,#26394A);border-radius:6px;
- padding:6px;background:rgba(4,10,11,.35);
+ padding:6px;background:rgba(4,10,11,.35);min-width:0;
  scrollbar-width:thin;scrollbar-color:#7DC8F7 #101819;
 }
-#adminPlayers .table-scroll,#adminCombos .table-scroll,#adminTournaments .table-scroll,#adminMatches .table-scroll{overflow:visible}
-#adminPlayers table,#adminCombos table,#adminTournaments table,#adminMatches table{min-width:560px}
+#adminPlayers .table-scroll,#adminCombos .table-scroll,#adminTournaments .table-scroll,#adminMatches .table-scroll{overflow:visible;max-width:100%}
+#adminPlayers table,#adminCombos table,#adminTournaments table,#adminMatches table{width:100%;min-width:0;table-layout:fixed}
+#adminPlayers th,#adminCombos th,#adminTournaments th,#adminMatches th,
+#adminPlayers td,#adminCombos td,#adminTournaments td,#adminMatches td{padding:7px 5px;overflow-wrap:anywhere}
+#adminPlayers th:last-child,#adminCombos th:last-child,#adminTournaments th:last-child,
+#adminPlayers td:last-child,#adminCombos td:last-child,#adminTournaments td:last-child{width:94px}
+#adminPlayers .button-row,#adminCombos .button-row,#adminTournaments .button-row{gap:4px;flex-wrap:wrap}
+#adminPlayers .button-row button,#adminCombos .button-row button,#adminTournaments .button-row button{padding:5px 7px;font-size:11px}
 #adminPlayers thead th,#adminCombos thead th,#adminTournaments thead th,#adminMatches thead th{position:sticky;top:0;z-index:2;background:var(--panel,#101819)}
 #viewerList{max-height:180px}
 #tournamentParticipantManager,#tournamentGroupManager{max-height:200px}
 #auditLogList{max-height:300px}
-@media(max-width:700px){
- #adminPlayers,#adminCombos,#adminTournaments,#adminMatches{max-height:190px}
- #auditLogList{max-height:240px}
-}
+@media(max-width:900px){#adminPanel .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#adminPanel .admin-grid{grid-template-columns:minmax(0,1fr)}#auditLogList{max-height:240px}}
+
 
 
 /* Refined Beyfans BD X Tracker masthead */
@@ -434,6 +441,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <p class="muted">Register any number of players, create groups, and move players between groups. Changes are shared with approved viewers.</p>
 <label for="tournamentManagerSelect">Choose tournament</label><select id="tournamentManagerSelect"><option value="">Select a tournament</option></select>
 <div id="tournamentManagerBody" class="hide">
+<div class="actions" style="margin:12px 0"><button type="button" class="primary" id="editManagedTournament">Edit tournament details</button><button type="button" class="danger" id="deleteManagedTournament">Delete tournament</button></div>
 <div class="form-grid" style="margin-top:12px">
 <div><label for="tournamentPlayerPicker">Add players to this tournament</label><select id="tournamentPlayerPicker" multiple size="8" style="min-height:170px"></select><p class="muted">Use Ctrl (Windows) or Command (Mac) to select multiple players.</p><button type="button" class="primary" id="addTournamentPlayers">Add selected players</button></div>
 <div><label for="newTournamentGroupName">Create a group</label><input id="newTournamentGroupName" maxlength="60" placeholder="Example: Group A"><button type="button" id="createTournamentGroup" class="primary" style="margin-top:8px">Create group</button><p class="muted">Create as many groups as your tournament needs.</p></div>
@@ -682,7 +690,7 @@ function renderTournamentManager(){
  const groups=data.tournament_groups.filter(g=>g.tournament_id===tid).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const registered=new Set(entries.map(p=>p.player_id));
  $('tournamentPlayerPicker').innerHTML=data.players.filter(p=>!registered.has(p.id)).map(p=>`<option value="${E(p.id)}">${E(p.name)}</option>`).join('');
- $('tournamentParticipantManager').innerHTML=entries.length?table(['Player','Assigned group','Actions'],entries.map(p=>{const opts='<option value="">Unassigned</option>'+groups.map(g=>`<option value="${E(g.id)}" ${p.group_id===g.id?'selected':''}>${E(g.name)}</option>`).join('');return row([E(pName(p.player_id)),`<select data-assign-participant="${E(p.id)}">${opts}</select>`,`<button type="button" class="small danger" data-remove-participant="${E(p.id)}">Remove</button>`]);})): '<div class="empty">No players registered yet. Select players above and add them.</div>';
+ $('tournamentParticipantManager').innerHTML=entries.length?table(['Player','Assigned group','Actions'],entries.map(p=>{const opts='<option value="">Unassigned</option>'+groups.map(g=>`<option value="${E(g.id)}" ${p.group_id===g.id?'selected':''}>${E(g.name)}</option>`).join('');return row([E(pName(p.player_id)),`<select data-assign-participant="${E(p.id)}">${opts}</select>`,`<div class="button-row"><button type="button" class="small" data-edit="player" data-id="${E(p.player_id)}">Edit profile</button><button type="button" class="small danger" data-remove-participant="${E(p.id)}">Remove</button></div>`]);})): '<div class="empty">No players registered yet. Select players above and add them.</div>';
  $('tournamentGroupManager').innerHTML=groups.length?table(['Group','Players','Actions'],groups.map(g=>row([E(g.name),entries.filter(p=>p.group_id===g.id).length,`<button type="button" class="small danger" data-delete-group="${E(g.id)}">Delete group</button>`]))):'<div class="empty">No groups created yet. Create your first group above.</div>';
 }
 async function populateMatchGroups(){
@@ -790,6 +798,8 @@ async function loadApprovedViewers(){
 }
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)setView(b.dataset.view);});$('backToPlayers').addEventListener('click',()=>setView('players'));$('tournamentFilter').addEventListener('change',renderTournament);
 $('tournamentManagerSelect').addEventListener('change',renderTournamentManager);
+$('editManagedTournament').addEventListener('click',()=>{const id=$('tournamentManagerSelect').value;if(id)fillEdit('tournament',id);});
+$('deleteManagedTournament').addEventListener('click',async()=>{const id=$('tournamentManagerSelect').value;if(!id||!isAdmin)return;if(!confirm('Delete this tournament? This cannot be undone.'))return;try{const {error}=await sb.from('tournaments').delete().eq('id',id);if(error)throw error;$('tournamentManagerSelect').value='';await loadAll(true);banner('Tournament deleted.','success');}catch(err){banner('Could not delete tournament: '+err.message,'error');}});
 $('matchTournament').addEventListener('change',()=>{void populateMatchGroups();});
 $('addTournamentPlayers').addEventListener('click',async()=>{
  if(!isAdmin)return;const tournament_id=$('tournamentManagerSelect').value;
