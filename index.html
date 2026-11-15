@@ -997,9 +997,9 @@ $('exportBackup').addEventListener('click',()=>{const backup={exported_at:new Da
 $('matchDate').value=new Date().toLocaleDateString('en-CA');
 await refreshAuth();await loadAll();
 const savedNav=readNavigationState();
-if(savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
+if(savedNav.view==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
 else if(savedNav.view==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
-else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){setView(savedNav.view);}
+else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){selectedTournamentId=savedNav.view==='tournaments'?selectedTournamentId:null;setView(savedNav.view);}
 
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll();},15000);
 </script>
