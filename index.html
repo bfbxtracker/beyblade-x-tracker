@@ -463,7 +463,12 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
   <form id="myComboForm">
    <input type="hidden" id="myComboId">
    <label>Combo name *</label><input id="myComboName" required maxlength="120" placeholder="e.g. DranSword 3-60F">
-   <div class="form-grid"><div><label>Blade</label><input id="myComboBlade" maxlength="100" placeholder="Blade name"></div><div><label>Ratchet</label><input id="myComboRatchet" maxlength="40" placeholder="Ratchet"></div><div><label>Bit</label><input id="myComboBit" maxlength="40" placeholder="Bit"></div><div><label>Type</label><select id="myComboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div></div>
+   <div class="form-grid">
+   <div class="blade-picker-field"><label>Blade</label><input id="myComboBlade" type="hidden"><button type="button" id="myComboBladeTrigger" class="blade-picker-trigger" aria-expanded="false" aria-controls="myComboBladePicker"><span id="myComboBladeSelected">Choose a Blade</span><span class="blade-picker-arrow" aria-hidden="true">▾</span></button><div id="myComboBladePicker" class="blade-picker hide"><input id="myComboBladeSearch" type="search" placeholder="Search Blades by name…" autocomplete="off"><div class="blade-picker-count" id="myComboBladeCount"></div><div class="blade-picker-options" id="myComboBladeOptions"></div></div></div>
+   <div class="blade-picker-field"><label>Ratchet</label><input id="myComboRatchet" type="hidden"><button type="button" id="myComboRatchetTrigger" class="blade-picker-trigger" aria-expanded="false" aria-controls="myComboRatchetPicker"><span id="myComboRatchetSelected">Choose a Ratchet</span><span class="blade-picker-arrow" aria-hidden="true">▾</span></button><div id="myComboRatchetPicker" class="blade-picker hide"><input id="myComboRatchetSearch" type="search" placeholder="Search Ratchets…" autocomplete="off"><div class="blade-picker-count" id="myComboRatchetCount"></div><div class="blade-picker-options" id="myComboRatchetOptions"></div></div></div>
+   <div class="blade-picker-field"><label>Bit</label><input id="myComboBit" type="hidden"><button type="button" id="myComboBitTrigger" class="blade-picker-trigger" aria-expanded="false" aria-controls="myComboBitPicker"><span id="myComboBitSelected">Choose a Bit</span><span class="blade-picker-arrow" aria-hidden="true">▾</span></button><div id="myComboBitPicker" class="blade-picker hide"><input id="myComboBitSearch" type="search" placeholder="Search Bits by code or name…" autocomplete="off"><div class="blade-picker-count" id="myComboBitCount"></div><div class="blade-picker-options" id="myComboBitOptions"></div></div></div>
+   <div><label>Type</label><select id="myComboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div>
+  </div>
    <label>Notes</label><textarea id="myComboNotes" rows="2" maxlength="1500" placeholder="Optional combo notes"></textarea>
    <div class="actions"><button type="submit" class="primary" id="myComboSave">Add my combo</button><button type="button" class="ghost" id="myComboClear">Clear</button></div>
   </form><p id="myComboMessage" class="muted"></p><div id="myProfileCombos"></div>
@@ -845,6 +850,27 @@ async function loadAll(showMessage=false){
  }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
  finally{busy=false;}
 }
+function setMyPartPickerOpen(part,open){
+ const cap=part[0].toUpperCase()+part.slice(1),panel=$('myCombo'+cap+'Picker'),trigger=$('myCombo'+cap+'Trigger');
+ panel.classList.toggle('hide',!open);trigger.setAttribute('aria-expanded',String(open));
+ if(open){$('myCombo'+cap+'Search').focus();renderMyPartPicker(part,$('myCombo'+cap).value);}
+}
+function renderMyPartPicker(part,selected=''){
+ const cap=part[0].toUpperCase()+part.slice(1),hidden=$('myCombo'+cap),label=$('myCombo'+cap+'Selected'),q=($('myCombo'+cap+'Search').value||'').trim().toLowerCase();
+ hidden.value=selected||'';label.textContent='Selected '+cap+': '+(selected||'None');
+ const source=part==='blade'?BLADE_CATALOG:part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG;
+ const items=source.filter(x=>part==='blade'?(!q||x.name.toLowerCase().includes(q)||x.series.toLowerCase().includes(q)):part==='ratchet'?(!q||x.name.toLowerCase().includes(q)):(!q||x.code.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)));
+ $('myCombo'+cap+'Count').textContent=items.length+' of '+source.length+' '+cap+'s shown';
+ $('myCombo'+cap+'Options').innerHTML=items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name,sub=part==='blade'?x.series:cap;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-my-'+part+'="'+E(value)+'"><img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';}).join('')||'<div class="empty">No matching '+cap+'s.</div>';
+}
+['blade','ratchet','bit'].forEach(part=>{
+ const cap=part[0].toUpperCase()+part.slice(1);
+ $('myCombo'+cap+'Trigger').addEventListener('click',()=>setMyPartPickerOpen(part,$('myCombo'+cap+'Picker').classList.contains('hide')));
+ $('myCombo'+cap+'Search').addEventListener('input',()=>renderMyPartPicker(part,$('myCombo'+cap).value));
+ $('myCombo'+cap+'Options').addEventListener('click',e=>{const option=e.target.closest('[data-my-'+part+']');if(!option)return;const value=option.getAttribute('data-my-'+part);$('myCombo'+cap+'Search').value='';renderMyPartPicker(part,value);setMyPartPickerOpen(part,false);});
+});
+document.addEventListener('click',e=>{['blade','ratchet','bit'].forEach(part=>{const cap=part[0].toUpperCase()+part.slice(1);if(!e.target.closest('#myCombo'+cap+'Picker')&&!e.target.closest('#myCombo'+cap+'Trigger'))$('myCombo'+cap+'Picker').classList.add('hide');});});
+function renderMyComboPickers(){['blade','ratchet','bit'].forEach(part=>renderMyPartPicker(part,$('myCombo'+part[0].toUpperCase()+part.slice(1)).value));}
 function myOwnedPlayer(){return data.players.find(p=>p.auth_user_id===session?.user?.id)||null;}
 function renderMyProfile(){
  const p=myOwnedPlayer();
@@ -856,7 +882,7 @@ function renderMyProfile(){
  const list=p?data.combos.filter(c=>c.owner_id===p.id):[];
  $('myProfileCombos').innerHTML=list.length?table(['Combo','Blade','Ratchet','Bit','Type','Actions'],list.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type),'<button type="button" class="small" data-my-combo-edit="'+E(c.id)+'">Edit</button> <button type="button" class="small danger" data-my-combo-delete="'+E(c.id)+'">Delete</button>']))):'<div class="empty">No combos yet. Add your first combo above.</div>';
 }
-function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';}
+function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';renderMyComboPickers();}
 async function ensureMyPlayer(){
  let p=myOwnedPlayer();if(p)return p;
  const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
@@ -881,7 +907,7 @@ $('myComboForm').addEventListener('submit',async e=>{
 });
 $('myComboClear').addEventListener('click',resetMyCombo);
 document.addEventListener('click',async e=>{
- const edit=e.target.closest('[data-my-combo-edit]');if(edit){const c=data.combos.find(x=>x.id===edit.dataset.myComboEdit);if(!c||c.owner_id!==myOwnedPlayer()?.id)return;$('myComboId').value=c.id;$('myComboName').value=c.name||'';$('myComboBlade').value=c.blade||'';$('myComboRatchet').value=c.ratchet||'';$('myComboBit').value=c.bit||'';$('myComboType').value=c.type||'Attack';$('myComboNotes').value=c.notes||'';$('myComboSave').textContent='Update my combo';return;}
+ const edit=e.target.closest('[data-my-combo-edit]');if(edit){const c=data.combos.find(x=>x.id===edit.dataset.myComboEdit);if(!c||c.owner_id!==myOwnedPlayer()?.id)return;$('myComboId').value=c.id;$('myComboName').value=c.name||'';$('myComboBlade').value=c.blade||'';$('myComboRatchet').value=c.ratchet||'';$('myComboBit').value=c.bit||'';renderMyComboPickers();$('myComboType').value=c.type||'Attack';$('myComboNotes').value=c.notes||'';$('myComboSave').textContent='Update my combo';return;}
  const del=e.target.closest('[data-my-combo-delete]');if(del){const p=myOwnedPlayer();if(!p||!confirm('Delete this combo?'))return;const {error}=await sb.from('combos').delete().eq('id',del.dataset.myComboDelete).eq('owner_id',p.id);if(error){$('myComboMessage').textContent='Could not delete combo: '+error.message;return;}await loadAll();renderMyProfile();}
 });
 function saveNavigationState(){try{localStorage.setItem('bfbx_navigation_state',JSON.stringify({view:currentView||'overview',tournamentId:selectedTournamentId||null,tournamentTab:selectedTournamentTab||'groups',tableGroup:selectedTableGroup||'all',bracketMode:document.querySelector('[data-bracket-panel]:not(.hide)')?.dataset.bracketPanel||'tree',profileId:window.bfbxCurrentProfileId||null}));}catch(e){console.warn('Could not save page state',e);}}
