@@ -448,13 +448,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <section id="combos" class="view hide"><div class="panel"><h2>Beyblade Combo Database</h2><div id="combosTable"></div></div></section>
 <section id="myProfile" class="view hide">
  <div class="panel">
-  <div class="section-head"><div><h2>My Blader Profile</h2><p>Manage your blader identity, combos and decks. Changes are saved to your account.</p></div><span class="tag">PERSONAL PROFILE</span></div>
+  <div class="section-head"><div><h2>My Blader Profile</h2><p>Manage your blader identity and combos. Changes are saved to your account.</p></div><span class="tag">PERSONAL PROFILE</span></div>
   <form id="myProfileForm">
    <label>Blader name *</label><input id="myProfileName" required maxlength="100" placeholder="Your blader name">
-   <label>Team / club</label><input id="myProfileTeam" maxlength="120" placeholder="Optional team or club">
-   <label>Location</label><input id="myProfileLocation" maxlength="120" placeholder="City / area">
-   <label>Decks</label><textarea id="myProfileDecks" rows="3" maxlength="3000" placeholder="List your tournament decks"></textarea>
-   <label>Other profile details</label><textarea id="myProfileNotes" rows="3" maxlength="3000" placeholder="Play style, achievements, preferred format, etc."></textarea>
+   <label>Team / club (optional)</label><input id="myProfileTeam" maxlength="120" placeholder="Leave blank if you do not have a team">
+   <label>Location *</label><input id="myProfileLocation" required maxlength="120" placeholder="City / area">
+   
+   <label>Blader details (optional)</label><textarea id="myProfileNotes" rows="3" maxlength="3000" placeholder="Play style, achievements, preferred format, etc. Leave blank if you have nothing to add."></textarea>
    <div class="actions"><button type="submit" class="primary" id="myProfileSave">Save profile</button></div>
   </form><p id="myProfileMessage" class="muted"></p>
  </div>
@@ -877,7 +877,6 @@ function renderMyProfile(){
  $('myProfileName').value=p?.name||session?.user?.user_metadata?.blader_name||'';
  $('myProfileTeam').value=p?.team||'';
  $('myProfileLocation').value=p?.location||'';
- $('myProfileDecks').value=p?.decks||'';
  $('myProfileNotes').value=p?.notes||'';
  const list=p?data.combos.filter(c=>c.owner_id===p.id):[];
  $('myProfileCombos').innerHTML=list.length?table(['Combo','Blade','Ratchet','Bit','Type','Actions'],list.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type),'<button type="button" class="small" data-my-combo-edit="'+E(c.id)+'">Edit</button> <button type="button" class="small danger" data-my-combo-delete="'+E(c.id)+'">Delete</button>']))):'<div class="empty">No combos yet. Add your first combo above.</div>';
@@ -887,12 +886,12 @@ async function ensureMyPlayer(){
  let p=myOwnedPlayer();if(p)return p;
  const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
  if(!name)throw new Error('Enter your blader name and save your profile first.');
- const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:field('myProfileDecks')||'',notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
+ const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:'',notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
  if(error)throw error;data.players.push(created);return created;
 }
 $('myProfileForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
- try{let p=myOwnedPlayer();const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:optional('myProfileDecks'),notes:optional('myProfileNotes')};
+ try{let p=myOwnedPlayer();const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:'',notes:optional('myProfileNotes')};
  if(p){const {error}=await sb.from('players').update(payload).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;Object.assign(p,payload);}
  else {const {data:created,error}=await sb.from('players').insert({...payload,auth_user_id:session.user.id}).select('*').single();if(error)throw error;data.players.push(created);}
  $('myProfileMessage').textContent='Your blader profile has been saved.';renderMyProfile();render();
