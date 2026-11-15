@@ -430,9 +430,10 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 </head>
 <body>
 <header class="top"><div class="wrap"><div class="head"><div class="brand"><img class="brand-mark" src="./bfb-fans-bd-logo.webp" alt="Beyblade Fans BD logo"><div class="brand-copy"><div class="brand-shoot">3 2 1 Go SHOOT</div><h1>BEYFANS <span>X BD</span></h1></div></div><div class="header-tools">
-<div class="admin-tools hide" id="adminTools">
-<button type="button" id="adminDashboardButton" class="admin-dashboard-button">⚙ Admin Dashboard</button>
-<label for="viewAsSelect">View As</label>
+<div class="admin-tools" id="adminTools">
+<button type="button" id="accountAccessButton" class="admin-dashboard-button">Sign in / Admin</button>
+<button type="button" id="adminDashboardButton" class="admin-dashboard-button hide">⚙ Admin Dashboard</button>
+<label for="viewAsSelect" id="viewAsLabel" class="hide">View As</label>
 <select id="viewAsSelect" aria-label="Preview website as"><option value="admin">Admin</option><option value="member">Approved Member</option><option value="public">Public Visitor</option></select>
 </div>
 <div class="pill">● CLOUD CONNECTED</div>
@@ -825,7 +826,11 @@ function showAuth(){
  $('memberPanel').classList.toggle('hide',!session||(!isViewer&&!isAdmin));
  $('notAdminPanel').classList.toggle('hide',!session||isViewer||isAdmin);
  $('adminPanel').classList.toggle('hide',!isAdmin);
- $('adminTools').classList.toggle('hide',!isAdmin);
+ $('adminTools').classList.remove('hide');
+ $('accountAccessButton').classList.toggle('hide',isAdmin);
+ $('adminDashboardButton').classList.toggle('hide',!isAdmin);
+ $('viewAsLabel').classList.toggle('hide',!isAdmin);
+ $('viewAsSelect').classList.toggle('hide',!isAdmin);
  $('adminEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
  $('memberEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
  $('viewAsSelect').value=viewAs;
@@ -858,7 +863,11 @@ async function applyViewAs(){
  document.body.classList.toggle('view-as-member',isAdmin&&viewAs==='member');
  document.body.classList.toggle('view-as-public',isAdmin&&viewAs==='public');
  document.body.classList.toggle('view-as-admin',isAdmin&&viewAs==='admin');
- $('adminTools').classList.toggle('hide',!isAdmin);
+ $('adminTools').classList.remove('hide');
+ $('accountAccessButton').classList.toggle('hide',isAdmin);
+ $('adminDashboardButton').classList.toggle('hide',!isAdmin);
+ $('viewAsLabel').classList.toggle('hide',!isAdmin);
+ $('viewAsSelect').classList.toggle('hide',!isAdmin);
  $('viewAsSelect').value=viewAs;
  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  if(isAdmin&&viewAs==='public'){
@@ -867,6 +876,7 @@ async function applyViewAs(){
   catch(e){banner('Could not load public preview: '+e.message,'error');}
  }else if(isAdmin){render();}
 }
+$('accountAccessButton').addEventListener('click',()=>setView('admin'));
 $('adminDashboardButton').addEventListener('click',()=>setView('admin'));
 $('viewAsSelect').addEventListener('change',async e=>{
  if(!isAdmin){e.target.value='admin';return;}
