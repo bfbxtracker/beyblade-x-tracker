@@ -310,6 +310,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 
 
 .bx-match-player{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:4px 0;border-top:1px solid rgba(67,190,198,.12);min-width:0}
+/* Stack each Blader's deck images directly beneath their name */
+.bx-match-player{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:7px;row-gap:2px;align-items:center}
+.bx-match-player .player-link{grid-column:1;grid-row:1;justify-self:start;max-width:100%}
+.bx-match-player>b{grid-column:2;grid-row:1;justify-self:end}
+.bx-match-player .bx-drag-hint{grid-column:2;grid-row:2;align-self:start;text-align:right}
+.bx-match-player .bx-match-deck-blades{grid-column:1;grid-row:2;margin:2px 0 3px;justify-self:start}
+
 .bx-match-player .player-link{padding:0;border:0;background:none;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:#c3d0d0}
 .bx-match-player b{font-size:13px;color:#A8BDCC}
 .bx-match-player.is-winner .player-link,.bx-match-player.is-winner b{color:#7DC8F7;font-weight:700}
