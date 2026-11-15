@@ -510,13 +510,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 </form><p id="playerSignupMessage" class="muted"></p>
 </details>
 <details style="margin-top:14px"><summary style="cursor:pointer;color:var(--blue);font-weight:750">Approved viewer? Create your account</summary><p class="muted">Your email must already have been added by the administrator. Use that exact email address.</p><form id="signupForm"><label>Approved email</label><input id="signupEmail" type="email" required autocomplete="email"><label>Create password</label><input id="signupPassword" type="password" required minlength="8" autocomplete="new-password"><div class="actions"><button type="submit" class="primary">Create viewer account</button></div></form><p id="signupMessage" class="muted"></p></details></div>
-<div id="memberPanel" class="panel loginbox hide"><h2>Welcome to BFB X Tracker</h2><p id="memberEmail" class="authnote"></p><p>You have read-only access to tournament records. If you own a player profile, you can update its blader name, combos and decks below.</p>
-<div id="ownPlayerProfile" class="profile-editor hide"><h3>My player profile</h3>
-<form id="ownPlayerForm"><label>Blader name *</label><input id="ownBladerName" required maxlength="100">
-<label>Combos</label><textarea id="ownBladerCombos" rows="3" maxlength="2000"></textarea>
-<label>Decks</label><textarea id="ownBladerDecks" rows="3" maxlength="2000"></textarea>
-<div class="actions"><button type="submit" class="primary">Save my profile</button></div></form><p id="ownPlayerMessage" class="muted"></p></div>
-<button id="memberSignOut" class="danger">Sign out</button></div>
+<div id="memberPanel" class="panel loginbox hide"><h2>Welcome to BFB X Tracker</h2><p id="memberEmail" class="authnote"></p><button id="memberSignOut" class="danger">Sign out</button></div>
 <div id="notAdminPanel" class="panel loginbox hide"><h2>Dashboard-only access</h2><p>You are signed in, but this email has not been approved for full details. Contact the BFB X Tracker administrator if you need access.</p><button id="notAdminSignOut">Sign out</button></div>
 <div id="adminPanel" class="hide"><div class="panel section"><div class="head"><div><h2>Admin Control Center</h2><div id="adminEmail" class="authnote"></div></div><div class="actions"><button id="refreshBtn">Refresh now</button><button id="signOutBtn" class="danger">Sign out</button></div></div></div>
 <div class="admin-grid">
@@ -847,8 +841,6 @@ async function loadAll(showMessage=false){
   render();
   if(session&&(isViewer||isAdmin))renderMyProfile();
   const ownProfile=data.players.find(p=>p.auth_user_id===session?.user?.id);
-  $('ownPlayerProfile').classList.toggle('hide',!ownProfile);
-  if(ownProfile){$('ownBladerName').value=ownProfile.name||'';$('ownBladerCombos').value=ownProfile.combos||'';$('ownBladerDecks').value=ownProfile.decks||'';}
   $('lastSync').textContent='Last updated: '+new Date().toLocaleTimeString();
   if(showMessage)banner('Database updated successfully. Approved members can see these records.','success');
   else banner('Connected. Full details are visible to approved members only.','success');
@@ -954,8 +946,6 @@ function showAuth(){
  document.querySelectorAll('.profile-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();loadApprovedViewers();loadAuditLog();}
  const own=data.players.find(p=>p.auth_user_id===session?.user?.id);
- $('ownPlayerProfile').classList.toggle('hide',!own);
- if(own){$('ownBladerName').value=own.name||'';$('ownBladerCombos').value=own.combos||'';$('ownBladerDecks').value=own.decks||'';}
 }
 async function refreshAuth(){
  try{
@@ -1133,15 +1123,6 @@ $('playerSignupForm').addEventListener('submit',async e=>{
  if(error){message.textContent=error.message;return;}
  $('newBladerPassword').value='';
  message.textContent=result.session?'Profile created. You can sign in now.':'Account created. Verify your email, then sign in to manage your profile.';
-});
-$('ownPlayerForm').addEventListener('submit',async e=>{
- e.preventDefault();if(!session?.user)return;
- const row=data.players.find(p=>p.auth_user_id===session.user.id);
- if(!row){$('ownPlayerMessage').textContent='No linked player profile was found for this account.';return;}
- const payload={name:field('ownBladerName'),combos:optional('ownBladerCombos'),decks:field('ownBladerDecks')||''};
- const {error}=await sb.from('players').update(payload).eq('id',row.id).eq('auth_user_id',session.user.id);
- if(error){$('ownPlayerMessage').textContent='Could not save profile: '+error.message;return;}
- $('ownPlayerMessage').textContent='Your profile has been saved.';await loadAll();
 });
 $('viewerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;const full_name=$('viewerName').value.trim(),email=$('viewerEmail').value.trim().toLowerCase();if(!full_name||!email)return;const {error}=await sb.from('approved_viewers').upsert({full_name,email},{onConflict:'email'});if(error){banner('Could not approve email: '+error.message,'error');return;}$('viewerForm').reset();await loadApprovedViewers();banner('Email approved. Ask this person to create an account on the website using this exact email, verify it, then sign in.','success');});
 async function signOut(){await sb.auth.signOut();session=null;isAdmin=false;isViewer=false;showAuth();setView('overview');await loadAll();banner('Signed out. Only the public dashboard is now available.','success');}
