@@ -678,6 +678,15 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-bracket-round-editor .bx-knockout-compact-form{grid-template-columns:minmax(0,1fr)!important}
 @media(max-width:760px){.bx-bracket-tree{grid-template-columns:repeat(4,minmax(190px,1fr))!important;gap:16px!important}.bx-bracket-round{min-width:190px!important}}
 
+
+/* Admin bracket is managed directly in the tree; remove the separate lower editors */
+.bx-bracket-tree .bx-knockout-tree-drop{min-height:42px;cursor:copy;border-style:dashed}
+.bx-bracket-tree .bx-knockout-tree-drop.is-drag-over{border-color:#7DC8F7;background:rgba(125,200,247,.16)}
+.bx-bracket-tree .bx-knockout-tree-drop.has-winner{border-style:solid;border-color:#39d98a;background:rgba(57,217,138,.07)}
+.bx-bracket-tree .bx-knockout-tree-drop .bx-match-deck-blades{gap:4px;margin:1px 0 0}
+.bx-bracket-tree .bx-knockout-tree-drop .bx-match-blade-only{width:25px;height:25px;flex:0 0 25px}
+.bx-bracket-tree .bx-knockout-tree-drop .bx-match-blade-only img{width:22px;height:22px}
+
 </style>
 </head>
 <body>
@@ -1085,7 +1094,7 @@ function renderTournamentTab(){
    const r16Matches=main.filter(m=>stageOf(m.round_name)==='r16').sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
    if(isAdmin)out+='<section class="bx-r16-admin-top">'+tournamentAdminKnockoutControls(id,entries,'r16',r16Matches)+'</section>';
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+E(pName(runner))+'</p></div></div>';
-   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+(stageMatches.length?stageMatches.map(matchCard).join(''):'<div class="bx-bracket-match bx-empty-match"><div class="bx-match-code">'+stage.label+'</div><div class="bx-tree-slot"><span class="bx-tree-slot-label">Blader 1</span></div><div class="bx-tree-slot"><span class="bx-tree-slot-label">Blader 2</span></div></div>')+(isAdmin&&stage.id!=='r16'?tournamentAdminKnockoutControls(id,entries,stage.id,stageMatches):'')+'</section>';}).join('')+'</div>';
+   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));const capacity={r16:8,quarter:4,semi:2,final:1}[stage.id];const blanks=isAdmin&&stage.id!=='r16'?Array.from({length:Math.max(0,capacity-stageMatches.length)},(_,i)=>'<div class="bx-bracket-match bx-empty-match" data-knockout-target-match data-tournament-id="'+E(id)+'" data-stage="'+stage.id+'" data-slot-index="'+(stageMatches.length+i)+'"><div class="bx-match-code">'+stage.label+'</div>'+[1,2].map(side=>'<div class="bx-tree-slot bx-knockout-tree-drop" data-knockout-target-side="'+side+'"><span class="bx-tree-slot-content"><span class="bx-tree-slot-label">Blader '+side+'</span></span></div>').join('')+'</div>').join(''):'';return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+stageMatches.map(matchCard).join('')+blanks+(stageMatches.length===0&&!isAdmin?'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>':'')+'</section>';}).join('')+'</div>';
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
    if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
   }else{
@@ -1525,6 +1534,42 @@ document.addEventListener('drop',e=>{
  e.preventDefault();zone.classList.remove('is-drag-over');
  let payload;try{payload=JSON.parse(e.dataTransfer.getData('application/x-bfbx-knockout-winner')||'{}');}catch{return;}
  applyKnockoutWinnerToZone(zone,payload);
+});
+/* Admins can drop winners directly into empty bracket slots; a match is saved when both slots are filled. */
+document.addEventListener('dragover',e=>{
+ const target=e.target.closest('[data-knockout-target-side]');
+ if(!target||!isAdmin)return;
+ e.preventDefault();e.dataTransfer.dropEffect='copy';target.classList.add('is-drag-over');
+});
+document.addEventListener('dragleave',e=>{
+ const target=e.target.closest('[data-knockout-target-side]');
+ if(target&&!target.contains(e.relatedTarget))target.classList.remove('is-drag-over');
+});
+document.addEventListener('drop',async e=>{
+ const target=e.target.closest('[data-knockout-target-side]');
+ if(!target||!isAdmin)return;
+ e.preventDefault();target.classList.remove('is-drag-over');
+ let payload;try{payload=JSON.parse(e.dataTransfer.getData('application/x-bfbx-knockout-winner')||'{}');}catch{return;}
+ if(!payload.playerId)return;
+ const matchBox=target.closest('[data-knockout-target-match]');
+ if(!matchBox)return;
+ const stage=matchBox.dataset.stage,tournament_id=matchBox.dataset.tournamentId,side=target.dataset.knockoutTargetSide;
+ const duplicate=[...document.querySelectorAll('[data-knockout-target-match][data-stage="'+stage+'"] [data-knockout-target-side]')].some(el=>el!==target&&el.dataset.playerId===payload.playerId);
+ if(duplicate){banner('That Blader is already assigned to another slot in this round.','error');return;}
+ target.dataset.playerId=payload.playerId;target.dataset.playerName=payload.name;target.dataset.deck=JSON.stringify(payload.deck||[]);
+ target.innerHTML='<span class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+E(payload.name)+'</span>'+renderKnockoutDeck(payload.deck)+'</span>';
+ target.classList.add('has-winner');
+ const slots=[...matchBox.querySelectorAll('[data-knockout-target-side]')];
+ if(slots.some(x=>!x.dataset.playerId))return;
+ if(slots[0].dataset.playerId===slots[1].dataset.playerId){banner('Choose two different Bladers for this match.','error');return;}
+ const allMatches=data.matches.filter(m=>m.tournament_id===tournament_id&&stageOf(m.round_name)===stage);
+ if(allMatches.length>=( {quarter:4,semi:2,final:1}[stage]||0)){banner('This round is full.','error');return;}
+ const ids=[slots[0].dataset.playerId,slots[1].dataset.playerId];
+ if(allMatches.some(m=>ids.some(pid=>[m.player1_id,m.player2_id].includes(pid)))){banner('A Blader is already assigned to another match in this round.','error');return;}
+ const labels={quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
+ const {error}=await sb.from('matches').insert({tournament_id,round_name:labels[stage],player1_id:ids[0],player2_id:ids[1],player1_deck:JSON.parse(slots[0].dataset.deck||'[]'),player2_deck:JSON.parse(slots[1].dataset.deck||'[]'),player1_points:0,player2_points:0});
+ if(error){banner('Could not save '+labels[stage]+' match: '+error.message,'error');return;}
+ await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='bracket';renderTournamentTab();banner(labels[stage]+' match created from the bracket. Add scores using Edit.','success');
 });
 /* Touch-friendly fallback: tap a winner, then tap the destination slot */
 document.addEventListener('click',e=>{
