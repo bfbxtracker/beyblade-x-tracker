@@ -934,11 +934,11 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const previous={quarter:'Round of 16',semi:'Quarter-final',final:'Semi-final'}[stage];
  const hiddenDeck=number=>[1,2,3].map(slot=>['blade','ratchet','bit'].map(part=>'<input type="hidden" name="ko'+number+slot+part[0].toUpperCase()+part.slice(1)+'">').join('')).join('');
  const side=number=>'<section class="bx-knockout-deck-builder"><h4>Blader '+number+' · Deck</h4>'+[1,2,3].map(slot=>'<div class="bx-knockout-deck-slot"><strong>'+slot+'</strong><div class="bx-knockout-deck-parts">'+['blade','ratchet','bit'].map(part=>knockoutDeckPickerMarkup(number,slot,part)).join('')+'</div></div>').join('')+'</section>';
- const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+'<select name="player'+number+'_id" '+(previous?'':'required')+'><option value="">'+(previous?'Waiting for winner':'Choose Blader')+'</option>'+opts+'</select>'+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
+ const player=number=>'<div class="bx-knockout-player-head"><label>Blader '+number+(previous?' · Drop winner':'')+(stage==='r16'?'<input name="player'+number+'_name" list="bxR16BladerOptions" maxlength="100" placeholder="Choose or type any Blader name" autocomplete="off" required>':'<select name="player'+number+'_id" required><option value="">Waiting for winner</option>'+opts+'</select>')+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
  if(previous){
   return '<div class="bx-admin-editor bx-bracket-round-editor bx-knockout-auto-stage"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · Drag a completed winner from '+previous+' into each slot. Their saved deck transfers automatically.</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+hiddenDeck(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+hiddenDeck(2)+'</div><button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
  }
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Blader slots</p><datalist id="bxR16BladerOptions">'+data.players.map(p=>'<option value="'+E(p.name)+'"></option>').join('')+'</datalist><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+side(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+side(2)+'</div><button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
 function drawBracketConnectors(){
  const tree=document.querySelector('.bx-bracket-tree');if(!tree)return;
@@ -1404,9 +1404,17 @@ document.addEventListener('submit',async e=>{
    await loadAll();selectedTournamentId=tournament_id;renderTournamentTab();banner(name+' created.','success');
   }else if(knockoutForm){
    const fd=new FormData(knockoutForm),tournament_id=knockoutForm.dataset.tournamentId;
-   const player1_id=String(fd.get('player1_id')||''),player2_id=String(fd.get('player2_id')||'');
-   if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different bladers.');
    const stage=knockoutForm.dataset.stage,capacity={r16:8,quarter:4,semi:2,final:1}[stage];
+   async function resolveKnockoutPlayer(idField,nameField){
+    if(stage!=='r16')return String(fd.get(idField)||'');
+    const name=String(fd.get(nameField)||'').trim();
+    if(!name)throw new Error('Enter or choose a Blader name for both slots.');
+    let player=data.players.find(p=>p.name.trim().toLowerCase()===name.toLowerCase());
+    if(!player){const created=await sb.from('players').insert({name,decks:'[]'}).select('*').single();if(created.error)throw created.error;player=created.data;data.players.push(player);data.players.sort((a,b)=>a.name.localeCompare(b.name));}
+    return player.id;
+   }
+   const player1_id=await resolveKnockoutPlayer('player1_id','player1_name'),player2_id=await resolveKnockoutPlayer('player2_id','player2_name');
+   if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different Bladers.');
    const stageKey=name=>{const n=String(name||'').toLowerCase();return /round of 16|round 16|last 16|r16/.test(n)?'r16':/quarter/.test(n)?'quarter':/semi/.test(n)?'semi':/^final$|grand final/.test(n)?'final':'other';};
    const currentRound=data.matches.filter(m=>m.tournament_id===tournament_id&&stageKey(m.round_name)===stage);
    if(currentRound.length>=capacity)throw new Error('This round already has all '+capacity+' matches.');
