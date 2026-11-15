@@ -439,13 +439,36 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div class="pill">● CLOUD CONNECTED</div>
 </div></div></div></header>
 <main class="wrap">
-<div class="nav" id="nav"><button data-view="overview" class="active">Dashboard</button><button data-view="tournaments" class="detail-nav hide">Tournaments</button><button data-view="matches" class="detail-nav hide">Matches</button><button data-view="rankings" class="detail-nav hide">Standings</button><button data-view="players" class="detail-nav hide">Bladers</button><button data-view="combos" class="detail-nav hide">Meta</button></div>
+<div class="nav" id="nav"><button data-view="overview" class="active">Dashboard</button><button data-view="tournaments" class="detail-nav hide">Tournaments</button><button data-view="matches" class="detail-nav hide">Matches</button><button data-view="rankings" class="detail-nav hide">Standings</button><button data-view="players" class="detail-nav hide">Bladers</button><button data-view="combos" class="detail-nav hide">Meta</button><button data-view="myProfile" class="detail-nav profile-nav hide">My Blader Profile</button></div>
 <div id="banner" class="notice">Connecting to your shared Supabase database…</div><div id="lastSync" class="statusline"></div>
 <section id="overview" class="view"><div class="tournament-hero"><div class="hero-info-square" data-bg-text="BF X"><div class="hero-kicker">BEYFANS X BD TOURNAMENT CENTER</div><h2 id="heroTournamentTitle">Your Beyblade X arena starts here.</h2><p id="heroTournamentSub">Manage tournaments, participants, groups, match records and results in one place.</p><div class="hero-actions"><button type="button" onclick="document.querySelector('[data-view=players]').click()">Browse Bladers</button><button type="button" onclick="document.querySelector('[data-view=tournaments]').click()">View Tournaments</button></div><div class="hero-chip">TOURNAMENT RECORDS • OFFLINE PLAY</div></div><div class="hero-banner-square" id="heroBannerSquare"><div class="hero-banner-placeholder" id="heroBannerPlaceholder"><span>TOURNAMENT BANNER</span><small>1:1 or 4:3 image</small></div><img id="heroTournamentBanner" class="hide" alt="Featured tournament banner"><label class="hero-banner-upload hide" id="heroBannerUploadLabel" for="heroBannerUpload">＋ Add / replace banner</label><input id="heroBannerUpload" class="hide" type="file" accept="image/png,image/jpeg,image/webp"></div></div><div class="stats" id="stats"></div><div class="grid"><div class="panel"><div class="section-head"><h2>Top Players</h2><button class="small ghost" data-go="rankings">Full rankings →</button></div><div id="topPlayers"></div><div id="recentMatches" class="hide" aria-hidden="true"></div></div></div></section>
 <section id="players" class="view hide"><div class="panel"><div class="section-head"><div><h2>Player Directory</h2><p class="muted">Open a player profile to view their competitive record.</p></div></div><div id="playersDirectory"></div></div></section>
 <section id="playerProfile" class="view hide"><div class="panel"><div class="actions" style="margin-top:0;margin-bottom:14px"><button type="button" class="ghost" id="backToPlayers">← Back to players</button></div><div id="playerProfileContent"></div></div></section>
 <section id="rankings" class="view hide"><div class="panel"><h2>Player Rankings</h2><p class="muted">Ranked by wins, win rate, then point difference. A draw counts as a match played.</p><div id="rankingsTable"></div></div></section>
 <section id="combos" class="view hide"><div class="panel"><h2>Beyblade Combo Database</h2><div id="combosTable"></div></div></section>
+<section id="myProfile" class="view hide">
+ <div class="panel">
+  <div class="section-head"><div><h2>My Blader Profile</h2><p>Manage your blader identity, combos and decks. Changes are saved to your account.</p></div><span class="tag">PERSONAL PROFILE</span></div>
+  <form id="myProfileForm">
+   <label>Blader name *</label><input id="myProfileName" required maxlength="100" placeholder="Your blader name">
+   <label>Team / club</label><input id="myProfileTeam" maxlength="120" placeholder="Optional team or club">
+   <label>Location</label><input id="myProfileLocation" maxlength="120" placeholder="City / area">
+   <label>Decks</label><textarea id="myProfileDecks" rows="3" maxlength="3000" placeholder="List your tournament decks"></textarea>
+   <label>Other profile details</label><textarea id="myProfileNotes" rows="3" maxlength="3000" placeholder="Play style, achievements, preferred format, etc."></textarea>
+   <div class="actions"><button type="submit" class="primary" id="myProfileSave">Save profile</button></div>
+  </form><p id="myProfileMessage" class="muted"></p>
+ </div>
+ <div class="panel">
+  <h2>My Beyblade Combos</h2><p class="muted">Add and edit your own combos. Only you and the administrator can manage these entries.</p>
+  <form id="myComboForm">
+   <input type="hidden" id="myComboId">
+   <label>Combo name *</label><input id="myComboName" required maxlength="120" placeholder="e.g. DranSword 3-60F">
+   <div class="form-grid"><div><label>Blade</label><input id="myComboBlade" maxlength="100" placeholder="Blade name"></div><div><label>Ratchet</label><input id="myComboRatchet" maxlength="40" placeholder="Ratchet"></div><div><label>Bit</label><input id="myComboBit" maxlength="40" placeholder="Bit"></div><div><label>Type</label><select id="myComboType"><option>Attack</option><option>Defense</option><option>Stamina</option><option>Balance</option></select></div></div>
+   <label>Notes</label><textarea id="myComboNotes" rows="2" maxlength="1500" placeholder="Optional combo notes"></textarea>
+   <div class="actions"><button type="submit" class="primary" id="myComboSave">Add my combo</button><button type="button" class="ghost" id="myComboClear">Clear</button></div>
+  </form><p id="myComboMessage" class="muted"></p><div id="myProfileCombos"></div>
+ </div>
+</section>
 <section id="matches" class="view hide"><div class="panel"><h2>Match History</h2><div id="matchesTable"></div></div></section>
 <section id="tournaments" class="view hide">
  <div id="tournamentDirectory">
@@ -812,6 +835,7 @@ async function loadAll(showMessage=false){
   data.tournament_groups=extraResults[0].data||[];data.tournament_participants=extraResults[1].data||[];
   data.players.sort((a,b)=>a.name.localeCompare(b.name));data.combos.sort((a,b)=>a.name.localeCompare(b.name));data.tournaments.sort((a,b)=>(b.tournament_date||'').localeCompare(a.tournament_date||''));data.matches.sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''));
   render();
+  if(session&&(isViewer||isAdmin))renderMyProfile();
   const ownProfile=data.players.find(p=>p.auth_user_id===session?.user?.id);
   $('ownPlayerProfile').classList.toggle('hide',!ownProfile);
   if(ownProfile){$('ownBladerName').value=ownProfile.name||'';$('ownBladerCombos').value=ownProfile.combos||'';$('ownBladerDecks').value=ownProfile.decks||'';}
@@ -821,9 +845,48 @@ async function loadAll(showMessage=false){
  }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
  finally{busy=false;}
 }
+function myOwnedPlayer(){return data.players.find(p=>p.auth_user_id===session?.user?.id)||null;}
+function renderMyProfile(){
+ const p=myOwnedPlayer();
+ $('myProfileName').value=p?.name||session?.user?.user_metadata?.blader_name||'';
+ $('myProfileTeam').value=p?.team||'';
+ $('myProfileLocation').value=p?.location||'';
+ $('myProfileDecks').value=p?.decks||'';
+ $('myProfileNotes').value=p?.notes||'';
+ const list=p?data.combos.filter(c=>c.owner_id===p.id):[];
+ $('myProfileCombos').innerHTML=list.length?table(['Combo','Blade','Ratchet','Bit','Type','Actions'],list.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type),'<button type="button" class="small" data-my-combo-edit="'+E(c.id)+'">Edit</button> <button type="button" class="small danger" data-my-combo-delete="'+E(c.id)+'">Delete</button>']))):'<div class="empty">No combos yet. Add your first combo above.</div>';
+}
+function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';}
+async function ensureMyPlayer(){
+ let p=myOwnedPlayer();if(p)return p;
+ const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
+ if(!name)throw new Error('Enter your blader name and save your profile first.');
+ const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:optional('myProfileDecks'),notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
+ if(error)throw error;data.players.push(created);return created;
+}
+$('myProfileForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
+ try{let p=myOwnedPlayer();const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:optional('myProfileDecks'),notes:optional('myProfileNotes')};
+ if(p){const {error}=await sb.from('players').update(payload).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;Object.assign(p,payload);}
+ else {const {data:created,error}=await sb.from('players').insert({...payload,auth_user_id:session.user.id}).select('*').single();if(error)throw error;data.players.push(created);}
+ $('myProfileMessage').textContent='Your blader profile has been saved.';renderMyProfile();render();
+ }catch(err){$('myProfileMessage').textContent='Could not save profile: '+err.message;}
+});
+$('myComboForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
+ try{const p=await ensureMyPlayer(),id=field('myComboId');const payload={name:field('myComboName'),blade:optional('myComboBlade'),ratchet:optional('myComboRatchet'),bit:optional('myComboBit'),type:field('myComboType'),notes:optional('myComboNotes'),owner_id:p.id};
+ const q=id?sb.from('combos').update(payload).eq('id',id).eq('owner_id',p.id):sb.from('combos').insert(payload);
+ const {error}=await q;if(error)throw error;resetMyCombo();await loadAll();renderMyProfile();$('myComboMessage').textContent='Your combo has been saved.';
+ }catch(err){$('myComboMessage').textContent='Could not save combo: '+err.message;}
+});
+$('myComboClear').addEventListener('click',resetMyCombo);
+document.addEventListener('click',async e=>{
+ const edit=e.target.closest('[data-my-combo-edit]');if(edit){const c=data.combos.find(x=>x.id===edit.dataset.myComboEdit);if(!c||c.owner_id!==myOwnedPlayer()?.id)return;$('myComboId').value=c.id;$('myComboName').value=c.name||'';$('myComboBlade').value=c.blade||'';$('myComboRatchet').value=c.ratchet||'';$('myComboBit').value=c.bit||'';$('myComboType').value=c.type||'Attack';$('myComboNotes').value=c.notes||'';$('myComboSave').textContent='Update my combo';return;}
+ const del=e.target.closest('[data-my-combo-delete]');if(del){const p=myOwnedPlayer();if(!p||!confirm('Delete this combo?'))return;const {error}=await sb.from('combos').delete().eq('id',del.dataset.myComboDelete).eq('owner_id',p.id);if(error){$('myComboMessage').textContent='Could not delete combo: '+error.message;return;}await loadAll();renderMyProfile();}
+});
 function saveNavigationState(){try{localStorage.setItem('bfbx_navigation_state',JSON.stringify({view:currentView||'overview',tournamentId:selectedTournamentId||null,tournamentTab:selectedTournamentTab||'groups',tableGroup:selectedTableGroup||'all',bracketMode:document.querySelector('[data-bracket-panel]:not(.hide)')?.dataset.bracketPanel||'tree',profileId:window.bfbxCurrentProfileId||null}));}catch(e){console.warn('Could not save page state',e);}}
 function readNavigationState(){try{return JSON.parse(localStorage.getItem('bfbx_navigation_state')||'{}');}catch(e){return {};}}
-function setView(view){const canViewDetails=isAdmin?viewAs!=='public':isViewer;if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(view)&&!canViewDetails){view='overview';banner('Full details are restricted. Switch View As to an approved member or sign in with an approved email.','error');}/* The Admin section also contains sign-in and account-access panels.
+function setView(view){const canViewDetails=isAdmin?viewAs!=='public':isViewer;if(['players','playerProfile','rankings','combos','myProfile','matches','tournaments'].includes(view)&&!canViewDetails){view='overview';banner('Full details are restricted. Switch View As to an approved member or sign in with an approved email.','error');}/* The Admin section also contains sign-in and account-access panels.
    Actual admin controls remain hidden unless Supabase confirms isAdmin. */currentView=view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('.view').forEach(el=>el.classList.toggle('hide',el.id!==view));if(view==='admin'&&isAdmin)renderScoring();saveNavigationState();}
 function showAuth(){
  $('loginPanel').classList.toggle('hide',!!session);
@@ -839,6 +902,8 @@ function showAuth(){
  $('memberEmail').textContent=session?.user?.email?'Signed in as '+session.user.email:'';
  $('viewAsSelect').value=viewAs;
  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
+ document.querySelectorAll('.profile-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
+ document.querySelectorAll('.profile-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();loadApprovedViewers();loadAuditLog();}
  const own=data.players.find(p=>p.auth_user_id===session?.user?.id);
  $('ownPlayerProfile').classList.toggle('hide',!own);
@@ -875,7 +940,7 @@ async function applyViewAs(){
  $('viewAsSelect').value=viewAs;
  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  if(isAdmin&&viewAs==='public'){
-  if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(currentView))setView('overview');
+  if(['players','playerProfile','rankings','combos','myProfile','matches','tournaments'].includes(currentView))setView('overview');
   try{const {data:summary,error}=await sb.rpc('get_public_dashboard');if(error)throw error;renderPublicDashboard(summary);}
   catch(e){banner('Could not load public preview: '+e.message,'error');}
  }else if(isAdmin){render();}
