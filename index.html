@@ -543,7 +543,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div class="panel wide"><h3>Record / Edit Match</h3><form id="matchForm"><input type="hidden" id="matchId"><div class="form-grid"><div><label>Date *</label><input id="matchDate" type="date" required></div><div><label>Tournament</label><select id="matchTournament"></select></div><div><label>Group (optional)</label><select id="matchGroup"><option value="">No group / knockout</option></select></div><div><label>Round</label><input id="matchRound" placeholder="Final / Round 1"></div><div><label>Player 1 *</label><select id="matchP1" required></select><small id="matchP1ViewerHint" class="muted player-viewer-hint"></small></div><div><label>Player 2 *</label><select id="matchP2" required></select><small id="matchP2ViewerHint" class="muted player-viewer-hint"></small></div><div><label>Player 1 Combo</label><select id="matchC1"></select></div><div><label>Player 2 Combo</label><select id="matchC2"></select></div><div><label>Finish type</label><select id="matchFinish"></select></div><div><label>Finish winner</label><select id="matchWinner"><option value="1">Player 1</option><option value="2">Player 2</option></select></div><div><label>Player 1 points *</label><input id="matchS1" type="number" min="0" step="1" value="0" required></div><div><label>Player 2 points *</label><input id="matchS2" type="number" min="0" step="1" value="0" required></div></div><label>Notes</label><input id="matchNotes"><div class="actions"><button type="button" id="applyPoints">Apply finish points</button><button class="primary" type="submit" id="matchSave">Save match</button><button type="button" class="ghost" data-reset="match">Clear</button></div></form><h3 style="margin-top:19px">Existing matches</h3><div id="adminMatches"></div></div>
 
 </div>
-<div class="panel section"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div>
+<div class="panel section" id="superAdminOnly"><h3>Approved Viewers</h3><p class="muted">Add a person's name and email to allow that email to view full tournament details. They must then create an account on the website using the same email and verify it. Approved viewers can view but cannot edit records.</p><form id="viewerForm"><div class="form-grid"><div><label>Viewer name *</label><input id="viewerName" required maxlength="100" placeholder="Full name"></div><div><label>Viewer email *</label><input id="viewerEmail" type="email" required maxlength="254" placeholder="name@example.com"></div></div><div class="actions"><button type="submit" class="primary">Approve viewer email</button></div></form><div id="viewerList" style="margin-top:12px"></div>
 
 </div>
 <div class="panel section">
@@ -954,7 +954,7 @@ function showAuth(){
  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  document.querySelectorAll('.profile-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
  document.querySelectorAll('.profile-nav').forEach(b=>b.classList.toggle('hide',!(isAdmin?viewAs!=='public':isViewer)));
- if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();if(isSuperAdmin){loadApprovedViewers();loadAuditLog();}}
+ $('superAdminOnly').classList.toggle('hide',!isSuperAdmin);$('superAdminAuditOnly').classList.toggle('hide',!isSuperAdmin);if(isAdmin){populateAdminOptions();renderAdminLists();renderScoring();if(isSuperAdmin){loadApprovedViewers();loadAuditLog();}}
  const own=data.players.find(p=>p.auth_user_id===session?.user?.id);
 }
 async function refreshAuth(){
@@ -969,16 +969,16 @@ async function refreshAuth(){
   }
   // Always discard the temporary View As preview on a fresh page load.
   // Restore the real experience from the authenticated account's database role.
-  viewAs=isSuperAdmin?'admin':isAdmin?'member':isViewer?'member':'public';
+  viewAs=isAdmin?'admin':isViewer?'member':'public';
   document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');if(isAdmin&&!isSuperAdmin)document.body.classList.add('restricted-admin');
   showAuth();
  }catch(e){banner('Authentication check failed: '+e.message,'error');}
 }
 
 async function applyViewAs(){
- document.body.classList.toggle('view-as-member',isAdmin&&viewAs==='member');
- document.body.classList.toggle('view-as-public',isAdmin&&viewAs==='public');
- document.body.classList.toggle('view-as-admin',isAdmin&&viewAs==='admin');
+ document.body.classList.toggle('view-as-member',isSuperAdmin&&viewAs==='member');
+ document.body.classList.toggle('view-as-public',isSuperAdmin&&viewAs==='public');
+ document.body.classList.toggle('view-as-admin',isSuperAdmin&&viewAs==='admin');
  $('adminTools').classList.remove('hide');
  $('accountAccessButton').classList.toggle('hide',isAdmin);
  $('adminDashboardButton').classList.toggle('hide',!isAdmin);
@@ -1228,7 +1228,7 @@ function closeDeletePlayerModal(){pendingPlayerDeleteId=null;$('deletePlayerModa
 $('deletePlayerNo').addEventListener('click',closeDeletePlayerModal);
 $('deletePlayerModal').addEventListener('click',e=>{if(e.target===$('deletePlayerModal'))closeDeletePlayerModal();});
 $('deletePlayerYes').addEventListener('click',async()=>{
- if(!isAdmin||!pendingPlayerDeleteId)return;
+ if(!isSuperAdmin||!pendingPlayerDeleteId)return;
  const id=pendingPlayerDeleteId,player=data.players.find(p=>p.id===id);
  $('deletePlayerYes').disabled=true;$('deletePlayerNo').disabled=true;
  try{
