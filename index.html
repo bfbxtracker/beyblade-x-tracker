@@ -621,6 +621,14 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-knockout-auto-stage .bx-knockout-compact-form>.primary{grid-column:1/-1;justify-self:start}
 @media(max-width:620px){.bx-knockout-auto-stage .bx-knockout-compact-form{grid-template-columns:minmax(0,1fr)}.bx-knockout-auto-stage .bx-knockout-compact-form>.primary{grid-column:1}}
 
+/* Compact winner preview inside later-round drop slots */
+.bx-knockout-winner-preview{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;width:100%;gap:3px;text-align:left}
+.bx-knockout-winner-preview>strong{font-size:12px;line-height:1.25;color:#b5f2d1;overflow-wrap:anywhere}
+.bx-knockout-winner-preview .bx-match-deck-blades{gap:4px;margin:1px 0 0;padding:0}
+.bx-knockout-winner-preview .bx-match-blade-only{width:25px;height:25px;flex:0 0 25px;border-radius:4px}
+.bx-knockout-winner-preview .bx-match-blade-only img{width:22px;height:22px}
+.bx-knockout-auto-stage .bx-knockout-dropzone.has-winner{min-height:66px;justify-content:flex-start;padding:7px 9px}
+
 /* Winner drag-and-drop progression between knockout rounds */
 .bx-bracket-match [data-knockout-winner]{cursor:grab;position:relative;border:1px dashed transparent;border-radius:4px;padding:4px}
 .bx-bracket-match [data-knockout-winner]:hover{border-color:#7DC8F7;background:rgba(125,200,247,.08)}
@@ -1490,7 +1498,7 @@ function applyKnockoutWinnerToZone(zone,payload){
  const select=form.elements.namedItem('player'+side+'_id');
  if(!select||![...select.options].some(o=>o.value===payload.playerId)){banner('That winner is not registered in this tournament.','error');return;}
  select.value=payload.playerId;
- zone.textContent='✓ '+payload.name+' · deck transferred';
+ zone.innerHTML='<div class="bx-knockout-winner-preview"><strong>'+E(payload.name)+'</strong>'+renderKnockoutDeck(payload.deck)+'</div>';
  zone.classList.add('has-winner');
  [1,2,3].forEach((slot,i)=>{
   const part=payload.deck?.[i]||{};
