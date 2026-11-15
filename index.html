@@ -415,28 +415,6 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .public-wins{font-size:11px;color:#7DC8F7;white-space:nowrap}
 
 
-/* BFB AI floating assistant */
-#bfbAiWidget{position:fixed;right:20px;bottom:20px;z-index:10000;font-family:inherit}
-#bfbAiLauncher{display:flex;align-items:center;gap:9px;border:1px solid #7DC8F7;border-radius:999px;background:#7DC8F7;color:#041719;padding:13px 19px;font-weight:850;box-shadow:0 8px 28px #0009}
-#bfbAiLauncher:hover{background:#a6ddff;color:#041719;border-color:#a6ddff;transform:translateY(-1px)}
-#bfbAiPanel{position:absolute;right:0;bottom:68px;width:min(390px,calc(100vw - 28px));height:min(560px,calc(100dvh - 112px));display:flex;flex-direction:column;overflow:hidden;border:1px solid #36556a;border-radius:15px;background:#091011;box-shadow:0 18px 60px #000c}
-#bfbAiPanel[hidden]{display:none!important}
-.bfb-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:#101d20;border-bottom:1px solid #26394A}
-.bfb-ai-head strong{display:block;color:#eefafa;font-size:15px}
-.bfb-ai-head small{display:block;color:#A8BDCC;font-size:11px}
-#bfbAiClose{padding:4px 9px;border-radius:8px;background:transparent;color:#A8BDCC}
-#bfbAiMessages{display:flex;flex:1;flex-direction:column;gap:10px;overflow-y:auto;padding:14px;background:radial-gradient(ellipse at top,#102025 0,transparent 70%)}
-.bfb-ai-message{max-width:90%;padding:10px 12px;border:1px solid #26394A;border-radius:12px;color:#eefafa;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
-.bfb-ai-assistant{align-self:flex-start;background:#111d20;border-top-left-radius:4px}
-.bfb-ai-user{align-self:flex-end;background:#12344a;border-color:#2d6585;border-top-right-radius:4px}
-.bfb-ai-system{align-self:center;max-width:100%;background:#151d1e;color:#A8BDCC;font-size:11px;text-align:center}
-#bfbAiForm{display:flex;align-items:flex-end;gap:8px;padding:11px;border-top:1px solid #26394A;background:#0c1416}
-#bfbAiInput{flex:1;min-width:0;min-height:42px;max-height:112px;resize:vertical;padding:10px 11px;border:1px solid #36556a;border-radius:10px;background:#050b0c;color:#eefafa;font-size:13px}
-#bfbAiInput:focus{outline:2px solid #7DC8F7;outline-offset:1px}
-#bfbAiSend{min-height:42px;padding:9px 13px;background:#7DC8F7;border-color:#7DC8F7;color:#041719}
-#bfbAiSend:disabled{opacity:.55;cursor:wait}
-.bfb-ai-footnote{padding:0 12px 10px;background:#0c1416;color:#77909a;font-size:10px;text-align:center}
-@media(max-width:520px){#bfbAiWidget{right:12px;bottom:12px}#bfbAiPanel{right:-2px;bottom:64px;width:calc(100vw - 24px);height:min(70dvh,560px)}#bfbAiLauncher{padding:12px 15px}}
 </style>
 </head>
 <body>
@@ -523,15 +501,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <div class="panel wide"><h3>Backup</h3><p class="muted">Export the current shared records as a JSON backup. This does not remove data from Supabase.</p><button id="exportBackup">Export cloud data (JSON)</button></div>
 </div></section>
 </main>
-<div id="bfbAiWidget">
- <section id="bfbAiPanel" hidden aria-label="BFB AI chat">
-  <div class="bfb-ai-head"><div><strong>✦ BFB AI</strong><small>Beyblade X · Live tracker data</small></div><button type="button" id="bfbAiClose" aria-label="Close BFB AI">✕</button></div>
-  <div id="bfbAiMessages" role="log" aria-live="polite" aria-relevant="additions text"><div class="bfb-ai-message bfb-ai-assistant">Hey Blader! Ask me about Beyblade X, player records, combos, rankings or tournaments. I use the live tracker records and can answer in read-only mode.</div></div>
-  <form id="bfbAiForm"><textarea id="bfbAiInput" maxlength="1500" rows="1" placeholder="Ask BFB AI anything…" aria-label="Message BFB AI"></textarea><button type="submit" id="bfbAiSend">Send</button></form>
-  <div class="bfb-ai-footnote">Available to approved tracker members · AI answers may need checking</div>
- </section>
- <button type="button" id="bfbAiLauncher" aria-controls="bfbAiPanel" aria-expanded="false">✦ Ask BFB AI</button>
-</div>
+
 <footer class="wrap footer">BFB X Tracker • Unofficial fan-made community platform. Not affiliated with Takara Tomy, Hasbro, or the Beyblade brand owners. Public data refreshes approximately every 15 seconds.</footer>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -1020,27 +990,6 @@ const savedNav=readNavigationState();
 if(savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
 else if(savedNav.view==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
 else if(['overview','players','rankings','combos','matches','tournaments','admin'].includes(savedNav.view)){setView(savedNav.view);}
-
-// BFB AI chat — conversations stay in this browser session and are not saved to the database.
-const bfbAiPanel=$('bfbAiPanel'),bfbAiLauncher=$('bfbAiLauncher'),bfbAiMessages=$('bfbAiMessages'),bfbAiForm=$('bfbAiForm'),bfbAiInput=$('bfbAiInput'),bfbAiSend=$('bfbAiSend');
-let bfbAiHistory=[];
-function bfbAiAddMessage(role,content){const el=document.createElement('div');el.className='bfb-ai-message '+(role==='assistant'?'bfb-ai-assistant':role==='user'?'bfb-ai-user':'bfb-ai-system');el.textContent=content;bfbAiMessages.appendChild(el);bfbAiMessages.scrollTop=bfbAiMessages.scrollHeight;return el;}
-function bfbAiSetOpen(open){bfbAiPanel.hidden=!open;bfbAiLauncher.setAttribute('aria-expanded',String(open));if(open)bfbAiInput.focus();}
-bfbAiLauncher.addEventListener('click',()=>bfbAiSetOpen(bfbAiPanel.hidden));$('bfbAiClose').addEventListener('click',()=>bfbAiSetOpen(false));
-bfbAiForm.addEventListener('submit',async e=>{
- e.preventDefault();const message=bfbAiInput.value.trim();if(!message||bfbAiSend.disabled)return;
- if(!session||!isViewer){bfbAiAddMessage('system','Please sign in with an approved BFB X Tracker account to use the assistant.');return;}
- bfbAiAddMessage('user',message);bfbAiInput.value='';bfbAiSend.disabled=true;bfbAiSend.textContent='…';
- const thinking=bfbAiAddMessage('assistant','BFB AI is thinking…');
- try{
-  const {data:reply,error}=await sb.functions.invoke('bfbx-ai-chat',{body:{message,history:bfbAiHistory.slice(-8)}});
-  if(error){let detail='';try{const payload=await error.context?.json();detail=payload?.error||'';}catch(_){}throw new Error(detail||error.message||'Could not reach BFB AI.');}
-  if(reply?.error)throw new Error(reply.error);if(!reply?.answer)throw new Error('BFB AI returned an empty response.');
-  thinking.textContent=reply.answer;bfbAiHistory.push({role:'user',content:message},{role:'assistant',content:reply.answer});bfbAiHistory=bfbAiHistory.slice(-8);
- }catch(err){thinking.textContent=err.message||'Something went wrong. Please try again.';thinking.classList.add('bfb-ai-system');}
- finally{bfbAiSend.disabled=false;bfbAiSend.textContent='Send';bfbAiInput.focus();bfbAiMessages.scrollTop=bfbAiMessages.scrollHeight;}
-});
-bfbAiInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();bfbAiForm.requestSubmit();}});
 
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll();},15000);
 </script>
