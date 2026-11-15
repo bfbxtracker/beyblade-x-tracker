@@ -687,6 +687,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-bracket-tree .bx-knockout-tree-drop .bx-match-blade-only{width:25px;height:25px;flex:0 0 25px}
 .bx-bracket-tree .bx-knockout-tree-drop .bx-match-blade-only img{width:22px;height:22px}
 
+.my-profile-card-head{display:flex;align-items:center;gap:14px;min-width:0}
+.bx-profile-title{min-width:0;flex:1}
+.bx-profile-delete{margin-left:auto;flex:0 0 auto;align-self:flex-start}
 </style>
 </head>
 <body>
@@ -930,7 +933,8 @@ function openPlayerProfile(id){
  const photo=p.profile_image_url?'<img class="my-profile-avatar" src="'+E(p.profile_image_url)+'" alt="'+E(p.name)+' profile picture">':'<div class="my-profile-avatar">'+E((p.name||'?').trim().slice(0,1).toUpperCase())+'</div>';
  const deckHtml=renderMyDeckCards(p);
  const matchHtml=played.length?played.map(m=>{const first=m.player1_id===id,opp=first?m.player2_id:m.player1_id,a=Number(first?m.player1_points:m.player2_points),b=Number(first?m.player2_points:m.player1_points),win=a>b,draw=a===b,stage=m.round_name|| (m.group_id?(data.tournament_groups.find(g=>g.id===m.group_id)?.name||'Group stage'):'Match');return '<div class="blader-match-card"><div class="blader-match-meta"><span>'+E(stage)+'</span><strong style="color:'+(draw?'#e6c35b':win?'#7DC8F7':'#ed6b76')+'">'+(draw?'Draw':win?'Win':'Loss')+'</strong></div><div class="blader-match-main"><span>'+playerButton(opp,pName(opp))+'</span><b>'+a+'–'+b+'</b><small>'+E(displayDate(m.match_date))+'</small></div><div class="blader-match-sub"><span>'+E(tName(m.tournament_id))+'</span><span>'+E(m.finish_type||'Finish not recorded')+'</span></div>'+(m.notes?'<p class="blader-match-notes">'+E(m.notes)+'</p>':'')+'</div>';}).join(''):'<div class="empty">No match records yet.</div>';
- $('playerProfileContent').innerHTML='<div class="my-profile-card"><div class="my-profile-card-head">'+photo+'<div><small class="muted">BLADER NAME</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · '))+'</div></div></div>'+
+ const profileDelete=isSuperAdmin&&!p.auth_user_id?'<button type="button" class="small danger bx-profile-delete" data-delete="player" data-id="'+E(p.id)+'" title="Delete this unregistered Blader">Delete profile</button>':'';
+ $('playerProfileContent').innerHTML='<div class="my-profile-card"><div class="my-profile-card-head">'+photo+'<div class="bx-profile-title"><small class="muted">BLADER NAME</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · '))+'</div></div>'+profileDelete+'</div>'+
  (p.notes?'<div class="my-profile-section"><h3>Blader Details</h3><p>'+E(p.notes)+'</p></div>':'')+
  '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+statCard('Ranking',ranking?'#'+ranking:'—')+statCard('Score % (Win rate)',st.rate.toFixed(1)+'%')+statCard('Points scored',st.points)+statCard('Matches',st.played)+statCard('W - L - D',st.w+' - '+st.l+' - '+st.d)+statCard('Tournaments played',tournaments.length)+'</div></div>'+
  '<section class="my-profile-section"><h3>Decks</h3>'+deckHtml+'</section>'+
