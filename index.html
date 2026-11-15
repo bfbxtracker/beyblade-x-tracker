@@ -471,6 +471,19 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
   </form><p id="myProfileMessage" class="muted"></p>
  </div>
  <div class="panel">
+  <h2>My Beyblade Decks</h2><p class="muted">Build a Deck by choosing three of your saved Beyblade combos. Each Deck will appear on your profile with all three Blade images and its name.</p>
+  <form id="myDeckForm">
+   <input type="hidden" id="myDeckId">
+   <label>Deck name *</label><input id="myDeckName" required maxlength="120" placeholder="e.g. Tournament Deck">
+   <div class="form-grid">
+    <div><label>Combo 1 *</label><select id="myDeckCombo1" required><option value="">Choose your first combo</option></select></div>
+    <div><label>Combo 2 *</label><select id="myDeckCombo2" required><option value="">Choose your second combo</option></select></div>
+    <div><label>Combo 3 *</label><select id="myDeckCombo3" required><option value="">Choose your third combo</option></select></div>
+   </div>
+   <div class="actions"><button type="submit" class="primary" id="myDeckSave">Create Deck</button><button type="button" class="ghost" id="myDeckClear">Clear</button></div>
+  </form><p id="myDeckMessage" class="muted"></p><div id="myProfileDecks"></div>
+ </div>
+ <div class="panel">
   <h2>My Beyblade Combos</h2><p class="muted">Add and edit your own combos. Only you and the administrator can manage these entries.</p>
   <form id="myComboForm">
    <input type="hidden" id="myComboId">
@@ -627,12 +640,12 @@ function openPlayerProfile(id){
  const finishes=new Map();played.forEach(m=>{const f=m.finish_type||'Not specified';finishes.set(f,(finishes.get(f)||0)+1);});
  const statCard=(label,value)=>'<div class="profile-stat"><span>'+label+'</span><b>'+value+'</b></div>';
  const photo=p.profile_image_url?'<img class="my-profile-avatar" src="'+E(p.profile_image_url)+'" alt="'+E(p.name)+' profile picture">':'<div class="my-profile-avatar">'+E((p.name||'?').trim().slice(0,1).toUpperCase())+'</div>';
- const comboHtml=owned.length?'<div class="my-profile-combos">'+owned.map(c=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(c.blade||'').toLowerCase());return '<div class="my-profile-combo">'+(blade?'<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(blade.image)+'" alt="'+E(c.blade)+'">':'<div class="empty">Blade image unavailable</div>')+'<strong>'+E(c.name)+'</strong><small>'+E(c.ratchet||'—')+' · '+E(c.bit||'—')+'</small></div>';}).join('')+'</div>':'<div class="empty">No registered combo records yet.</div>';
+ const deckHtml=renderMyDeckCards(p);
  const matchHtml=played.length?played.map(m=>{const first=m.player1_id===id,opp=first?m.player2_id:m.player1_id,a=Number(first?m.player1_points:m.player2_points),b=Number(first?m.player2_points:m.player1_points),win=a>b,draw=a===b,stage=m.round_name|| (m.group_id?(data.tournament_groups.find(g=>g.id===m.group_id)?.name||'Group stage'):'Match');return '<div class="blader-match-card"><div class="blader-match-meta"><span>'+E(stage)+'</span><strong style="color:'+(draw?'#e6c35b':win?'#7DC8F7':'#ed6b76')+'">'+(draw?'Draw':win?'Win':'Loss')+'</strong></div><div class="blader-match-main"><span>'+playerButton(opp,pName(opp))+'</span><b>'+a+'–'+b+'</b><small>'+E(displayDate(m.match_date))+'</small></div><div class="blader-match-sub"><span>'+E(tName(m.tournament_id))+'</span><span>'+E(m.finish_type||'Finish not recorded')+'</span></div>'+(m.notes?'<p class="blader-match-notes">'+E(m.notes)+'</p>':'')+'</div>';}).join(''):'<div class="empty">No match records yet.</div>';
  $('playerProfileContent').innerHTML='<div class="my-profile-card"><div class="my-profile-card-head">'+photo+'<div><small class="muted">BLADER NAME</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · '))+'</div></div></div>'+
  (p.notes?'<div class="my-profile-section"><h3>Blader Details</h3><p>'+E(p.notes)+'</p></div>':'')+
  '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+statCard('Ranking',ranking?'#'+ranking:'—')+statCard('Score % (Win rate)',st.rate.toFixed(1)+'%')+statCard('Points scored',st.points)+statCard('Matches',st.played)+statCard('W - L - D',st.w+' - '+st.l+' - '+st.d)+statCard('Tournaments played',tournaments.length)+'</div></div>'+
- '<section class="my-profile-section"><h3>Combos</h3>'+comboHtml+'</section>'+
+ '<section class="my-profile-section"><h3>Decks</h3>'+deckHtml+'</section>'+
  '<section class="my-profile-section"><h3>Finishes</h3><div class="finish-count-grid">'+(finishes.size?[...finishes.entries()].map(([name,count])=>'<div class="finish-count-card"><b>'+count+'</b><span>'+E(name)+'</span><small>recorded matches</small></div>').join(''):'<div class="empty">No finish types recorded.</div>')+'</div></section>'+
  '<section class="my-profile-section"><h3>Match by match</h3>'+matchHtml+'</section>'+
  '<section class="my-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.tournament_date)])))+'</section></div>';
@@ -896,6 +909,12 @@ function renderMyPartPicker(part,selected=''){
 document.addEventListener('click',e=>{['blade','ratchet','bit'].forEach(part=>{const cap=part[0].toUpperCase()+part.slice(1);if(!e.target.closest('#myCombo'+cap+'Picker')&&!e.target.closest('#myCombo'+cap+'Trigger'))$('myCombo'+cap+'Picker').classList.add('hide');});});
 function renderMyComboPickers(){['blade','ratchet','bit'].forEach(part=>renderMyPartPicker(part,$('myCombo'+part[0].toUpperCase()+part.slice(1)).value));}
 function myOwnedPlayer(){return data.players.find(p=>p.auth_user_id===session?.user?.id)||null;}
+function readMyDecks(player){try{const v=JSON.parse(player?.decks||'[]');return Array.isArray(v)?v:[];}catch{return [];}}
+function comboBladeImage(combo){const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(combo?.blade||'').toLowerCase());return blade?.image||'';}
+function renderMyDeckCards(player){const decks=readMyDecks(player);return decks.length?'<div class="my-profile-combos">'+decks.map(d=>{const picks=(d.comboIds||[]).map(id=>data.combos.find(c=>c.id===id)).filter(Boolean);return '<div class="my-profile-combo"><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;align-items:center">'+picks.map(c=>{const image=comboBladeImage(c);return image?'<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(image)+'" alt="'+E(c.blade||c.name)+'" style="width:100%;height:76px;object-fit:contain">':'<span class="muted">No image</span>';}).join('')+'</div><strong>'+E(d.name)+'</strong></div>';}).join('')+'</div>':'<div class="empty">No Decks created yet.</div>';}
+function refreshMyDeckForm(){const p=myOwnedPlayer(),list=p?data.combos.filter(c=>c.owner_id===p.id):[];['myDeckCombo1','myDeckCombo2','myDeckCombo3'].forEach((id,i)=>{const el=$(id),old=el.value;el.innerHTML='<option value="">Choose combo '+(i+1)+'</option>'+list.map(c=>'<option value="'+E(c.id)+'">'+E(c.name)+' — '+E(c.blade||'No Blade')+'</option>').join('');if(list.some(c=>c.id===old))el.value=old;});}
+function resetMyDeck(){ $('myDeckForm').reset();$('myDeckId').value='';$('myDeckSave').textContent='Create Deck';refreshMyDeckForm();}
+async function saveMyDecks(decks){const p=myOwnedPlayer();if(!p)throw new Error('Save your Blader profile first.');const value=JSON.stringify(decks);const {error}=await sb.from('players').update({decks:value}).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;p.decks=value;}
 function renderMyProfile(){
  const p=myOwnedPlayer(),form=$('myProfileForm'),card=$('myProfileCard');
  if(!p){form.classList.remove('hide');card.innerHTML='<div class="empty">Complete your profile to publish your Blader card.</div>';}
@@ -904,14 +923,12 @@ function renderMyProfile(){
   const st=winStats().find(x=>x.id===p.id)||{played:0,w:0,l:0,d:0,points:0,against:0,rate:0,diff:0};
   const ranking=winStats().findIndex(x=>x.id===p.id)+1;
   const tournamentCount=new Set([...data.tournament_participants.filter(x=>x.player_id===p.id).map(x=>x.tournament_id),...data.matches.filter(x=>(x.player1_id===p.id||x.player2_id===p.id)&&x.tournament_id).map(x=>x.tournament_id)]).size;
-  const combos=data.combos.filter(c=>c.owner_id===p.id);
   const photo=p.profile_image_url?'<img class="my-profile-avatar" src="'+E(p.profile_image_url)+'" alt="'+E(p.name)+' profile picture">':'<div class="my-profile-avatar">'+E((p.name||'?').trim().slice(0,1).toUpperCase())+'</div>';
-  const comboCards=combos.length?combos.map(c=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(c.blade||'').toLowerCase());const image=blade?.image||'';return '<div class="my-profile-combo">'+(image?'<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(image)+'" alt="'+E(c.blade)+'">':'<div class="empty">Blade image unavailable</div>')+'<strong>'+E(c.name)+'</strong><small>'+E(c.ratchet||'—')+' · '+E(c.bit||'—')+'</small></div>';}).join(''):'<div class="empty">No combos added yet.</div>';
   card.innerHTML='<div class="my-profile-card"><div class="my-profile-card-head">'+photo+'<div><small class="muted">BLADER NAME</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · ')||'')+'</div></div><button type="button" class="ghost my-profile-edit" id="editMyProfile">Edit Profile</button></div>'+
   (p.notes?'<div class="my-profile-section"><h3>Blader Details</h3><p>'+E(p.notes)+'</p></div>':'')+
   '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+
   '<div class="my-profile-stat"><small>Ranking</small><b>'+(ranking?'#'+ranking:'—')+'</b></div><div class="my-profile-stat"><small>Score % (Win rate)</small><b>'+st.rate.toFixed(1)+'%</b></div><div class="my-profile-stat"><small>Points scored</small><b>'+st.points+'</b></div><div class="my-profile-stat"><small>Matches</small><b>'+st.played+'</b></div><div class="my-profile-stat"><small>W - L - D</small><b>'+st.w+' - '+st.l+' - '+st.d+'</b></div><div class="my-profile-stat"><small>Tournaments played</small><b>'+tournamentCount+'</b></div></div></div>'+
-  '<div class="my-profile-section"><h3>My Beyblade Combos</h3><div class="my-profile-combos">'+comboCards+'</div></div></div>';
+  '<div class="my-profile-section"><h3>Decks</h3>'+renderMyDeckCards(p)+'</div></div>';
   $('editMyProfile').addEventListener('click',()=>form.classList.remove('hide'));
  }
  $('myProfileName').value=p?.name||session?.user?.user_metadata?.blader_name||'';
@@ -919,6 +936,8 @@ function renderMyProfile(){
  $('myProfileLocation').value=p?.location||'';
  $('myProfileNotes').value=p?.notes||'';
  const list=p?data.combos.filter(c=>c.owner_id===p.id):[];
+ refreshMyDeckForm();
+ $('myProfileDecks').innerHTML=renderMyDeckCards(p)+'<div class="table-scroll">'+(readMyDecks(p).length?table(['Deck','Combos','Actions'],readMyDecks(p).map(d=>row([E(d.name),E((d.comboIds||[]).map(id=>data.combos.find(c=>c.id===id)?.name||'').filter(Boolean).join(' · ')),'<button type="button" class="small" data-my-deck-edit="'+E(d.id)+'">Edit</button> <button type="button" class="small danger" data-my-deck-delete="'+E(d.id)+'">Delete</button>']))):'')+'</div>';
  $('myProfileCombos').innerHTML=list.length?table(['Combo','Blade','Ratchet','Bit','Type','Actions'],list.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type),'<button type="button" class="small" data-my-combo-edit="'+E(c.id)+'">Edit</button> <button type="button" class="small danger" data-my-combo-delete="'+E(c.id)+'">Delete</button>']))):'<div class="empty">No combos yet. Add your first combo above.</div>';
 }
 function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';['blade','ratchet','bit'].forEach(part=>{const cap=part[0].toUpperCase()+part.slice(1);$('myCombo'+cap+'Search').value='';$('myCombo'+cap+'Picker').classList.add('hide');$('myCombo'+cap+'Trigger').setAttribute('aria-expanded','false');});renderMyPartPicker('blade','');renderMyPartPicker('ratchet','');renderMyPartPicker('bit','');}
@@ -926,14 +945,14 @@ async function ensureMyPlayer(){
  let p=myOwnedPlayer();if(p)return p;
  const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
  if(!name)throw new Error('Enter your blader name and save your profile first.');
- const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:'',notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
+ const {data:created,error}=await sb.from('players').insert({name,team:optional('myProfileTeam'),location:optional('myProfileLocation'),decks:'[]',notes:optional('myProfileNotes'),auth_user_id:session.user.id}).select('*').single();
  if(error)throw error;data.players.push(created);return created;
 }
 $('myProfileForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
  try{let p=myOwnedPlayer();const file=$('myProfilePhoto').files?.[0];let profile_image_url=p?.profile_image_url||null;
  if(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP image.');if(file.size>2097152)throw new Error('Profile picture must be 2 MB or smaller.');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/profile-'+Date.now()+'.'+ext;const upload=await sb.storage.from('blader-profile-pictures').upload(path,file,{upsert:true,contentType:file.type});if(upload.error)throw upload.error;profile_image_url=sb.storage.from('blader-profile-pictures').getPublicUrl(path).data.publicUrl;}
- const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:field('myProfileLocation'),decks:'',notes:optional('myProfileNotes'),profile_image_url};
+ const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:field('myProfileLocation'),decks:p?.decks||'[]',notes:optional('myProfileNotes'),profile_image_url};
  if(p){const {error}=await sb.from('players').update(payload).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;Object.assign(p,payload);}
  else {const {data:created,error}=await sb.from('players').insert({...payload,auth_user_id:session.user.id}).select('*').single();if(error)throw error;data.players.push(created);}
  $('myProfilePhoto').value='';$('myProfileMessage').textContent='Your blader profile has been saved.';form.classList.add('hide');renderMyProfile();render();
@@ -947,7 +966,12 @@ $('myComboForm').addEventListener('submit',async e=>{
  }catch(err){$('myComboMessage').textContent='Could not save combo: '+err.message;}
 });
 $('myComboClear').addEventListener('click',resetMyCombo);
+$('myDeckClear').addEventListener('click',()=>{resetMyDeck();$('myDeckMessage').textContent='Deck form cleared.';});
+$('myDeckForm').addEventListener('submit',async e=>{e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;try{const p=myOwnedPlayer();if(!p)throw new Error('Save your Blader Profile before creating a Deck.');const comboIds=[$('myDeckCombo1').value,$('myDeckCombo2').value,$('myDeckCombo3').value];if(new Set(comboIds).size!==3)throw new Error('Choose three different combos for your Deck.');const owned=data.combos.filter(c=>c.owner_id===p.id);if(comboIds.some(id=>!owned.some(c=>c.id===id)))throw new Error('Choose only your own saved combos.');const decks=readMyDecks(p),id=field('myDeckId'),deck={id:id||('deck-'+Date.now()),name:field('myDeckName'),comboIds};const next=id?decks.map(d=>d.id===id?deck:d):[...decks,deck];await saveMyDecks(next);resetMyDeck();$('myDeckMessage').textContent='Deck saved successfully.';renderMyProfile();}catch(err){$('myDeckMessage').textContent='Could not save Deck: '+err.message;}});
+
 document.addEventListener('click',async e=>{
+ const deckEdit=e.target.closest('[data-my-deck-edit]');if(deckEdit){const p=myOwnedPlayer(),deck=readMyDecks(p).find(d=>d.id===deckEdit.dataset.myDeckEdit);if(!p||!deck)return;refreshMyDeckForm();$('myDeckId').value=deck.id;$('myDeckName').value=deck.name||'';['myDeckCombo1','myDeckCombo2','myDeckCombo3'].forEach((id,i)=>$(id).value=deck.comboIds?.[i]||'');$('myDeckSave').textContent='Update Deck';$('myDeckName').focus();return;}
+ const deckDelete=e.target.closest('[data-my-deck-delete]');if(deckDelete){const p=myOwnedPlayer();if(!p||!confirm('Delete this Deck?'))return;try{await saveMyDecks(readMyDecks(p).filter(d=>d.id!==deckDelete.dataset.myDeckDelete));renderMyProfile();}catch(err){$('myDeckMessage').textContent='Could not delete Deck: '+err.message;}return;}
  const edit=e.target.closest('[data-my-combo-edit]');if(edit){const c=data.combos.find(x=>x.id===edit.dataset.myComboEdit);if(!c||c.owner_id!==myOwnedPlayer()?.id)return;$('myComboId').value=c.id;$('myComboName').value=c.name||'';$('myComboBlade').value=c.blade||'';$('myComboRatchet').value=c.ratchet||'';$('myComboBit').value=c.bit||'';renderMyComboPickers();$('myComboType').value=c.type||'Attack';$('myComboNotes').value=c.notes||'';$('myComboSave').textContent='Update my combo';return;}
  const del=e.target.closest('[data-my-combo-delete]');if(del){const p=myOwnedPlayer();if(!p||!confirm('Delete this combo?'))return;const {error}=await sb.from('combos').delete().eq('id',del.dataset.myComboDelete).eq('owner_id',p.id);if(error){$('myComboMessage').textContent='Could not delete combo: '+error.message;return;}await loadAll();renderMyProfile();}
 });
