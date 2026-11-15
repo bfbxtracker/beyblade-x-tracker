@@ -287,6 +287,15 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-bracket-match:after{content:"";position:absolute;right:-12px;top:50%;width:10px;border-top:1px solid #7DC8F7;opacity:.7}
 .bx-bracket-round:last-child .bx-bracket-match:after{display:none}
 .bx-match-code{font-size:9px;color:#A8BDCC;margin-bottom:4px}
+.bx-match-combo{display:flex;gap:5px;align-items:stretch;padding:4px 0 6px;border-bottom:1px solid rgba(67,190,198,.12);margin-bottom:3px}
+.bx-match-combo-part{display:flex;align-items:center;gap:4px;min-width:0;flex:1}
+.bx-match-combo-part img{width:30px;height:30px;object-fit:contain;border-radius:4px;background:#101b20;padding:2px;flex-shrink:0}
+.bx-match-combo-part span{display:flex;flex-direction:column;min-width:0}
+.bx-match-combo-part small{font-size:8px;color:#7f999a;letter-spacing:.4px}
+.bx-match-combo-part strong{font-size:9px;color:#c3d0d0;overflow-wrap:anywhere}
+.bx-match-combo-no-image{width:30px;height:30px;flex-shrink:0}
+.bx-bracket-round-editor{margin-top:10px}
+
 .bx-match-player{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:4px 0;border-top:1px solid rgba(67,190,198,.12);min-width:0}
 .bx-match-player .player-link{padding:0;border:0;background:none;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:#c3d0d0}
 .bx-match-player b{font-size:13px;color:#A8BDCC}
@@ -685,6 +694,14 @@ function banner(message,kind='info'){const el=$('banner');el.className='notice'+
 function displayDate(s){if(!s)return '—';return E(s);}
 function pName(id){return data.players.find(p=>p.id===id)?.name||'Unknown player';}
 function cName(id){return data.combos.find(c=>c.id===id)?.name||'—';}
+function knockoutComboMarkup(comboId){
+ const combo=data.combos.find(c=>c.id===comboId);if(!combo)return '';
+ const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(combo.blade||'').toLowerCase());
+ const ratchet=RATCHET_CATALOG.find(x=>x.name.toLowerCase()===String(combo.ratchet||'').toLowerCase());
+ const bit=BIT_CATALOG.find(x=>x.code.toLowerCase()===String(combo.bit||'').toLowerCase());
+ const part=(label,value,image)=>value?'<div class="bx-match-combo-part">'+(image?'<img loading="lazy" decoding="async" src="'+E(image)+'" alt="'+E(value)+'">':'<span class="bx-match-combo-no-image"></span>')+'<span><small>'+label+'</small><strong>'+E(value)+'</strong></span></div>':'';
+ return '<div class="bx-match-combo" aria-label="Beyblade combo">'+part('BLADE',combo.blade,blade?.image||'')+part('RATCHET',combo.ratchet,ratchet?.image||'')+part('BIT',combo.bit,bit?.image||'')+'</div>';
+}
 function tName(id){return data.tournaments.find(t=>t.id===id)?.name||'Friendly / Other';}
 function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,against:0}]));for(const x of matches){let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;a.played++;b.played++;a.points+=Number(x.player1_points)||0;b.points+=Number(x.player2_points)||0;a.against+=Number(x.player2_points)||0;b.against+=Number(x.player1_points)||0;if(x.player1_points>x.player2_points){a.w++;b.l++}else if(x.player1_points<x.player2_points){a.l++;b.w++}else{a.d++;b.d++}}return [...m.values()].map(x=>{const manual=x.standing_played!==null&&x.standing_played!==undefined;const played=manual?Number(x.standing_played)||0:x.played,w=manual?Number(x.standing_wins)||0:x.w,l=manual?Number(x.standing_losses)||0:x.l,d=manual?Number(x.standing_draws)||0:x.d,points=3*w+d;return {...x,played,w,l,d,points,rate:played?100*w/played:0,diff:x.points-x.against,hasStandingResults:played>0||w>0||l>0||d>0};}).sort((a,b)=>b.points-a.points||b.w-a.w||b.rate-a.rate||b.played-a.played||a.name.localeCompare(b.name));}
 function table(headers,rows){if(!rows.length)return '<div class="empty">No records yet.</div>';return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${E(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;}
@@ -761,8 +778,9 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const capacity={r16:8,quarter:4,semi:2,final:1}[stage];
  const roundLabels={r16:'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
  const label=roundLabels[stage],opts=entries.map(e=>'<option value="'+E(e.player_id)+'">'+E(pName(e.player_id))+'</option>').join('');
+ const comboOpts='<option value="">No combo selected</option>'+data.combos.map(x=>'<option value="'+E(x.id)+'">'+E(x.name)+' · '+E([x.blade,x.ratchet,x.bit].filter(Boolean).join(' / '))+'</option>').join('');
  const full=stageMatches.length>=capacity;
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches added · '+(capacity*2)+' Blader slots total</p><form data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><label>Blader 1<select name="player1_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 2<select name="player2_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label><label>Match date<input name="match_date" type="date" value="'+new Date().toISOString().slice(0,10)+'" required></label><label>Notes<input name="notes" placeholder="Optional match notes"></label><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches added · '+(capacity*2)+' Blader slots total</p><form data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><label>Blader 1<select name="player1_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 1 Beyblade combo<select name="combo1_id">'+comboOpts+'</select></label><label>Blader 2<select name="player2_id" required><option value="">Choose Blader</option>'+opts+'</select></label><label>Blader 2 Beyblade combo<select name="combo2_id">'+comboOpts+'</select></label><label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label><button class="primary" type="submit" '+(entries.length<2||full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
 
 function drawBracketConnectors(){
@@ -859,7 +877,7 @@ function renderTournamentTab(){
    const champ=finalMatch?winnerOf(finalMatch):null,runner=finalMatch?loserOf(finalMatch):null;
    const matchCard=m=>{
     const w=winnerOf(m),p1=m.player1_id,p2=m.player2_id;
-    return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Knockout')+'</div><div class="bx-match-player '+(w===p1?'is-winner':'')+'">'+playerButton(p1,pName(p1))+'<b>'+E(m.player1_points)+'</b></div><div class="bx-match-player '+(w===p2?'is-winner':'')+'">'+playerButton(p2,pName(p2))+'<b>'+E(m.player2_points)+'</b></div>'+(m.match_date?'<div class="bx-match-date">'+E(displayDate(m.match_date))+'</div>':'')+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Replace / edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
+    return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Knockout')+'</div><div class="bx-match-player '+(w===p1?'is-winner':'')+'">'+playerButton(p1,pName(p1))+'<b>'+E(m.player1_points)+'</b></div>'+knockoutComboMarkup(m.combo1_id)+'<div class="bx-match-player '+(w===p2?'is-winner':'')+'">'+playerButton(p2,pName(p2))+'<b>'+E(m.player2_points)+'</b></div>'+knockoutComboMarkup(m.combo2_id)+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Replace / edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
    };
    out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Follow each round through to the champion.</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+E(pName(runner))+'</p></div></div>';
@@ -1187,8 +1205,12 @@ document.addEventListener('click',async e=>{
   if(!a||!b||a.id===b.id){banner('Enter two different existing blader names.','error');return;}
   const score1=prompt('Blader 1 score:',String(m.player1_points));if(score1===null)return;
   const score2=prompt('Blader 2 score:',String(m.player2_points));if(score2===null)return;
+  const combo1Name=prompt('Blader 1 combo name (leave blank to clear):',cName(m.combo1_id)==='—'?'':cName(m.combo1_id));if(combo1Name===null)return;
+  const combo2Name=prompt('Blader 2 combo name (leave blank to clear):',cName(m.combo2_id)==='—'?'':cName(m.combo2_id));if(combo2Name===null)return;
+  const combo1=data.combos.find(x=>x.name.trim().toLowerCase()===combo1Name.trim().toLowerCase()),combo2=data.combos.find(x=>x.name.trim().toLowerCase()===combo2Name.trim().toLowerCase());
+  if(combo1Name.trim()&&!combo1||combo2Name.trim()&&!combo2){banner('Enter an exact existing combo name, or leave blank.','error');return;}
   const n1=Number(score1),n2=Number(score2);if(!Number.isInteger(n1)||!Number.isInteger(n2)||n1<0||n2<0){banner('Scores must be non-negative whole numbers.','error');return;}
-  try{const {error}=await sb.from('matches').update({player1_id:a.id,player2_id:b.id,player1_points:n1,player2_points:n2}).eq('id',m.id);if(error)throw error;await loadAll();renderTournamentTab();banner('Knockout match updated.','success');}catch(err){banner('Could not update match: '+err.message,'error');}
+  try{const {error}=await sb.from('matches').update({player1_id:a.id,player2_id:b.id,combo1_id:combo1?.id||null,combo2_id:combo2?.id||null,player1_points:n1,player2_points:n2}).eq('id',m.id);if(error)throw error;await loadAll();renderTournamentTab();banner('Knockout match updated.','success');}catch(err){banner('Could not update match: '+err.message,'error');}
  }
 });
 $('heroBannerRemove').addEventListener('click',async()=>{if(!isAdmin)return;const featured=[...data.tournaments].sort((a,b)=>(b.tournament_date||'').localeCompare(a.tournament_date||''))[0];if(!featured?.banner_image_url)return;try{const marker='/tournament-banners/';const at=featured.banner_image_url.indexOf(marker);if(at>=0){const path=decodeURIComponent(featured.banner_image_url.slice(at+marker.length).split('?')[0]);const removed=await sb.storage.from('tournament-banners').remove([path]);if(removed.error)throw removed.error;}const {error}=await sb.from('tournaments').update({banner_image_url:null}).eq('id',featured.id);if(error)throw error;await loadAll();banner('Dashboard banner removed.','success');}catch(err){banner('Could not remove banner: '+err.message,'error');}});
@@ -1228,7 +1250,7 @@ document.addEventListener('submit',async e=>{
    if(currentRound.some(m=>[m.player1_id,m.player2_id].includes(player1_id)||[m.player1_id,m.player2_id].includes(player2_id)))throw new Error('A Blader is already assigned to a match in this round. Remove or edit that match first.');
    const player1_points=Number(fd.get('player1_points')),player2_points=Number(fd.get('player2_points'));
    if(!Number.isInteger(player1_points)||!Number.isInteger(player2_points)||player1_points<0||player2_points<0)throw new Error('Scores must be non-negative whole numbers.');
-   const {error}=await sb.from('matches').insert({tournament_id,match_date:fd.get('match_date')||null,round_name:fd.get('round_name'),player1_id,player2_id,player1_points,player2_points,notes:String(fd.get('notes')||'').trim()||null});
+   const {error}=await sb.from('matches').insert({tournament_id,round_name:fd.get('round_name'),player1_id,player2_id,combo1_id:String(fd.get('combo1_id')||'')||null,combo2_id:String(fd.get('combo2_id')||'')||null,player1_points,player2_points});
    if(error)throw error;
    await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='bracket';renderTournamentTab();banner('Knockout match saved.','success');
   }
