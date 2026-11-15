@@ -841,7 +841,7 @@ async function applyViewAs(){
   if(['players','playerProfile','rankings','combos','matches','tournaments'].includes(currentView))setView('overview');
   try{const {data:summary,error}=await sb.rpc('get_public_dashboard');if(error)throw error;renderPublicDashboard(summary);}
   catch(e){banner('Could not load public preview: '+e.message,'error');}
- }else if(isAdmin&&data.players.length){render();}
+ }else if(isAdmin){render();}
 }
 $('adminDashboardButton').addEventListener('click',()=>setView('admin'));
 $('viewAsSelect').addEventListener('change',async e=>{
