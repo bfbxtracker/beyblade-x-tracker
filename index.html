@@ -547,6 +547,33 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-bracket-round-editor>p{margin-bottom:7px}
 @media(max-width:620px){.bx-knockout-compact-form{grid-template-columns:minmax(0,1fr);gap:8px}.bx-knockout-compact-form>.primary{grid-column:1}.bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 68px}.bx-knockout-deck-parts{gap:4px}.bx-knockout-deck-parts .blade-picker-trigger{font-size:9px;padding:4px}}
 
+
+/* Wider knockout editors and readable deck search */
+.bx-bracket-round:has(.bx-bracket-round-editor){flex:0 0 410px;min-width:410px}
+.bx-stage-r16:has(.bx-bracket-round-editor){flex-basis:460px;min-width:460px}
+.bx-bracket-round-editor{width:100%;max-width:none;box-sizing:border-box}
+.bx-bracket-round-editor .bx-knockout-compact-form{grid-template-columns:minmax(0,1fr);gap:10px}
+.bx-bracket-round-editor .bx-knockout-compact-form>.primary{grid-column:1}
+.bx-bracket-round-editor .bx-knockout-blader-block{width:100%;box-sizing:border-box;padding:10px}
+.bx-bracket-round-editor .bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 92px;gap:10px}
+.bx-bracket-round-editor .bx-knockout-deck-parts{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.bx-bracket-round-editor .bx-knockout-deck-parts .blade-picker-trigger{min-height:42px;padding:8px;font-size:12px;gap:6px}
+.bx-bracket-round-editor .bx-knockout-deck-parts .blade-picker-trigger>span:first-child{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;line-height:1.2}
+.bx-bracket-round-editor .blade-picker{padding:10px;gap:9px}
+.bx-bracket-round-editor .blade-picker input[type=search]{width:100%;min-height:42px;padding:10px 12px;font-size:13px;border:1px solid #52758a;border-radius:7px;background:#071014;color:#f4f8fb;box-sizing:border-box}
+.bx-bracket-round-editor .blade-picker-options{max-height:340px;min-height:130px;gap:7px}
+.bx-bracket-round-editor .blade-picker-options .blade-option{min-height:66px;padding:8px 10px;gap:10px}
+.bx-bracket-round-editor .blade-picker-options .blade-option img{width:56px;height:56px}
+.bx-bracket-round-editor .blade-picker-options .blade-option strong{font-size:13px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.bx-bracket-round-editor .blade-picker-options .blade-option small{font-size:11px}
+@media(max-width:620px){
+ .bx-bracket-round:has(.bx-bracket-round-editor){flex-basis:390px;min-width:390px}
+ .bx-stage-r16:has(.bx-bracket-round-editor){flex-basis:420px;min-width:420px}
+ .bx-bracket-round-editor .bx-knockout-player-head{grid-template-columns:minmax(0,1fr) 78px}
+ .bx-bracket-round-editor .bx-knockout-deck-parts{gap:6px}
+ .bx-bracket-round-editor .bx-knockout-deck-parts .blade-picker-trigger{font-size:11px;padding:7px}
+}
+
 /* Winner drag-and-drop progression between knockout rounds */
 .bx-bracket-match [data-knockout-winner]{cursor:grab;position:relative;border:1px dashed transparent;border-radius:4px;padding:4px}
 .bx-bracket-match [data-knockout-winner]:hover{border-color:#7DC8F7;background:rgba(125,200,247,.08)}
