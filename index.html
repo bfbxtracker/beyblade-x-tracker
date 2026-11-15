@@ -883,8 +883,9 @@ function renderMyPartPicker(part,selected=''){
  hidden.value=selected||'';label.textContent='Selected '+cap+': '+(selected||'None');
  const source=part==='blade'?BLADE_CATALOG:part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG;
  const items=source.filter(x=>part==='blade'?(!q||x.name.toLowerCase().includes(q)||x.series.toLowerCase().includes(q)):part==='ratchet'?(!q||x.name.toLowerCase().includes(q)):(!q||x.code.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)));
- $('myCombo'+cap+'Count').textContent=items.length+' of '+source.length+' '+cap+'s shown';
- $('myCombo'+cap+'Options').innerHTML=items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name,sub=part==='blade'?x.series:cap;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-my-'+part+'="'+E(value)+'"><img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';}).join('')||'<div class="empty">No matching '+cap+'s.</div>';
+ $('myCombo'+cap+'Count').textContent=items.length+(part==='ratchet'?1:0)+' of '+(source.length+(part==='ratchet'?1:0))+' '+cap+'s shown';
+ const noRatchet=part==='ratchet'?'<button type="button" class="blade-option '+(!selected?'active':'')+'" data-my-ratchet=""><span><strong>No Ratchet</strong><small>Leave this slot blank</small></span></button>':'';
+ $('myCombo'+cap+'Options').innerHTML=noRatchet+items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name,sub=part==='blade'?x.series:cap;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-my-'+part+'="'+E(value)+'"><img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';}).join('')||noRatchet||'<div class="empty">No matching '+cap+'s.</div>';
 }
 ['blade','ratchet','bit'].forEach(part=>{
  const cap=part[0].toUpperCase()+part.slice(1);
@@ -920,7 +921,7 @@ function renderMyProfile(){
  const list=p?data.combos.filter(c=>c.owner_id===p.id):[];
  $('myProfileCombos').innerHTML=list.length?table(['Combo','Blade','Ratchet','Bit','Type','Actions'],list.map(c=>row([E(c.name),E(c.blade),E(c.ratchet),E(c.bit),E(c.type),'<button type="button" class="small" data-my-combo-edit="'+E(c.id)+'">Edit</button> <button type="button" class="small danger" data-my-combo-delete="'+E(c.id)+'">Delete</button>']))):'<div class="empty">No combos yet. Add your first combo above.</div>';
 }
-function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';renderMyComboPickers();}
+function resetMyCombo(){ $('myComboForm').reset();$('myComboId').value='';$('myComboSave').textContent='Add my combo';['blade','ratchet','bit'].forEach(part=>{const cap=part[0].toUpperCase()+part.slice(1);$('myCombo'+cap+'Search').value='';$('myCombo'+cap+'Picker').classList.add('hide');$('myCombo'+cap+'Trigger').setAttribute('aria-expanded','false');});renderMyPartPicker('blade','');renderMyPartPicker('ratchet','');renderMyPartPicker('bit','');}
 async function ensureMyPlayer(){
  let p=myOwnedPlayer();if(p)return p;
  const name=field('myProfileName')||session?.user?.user_metadata?.blader_name||'';
