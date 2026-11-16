@@ -700,6 +700,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 #emailWelcomeScreen .welcome-letitrip{display:block;margin-top:10px;color:#7dc8f7;font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(24px,5vw,36px);font-weight:900;letter-spacing:1.4px;text-shadow:0 0 14px rgba(53,200,255,.75)}
 #emailWelcomeScreen #welcomeContinue{min-width:180px;padding:12px 24px;background:#7dc8f7!important;border:1px solid #7dc8f7!important;color:#04131b!important;font-weight:900;box-shadow:0 0 18px rgba(53,200,255,.45)}
 
+ .bx-deck-visibility-control{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:#A8BDCC;white-space:nowrap}.bx-deck-visibility-control input{appearance:none;width:34px;height:19px;border-radius:20px;background:#34434a;position:relative;cursor:pointer;transition:background .18s}.bx-deck-visibility-control input:before{content:"";position:absolute;width:13px;height:13px;left:3px;top:3px;border-radius:50%;background:#eefafa;transition:transform .18s}.bx-deck-visibility-control input:checked{background:#43bec6}.bx-deck-visibility-control input:checked:before{transform:translateX(15px);background:#050505}
 </style>
 </head>
 <body>
@@ -761,14 +762,14 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
   </form><p id="myComboMessage" class="muted"></p><div id="myProfileCombos"></div>
  </div>
 </section>
-<section id="matches" class="view hide"><div class="panel"><h2>Match History</h2><div id="matchesTable"></div></div></section>
+<section id="matches" class="view hide"><div class="panel"><div class="section-heading"><h2>Match History</h2><label class="bx-deck-visibility-control hide" data-deck-visibility-control>Deck images <input type="checkbox" data-deck-visibility-switch aria-label="Show deck images"></label></div><div id="matchesTable"></div></div></section>
 <section id="tournaments" class="view hide">
  <div id="tournamentDirectory">
   <div class="tournament-page-heading"><div class="hero-kicker">BEYBLADE X</div><h2>Tournaments</h2><p><span class="accent-line"></span><strong>Watch</strong><span id="tournamentCount">0 tournaments</span></p></div>
   <div id="tournamentCards"></div>
  </div>
  <div id="tournamentWorkspace" class="hide">
-  <div class="tournament-workspace-head"><button type="button" class="ghost" id="backToTournaments">← All tournaments</button><div><h2 id="selectedTournamentName">Tournament</h2><p id="selectedTournamentMeta" class="muted"></p></div></div>
+  <div class="tournament-workspace-head"><button type="button" class="ghost" id="backToTournaments">← All tournaments</button><div><h2 id="selectedTournamentName">Tournament</h2><p id="selectedTournamentMeta" class="muted"></p></div><label class="bx-deck-visibility-control hide" data-deck-visibility-control>Deck images <input type="checkbox" data-deck-visibility-switch aria-label="Show deck images"></label></div>
   <nav class="tournament-tabs" aria-label="Tournament sections">
    <button type="button" data-tournament-tab="groups" class="active">Groups</button><button type="button" data-tournament-tab="matches">Matches</button><button type="button" data-tournament-tab="table">Table</button><button type="button" data-tournament-tab="bracket">Bracket</button><button type="button" data-tournament-tab="bladers">Bladers</button>
   </nav>
@@ -828,7 +829,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSessio
 const $=id=>document.getElementById(id);
 const E=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const data={players:[],combos:[],tournaments:[],matches:[],scoring:[],tournament_groups:[],tournament_participants:[]};
-let session=null,isAdmin=false,isSuperAdmin=false,isViewer=false,currentView='overview',busy=false,publicSummary=null,viewAs='admin';
+let session=null,isAdmin=false,isSuperAdmin=false,isViewer=false,currentView='overview',busy=false,publicSummary=null,viewAs='admin',deckImagesVisible=true;
 const keys=['players','combos','tournaments','matches','scoring'];
 // BeybladeHub blade catalogue (names and image asset codes from its public Blade database).
 
@@ -909,6 +910,7 @@ function readKnockoutDeck(fd,side){
  return parts;
 }
 function renderKnockoutDeck(deck){
+ if(!deckImagesVisible)return '';
  let parts=[];try{parts=Array.isArray(deck)?deck:JSON.parse(deck||'[]');}catch{}
  if(!parts.length)return '';
  return '<div class="bx-match-deck bx-match-deck-blades" aria-label="Three Beyblade deck">'+parts.slice(0,3).map((part,i)=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(part.blade||'').toLowerCase());return '<span class="bx-match-blade-only">'+(blade?.image?'<img loading="lazy" decoding="async" src="'+E(blade.image)+'" alt="">':'<span class="bx-match-blade-fallback"></span>')+'</span>';}).join('')+'</div>';
@@ -1158,9 +1160,28 @@ function renderPublicDashboard(summary){
  $('topPlayers').innerHTML=leaders.length?'<div class="public-top-players">'+leaders.map((p,i)=>'<div class="public-top-player"><span class="public-rank">'+(i+1)+'</span><strong>'+E(p.name||'Blader')+'</strong><span class="public-wins">'+Number(p.wins||0)+' wins</span></div>').join('')+'</div>':'<div class="empty">No player records yet.</div>';
  $('recentMatches').innerHTML='';
 }
+function syncDeckVisibilityControls(){
+ document.querySelectorAll('[data-deck-visibility-control]').forEach(el=>el.classList.toggle('hide',!isAdmin));
+ document.querySelectorAll('[data-deck-visibility-switch]').forEach(el=>{el.checked=deckImagesVisible;el.disabled=!isAdmin;});
+}
+async function loadDeckImageSetting(){
+ const {data:row,error}=await sb.from('bx_app_settings').select('setting_value').eq('setting_key','deck_images_visible').maybeSingle();
+ if(error)throw new Error('Deck image setting: '+error.message);
+ deckImagesVisible=row?.setting_value?.visible!==false;syncDeckVisibilityControls();
+}
+document.addEventListener('change',async e=>{
+ const toggle=e.target.closest('[data-deck-visibility-switch]');if(!toggle)return;
+ if(!isAdmin){toggle.checked=deckImagesVisible;return;}
+ const next=toggle.checked;toggle.disabled=true;
+ const {error}=await sb.from('bx_app_settings').update({setting_value:{visible:next},updated_at:new Date().toISOString(),updated_by:session?.user?.id||null}).eq('setting_key','deck_images_visible');
+ if(error){banner('Could not update deck image visibility: '+error.message,'error');toggle.checked=deckImagesVisible;toggle.disabled=false;return;}
+ deckImagesVisible=next;syncDeckVisibilityControls();renderTournamentTab();
+ banner(next?'Deck images are now visible to everyone.':'Deck images are now hidden from everyone.','success');
+});
 async function loadAll(showMessage=false){
  if(busy)return;busy=true;
  try{
+  await loadDeckImageSetting();
   if(!isViewer&&!isAdmin){
    const {data:summary,error}=await sb.rpc('get_public_dashboard');
    if(error)throw new Error('Public dashboard: '+error.message);
@@ -1318,7 +1339,7 @@ async function refreshAuth(){
   // Restore the real experience from the authenticated account's database role.
   viewAs=isAdmin?'admin':isViewer?'member':'public';
   document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');if(isAdmin&&!isSuperAdmin)document.body.classList.add('restricted-admin');
-  showAuth();
+  showAuth();syncDeckVisibilityControls();
  }catch(e){banner('Authentication check failed: '+e.message,'error');}
 }
 
