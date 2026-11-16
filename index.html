@@ -984,7 +984,7 @@ let selectedTableGroup='all';
 function tournamentAdminGroupControls(tid,groups,entries){
  if(!isAdmin)return '';
  const unregistered=data.players.filter(p=>!entries.some(e=>e.player_id===p.id));
- const assignments=entries.map(e=>'<div class="bx-admin-assignment"><strong>'+E(pName(e.player_id))+'</strong><select data-admin-move-player="'+E(e.id)+'"><option value="">Unassigned</option>'+groups.map(g=>'<option value="'+E(g.id)+'" '+(e.group_id===g.id?'selected':'')+'>'+E(g.name)+'</option>').join('')+'</select><button type="button" class="small danger" data-admin-remove-player="'+E(e.id)+'">Remove</button></div>').join('');
+ const assignments=entries.map(e=>{const deck=Array.isArray(e.deck)?e.deck:[];const fields=[1,2,3].map((n,i)=>{const p=deck[i]||{};return '<div class="form-grid"><label>Deck '+n+' · Blade<input name="blade'+n+'" value="'+E(p.blade||'')+'" placeholder="Blade name"></label><label>Ratchet<input name="ratchet'+n+'" value="'+E(p.ratchet||'')+'" placeholder="Ratchet (optional)"></label><label>Bit<input name="bit'+n+'" value="'+E(p.bit||'')+'" placeholder="Bit name"></label></div>';}).join('');return '<div class="bx-admin-assignment"><strong>'+E(pName(e.player_id))+'</strong><select data-admin-move-player="'+E(e.id)+'"><option value="">Unassigned</option>'+groups.map(g=>'<option value="'+E(g.id)+'" '+(e.group_id===g.id?'selected':'')+'>'+E(g.name)+'</option>').join('')+'</select><form data-participant-deck-form="'+E(e.id)+'" data-tournament-id="'+E(tid)+'"><p class="muted">Tournament deck · optional · admin only</p>'+fields+'<button type="submit" class="small primary">Save deck</button><button type="button" class="small" data-clear-participant-deck="'+E(e.id)+'">Clear deck</button></form><button type="button" class="small danger" data-admin-remove-player="'+E(e.id)+'">Remove</button></div>';}).join('');
  return '<section class="bx-admin-editor"><h3>Admin · Manage group stage</h3><p>Add, move, replace or remove tournament participants.</p><form data-admin-group-form data-tournament-id="'+E(tid)+'"><label>Blader<input name="player_name" list="group-bladers-'+E(tid)+'" maxlength="100" placeholder="Choose or type any Blader name" autocomplete="off" required><datalist id="group-bladers-'+E(tid)+'">'+unregistered.map(p=>'<option value="'+E(p.name)+'"></option>').join('')+'</datalist></label><label>Group<select name="group_id" required><option value="">Choose group</option>'+groups.map(g=>'<option value="'+E(g.id)+'">'+E(g.name)+'</option>').join('')+'</select></label><button class="primary" type="submit" '+(!groups.length?'disabled':'')+'>Add to group stage</button></form><form data-admin-create-group data-tournament-id="'+E(tid)+'"><label>New group name<input name="group_name" maxlength="60" placeholder="Group C" required></label><button type="submit">Create group</button></form><h4>Current participants</h4>'+ (assignments||'<p>No participants registered.</p>')+'</section>';
 }
 function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
@@ -1068,7 +1068,7 @@ function renderTournamentTab(){
   if(selectedTournamentTab==='groups'){
    out='<h3>Groups</h3><p class="muted">Players registered in each group.</p>';
    if(!groups.length)out+='<div class="empty">No groups have been created for this tournament yet.</div>';
-   groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+'</div>';});
+   groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+renderKnockoutDeck(e.deck)+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+'</div>';});
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
@@ -1094,7 +1094,7 @@ function renderTournamentTab(){
    const champ=finalMatch?winnerOf(finalMatch):null,runner=finalMatch?loserOf(finalMatch):null;
    const matchCard=m=>{
     const w=winnerOf(m),p1=m.player1_id,p2=m.player2_id;
-    const slot=(pid,score,deck,number)=>'<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&w===pid?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(deck||[]))+'" title="Drag Blader and deck to the next round"':'')+'><div class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+(pid?playerButton(pid,pName(pid)):'Blader '+number)+'</span>'+(pid?renderKnockoutDeck(deck):'')+'</div><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';
+    const slot=(pid,score,deck,number)=>{const participant=entries.find(e=>e.player_id===pid),savedDeck=participant?.deck||[];return '<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&w===pid?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(savedDeck))+'" title="Drag Blader to the next round"':'')+'><div class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+(pid?playerButton(pid,pName(pid)):'Blader '+number)+'</span>'+(pid?renderKnockoutDeck(savedDeck):'')+'</div><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';};
     return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Match')+'</div>'+slot(p1,m.player1_points,m.player1_deck,1)+slot(p2,m.player2_points,m.player2_deck,2)+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
    };
    out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Follow each round through to the champion.</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
@@ -1464,10 +1464,19 @@ document.addEventListener('submit',async e=>{
  const groupForm=e.target.closest('[data-admin-group-form]');
  const createGroupForm=e.target.closest('[data-admin-create-group]');
  const knockoutForm=e.target.closest('[data-admin-knockout-form]');
- if(!groupForm&&!createGroupForm&&!knockoutForm)return;
+ const deckForm=e.target.closest('[data-participant-deck-form]');
+ const clearDeck=e.target.closest('[data-clear-participant-deck]');
+ if(!groupForm&&!createGroupForm&&!knockoutForm&&!deckForm&&!clearDeck)return;
  e.preventDefault();if(!isAdmin){banner('Only tournament admins can make these changes.','error');return;}
  try{
-  if(groupForm){
+  if(deckForm||clearDeck){
+   const participantId=deckForm?.dataset.participantDeckForm||clearDeck.dataset.clearParticipantDeck;
+   const tournament_id=deckForm?.dataset.tournamentId||selectedTournamentId;
+   let deck=[];
+   if(deckForm){const fd=new FormData(deckForm);deck=[1,2,3].map(n=>({blade:String(fd.get('blade'+n)||'').trim(),ratchet:String(fd.get('ratchet'+n)||'').trim(),bit:String(fd.get('bit'+n)||'').trim()})).filter(p=>p.blade&&p.bit);}
+   const {error}=await sb.from('tournament_participants').update({deck}).eq('id',participantId);if(error)throw error;
+   await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='groups';renderTournamentTab();banner(deck.length?'Tournament deck saved.':'Tournament deck cleared.','success');
+  }else if(groupForm){
    const fd=new FormData(groupForm),tournament_id=groupForm.dataset.tournamentId,group_id=String(fd.get('group_id')||''),playerName=String(fd.get('player_name')||'').trim();
    if(!group_id)throw new Error('Choose a group.');
    if(!playerName)throw new Error('Choose or type a Blader name.');
@@ -1503,7 +1512,7 @@ document.addEventListener('submit',async e=>{
    if(currentRound.some(m=>[m.player1_id,m.player2_id].includes(player1_id)||[m.player1_id,m.player2_id].includes(player2_id)))throw new Error('A Blader is already assigned to a match in this round. Remove or edit that match first.');
    const player1_points=Number(fd.get('player1_points')),player2_points=Number(fd.get('player2_points'));
    if(!Number.isInteger(player1_points)||!Number.isInteger(player2_points)||player1_points<0||player2_points<0)throw new Error('Scores must be non-negative whole numbers.');
-   const player1_deck=readKnockoutDeck(fd,'1'),player2_deck=readKnockoutDeck(fd,'2');
+   const player1_deck=data.tournament_participants.find(p=>p.tournament_id===tournament_id&&p.player_id===player1_id)?.deck||[],player2_deck=data.tournament_participants.find(p=>p.tournament_id===tournament_id&&p.player_id===player2_id)?.deck||[];
    const {error}=await sb.from('matches').insert({tournament_id,round_name:fd.get('round_name'),player1_id,player2_id,player1_deck,player2_deck,player1_points,player2_points});
    if(error)throw error;
    await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='bracket';renderTournamentTab();banner('Knockout match saved.','success');
