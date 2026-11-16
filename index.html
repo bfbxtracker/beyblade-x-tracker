@@ -1387,7 +1387,15 @@ async function refreshAuth(){
   viewAs=isAdmin?'admin':isViewer?'member':'public';
   document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');if(isAdmin&&!isSuperAdmin)document.body.classList.add('restricted-admin');
   showAuth();syncDeckVisibilityControls();
- }catch(e){banner('Authentication check failed: '+e.message,'error');}
+ }catch(e){
+  console.error('BFB X Tracker authentication check failed:',e);
+  session=null;isAdmin=false;isSuperAdmin=false;isViewer=false;viewAs='public';
+  document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');
+  showAuth();
+  $('viewAsSelect').classList.add('hide');$('viewAsLabel').classList.add('hide');
+  document.querySelectorAll('.detail-nav').forEach(b=>b.classList.add('hide'));
+  banner('Admin sign-in could not be verified: '+(e?.message||String(e))+'. Please sign in again. If this continues, the Supabase role check needs attention.','error');
+ }
 }
 
 async function applyViewAs(){
