@@ -1029,6 +1029,7 @@ function drawBracketConnectors(){
  tree.prepend(svg);
 }
 
+function tournamentPlayerCell(pid){const entry=data.tournament_participants.find(e=>e.tournament_id===selectedTournamentId&&e.player_id===pid);return playerButton(pid,pName(pid))+renderKnockoutDeck(entry?.deck||[]);}
 function renderTournamentTab(){
  const id=selectedTournamentId,t=data.tournaments.find(x=>x.id===id);if(!t)return;
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
@@ -1056,7 +1057,7 @@ function renderTournamentTab(){
   };
   const groupRows=activeGroups.map(g=>{
    const gm=groupMatches.filter(m=>m.group_id===g.id),st=calcGroup(gm);
-   const rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>',playerButton(x.id,x.name),x.played,x.w,x.l,x.winMargin,x.diff>0?'+'+x.diff:x.diff]));
+   const rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>',tournamentPlayerCell(x.id),x.played,x.w,x.l,x.winMargin,x.diff>0?'+'+x.diff:x.diff]));
    return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
   }).join('');
   const best=groups.flatMap(g=>calcGroup(groupMatches.filter(m=>m.group_id===g.id))).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff)[0];
@@ -1072,7 +1073,7 @@ function renderTournamentTab(){
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
-   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),displayDate(m.match_date)])));
+   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date'],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),tournamentPlayerCell(m.player1_id),m.player1_points+'–'+m.player2_points,tournamentPlayerCell(m.player2_id),displayDate(m.match_date)])));
   }else if(selectedTournamentTab==='bracket'){
    const knockout=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
    const stageOf=name=>{
@@ -1105,12 +1106,11 @@ function renderTournamentTab(){
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
    if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
   }else{
-   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([playerButton(e.player_id,pName(e.player_id)),x.played,x.w,x.l,x.points]);}));
+   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,x.points]);}));
   }
  }
  $('tournamentTabContent').innerHTML=out;
  if(selectedTournamentTab==='bracket'){
-  document.querySelectorAll('[data-admin-knockout-form]').forEach(initKnockoutDeckPickers);
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(drawBracketConnectors));
  }
 }
