@@ -359,6 +359,17 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 
 .bx-admin-assignment{display:grid;grid-template-columns:minmax(100px,1fr) minmax(110px,180px) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #26394A;font-size:12px}
 .bx-admin-assignment select{background:#050909;color:#effafa;border:1px solid #304447;border-radius:4px;padding:7px;min-width:0}
+.bx-admin-assignment{grid-template-columns:minmax(90px,1fr) minmax(90px,150px);gap:5px 8px;padding:7px 0;align-items:center}
+.bx-admin-assignment>strong{font-size:11px}
+.bx-admin-assignment>select{grid-column:2;grid-row:1;font-size:10px;padding:5px 7px}
+.bx-admin-assignment>form[data-participant-deck-form]{grid-column:1/-1;display:block;margin:3px 0 0;padding:7px;background:#080f10;border:1px solid #26394A;border-radius:5px}
+.bx-admin-assignment>form[data-participant-deck-form]>p{display:none}
+.bx-admin-assignment form .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 5px}
+.bx-admin-assignment form label{font-size:9px;margin:0;gap:3px}
+.bx-admin-assignment form input{font-size:10px;padding:6px 7px;height:29px}
+.bx-admin-assignment form button{min-height:27px;padding:4px 9px;font-size:10px;margin-right:5px}
+.bx-admin-assignment>button[data-admin-remove-player]{grid-column:1/-1;justify-self:start;min-height:26px;padding:4px 8px;font-size:10px}
+@media(max-width:560px){.bx-admin-assignment form .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.bx-admin-assignment form label{font-size:8px}.bx-admin-assignment form input{padding:5px;font-size:9px}}
 .bx-admin-match-actions{display:flex;gap:6px;margin-top:7px;padding-top:6px;border-top:1px solid #26394A;flex-wrap:wrap}
 .bx-admin-match-actions button{font-size:10px;padding:5px 7px}
 
