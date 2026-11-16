@@ -1274,6 +1274,7 @@ async function ensureMyPlayer(){
 }
 $('myProfileForm').addEventListener('submit',async e=>{
  e.preventDefault();if(!session?.user||(!isViewer&&!isAdmin))return;
+ const form=$('myProfileForm');
  try{let p=myOwnedPlayer();const file=$('myProfilePhoto').files?.[0];let profile_image_url=p?.profile_image_url||null;
  if(file){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP image.');if(file.size>2097152)throw new Error('Profile picture must be 2 MB or smaller.');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=session.user.id+'/profile-'+Date.now()+'.'+ext;const upload=await sb.storage.from('blader-profile-pictures').upload(path,file,{upsert:true,contentType:file.type});if(upload.error)throw upload.error;profile_image_url=sb.storage.from('blader-profile-pictures').getPublicUrl(path).data.publicUrl;}
  const payload={name:field('myProfileName'),team:optional('myProfileTeam'),location:field('myProfileLocation'),decks:p?.decks||'[]',notes:optional('myProfileNotes'),profile_image_url};
