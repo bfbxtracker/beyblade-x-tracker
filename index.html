@@ -1404,20 +1404,23 @@ async function refreshAuth(){
   // Restore the real experience from the authenticated account's database role.
   viewAs=isAdmin?'admin':isViewer?'member':'public';
   document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');if(isAdmin&&!isSuperAdmin)document.body.classList.add('restricted-admin');
+  window.bfbxAuthError=null;
   showAuth();syncDeckVisibilityControls();
  }catch(e){
   console.error('BFB X Tracker authentication check failed:',e);
+  window.bfbxAuthError=e?.message||String(e);
   session=null;isAdmin=false;isSuperAdmin=false;isViewer=false;viewAs='public';
   document.body.classList.remove('view-as-member','view-as-public','view-as-admin','restricted-admin');
   showAuth();
   $('viewAsSelect').classList.add('hide');$('viewAsLabel').classList.add('hide');
   document.querySelectorAll('.detail-nav').forEach(b=>b.classList.add('hide'));
-  banner('Admin sign-in could not be verified: '+(e?.message||String(e))+'. Please sign in again. If this continues, the Supabase role check needs attention.','error');
+  banner('AUTH CHECK FAILED: '+(e?.message||String(e))+'. Sign in again or share this exact message.','error');
  }
 }
 
 async function applyViewAs(){
- $('banner').classList.toggle('hide',!isAdmin);$('lastSync').classList.toggle('hide',!isAdmin);
+ $('banner').classList.toggle('hide',!isAdmin&&!window.bfbxAuthError);
+ $('lastSync').classList.toggle('hide',!isAdmin);
  document.body.classList.toggle('view-as-member',isSuperAdmin&&viewAs==='member');
  document.body.classList.toggle('view-as-public',isSuperAdmin&&viewAs==='public');
  document.body.classList.toggle('view-as-admin',isSuperAdmin&&viewAs==='admin');
@@ -1837,6 +1840,7 @@ const allowedRoutes=['overview','players','playerProfile','rankings','combos','m
 const hashRoute=decodeURIComponent((location.hash||'').replace(/^#/,'')).split('/')[0];
 const restoreView=allowedRoutes.includes(hashRoute)?hashRoute:(allowedRoutes.includes(savedNav.view)?savedNav.view:'overview');
 if(!isAdmin&&restoreView==='admin'){setView('overview');}
+else if(['players','playerProfile','rankings','combos','myProfile','matches','tournaments'].includes(restoreView)&&!isAdmin&&!isViewer){setView('admin');}
 else if(restoreView==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
 else if(restoreView==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
 else if(allowedRoutes.includes(restoreView)){selectedTournamentId=restoreView==='tournaments'?selectedTournamentId:null;setView(restoreView);}
