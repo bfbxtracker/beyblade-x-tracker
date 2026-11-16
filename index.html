@@ -690,9 +690,21 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .my-profile-card-head{display:flex;align-items:center;gap:14px;min-width:0}
 .bx-profile-title{min-width:0;flex:1}
 .bx-profile-delete{margin-left:auto;flex:0 0 auto;align-self:flex-start}
+
+/* Email verification welcome screen */
+#emailWelcomeScreen{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at center,rgba(20,65,105,.22),#030609 68%);font-family:Inter,system-ui,sans-serif}
+#emailWelcomeScreen.active{display:flex}
+#emailWelcomeScreen .welcome-board{width:min(100%,720px);padding:clamp(30px,7vw,64px) 24px;text-align:center;background:#05080b;border:2px solid #35c8ff;border-radius:18px;box-shadow:0 0 12px #35c8ff,0 0 28px rgba(53,200,255,.72),inset 0 0 24px rgba(53,200,255,.10)}
+#emailWelcomeScreen .welcome-title{margin:0 0 20px;color:#f4fbff;font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(34px,7vw,58px);font-weight:900;line-height:1.08;text-shadow:0 0 14px rgba(53,200,255,.55)}
+#emailWelcomeScreen .welcome-copy{margin:0 auto 28px;color:#d9f4ff;font-size:clamp(16px,3vw,21px);line-height:1.65}
+#emailWelcomeScreen .welcome-letitrip{display:block;margin-top:10px;color:#7dc8f7;font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(24px,5vw,36px);font-weight:900;letter-spacing:1.4px;text-shadow:0 0 14px rgba(53,200,255,.75)}
+#emailWelcomeScreen #welcomeContinue{min-width:180px;padding:12px 24px;background:#7dc8f7!important;border:1px solid #7dc8f7!important;color:#04131b!important;font-weight:900;box-shadow:0 0 18px rgba(53,200,255,.45)}
+
 </style>
 </head>
 <body>
+<div id="emailWelcomeScreen" role="dialog" aria-modal="true" aria-labelledby="welcomeHeading"><div class="welcome-board"><h1 class="welcome-title" id="welcomeHeading">Welcome,<br>New Blader of BFB.</h1><p class="welcome-copy">You can now access the full site.<span class="welcome-letitrip">ENJOY AND LET IT RIP!!!</span></p><button type="button" id="welcomeContinue">ENTER THE SITE</button></div></div>
+
 <header class="top"><div class="wrap"><div class="head"><div class="brand"><img class="brand-mark" src="./bfb-fans-bd-logo.webp" alt="Beyblade Fans BD logo"><div class="brand-copy"><div class="brand-shoot">3 2 1 Go SHOOT</div><h1>BEYFANS <span>X BD</span></h1></div></div><div class="header-tools">
 <div class="admin-tools" id="adminTools">
 <button type="button" id="accountAccessButton" class="admin-dashboard-button">Sign in / Admin</button>
@@ -1596,13 +1608,13 @@ document.addEventListener('click',e=>{
 });
 
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error){$('loginError').textContent=error.message;return;}$('loginPassword').value='';$('loginError').textContent='';await refreshAuth();if(session?.user){const {error:logError}=await sb.from('admin_activity_log').insert({actor_user_id:session.user.id,actor_email:session.user.email,action:'LOGIN',entity_table:'auth',details:{summary:'Successful sign-in'}});if(logError)console.warn('Login audit log failed:',logError.message);}if(isAdmin){banner('Admin login successful. You can manage tournament data and approved viewers.','success');await loadAll();if(session?.user?.user_metadata?.player_profile){try{await ensureMyPlayer();await loadAll(true);}catch(err){banner('Signed in, but the Blader profile could not be synced: '+err.message,'error');}}}else if(isViewer){banner('Approved viewer login successful. Full details are now available in view-only mode.','success');await loadAll();if(session?.user?.user_metadata?.player_profile){try{await ensureMyPlayer();await loadAll(true);}catch(err){banner('Signed in, but the Blader profile could not be synced: '+err.message,'error');}}}else{banner('This email is not approved for full details. You can still view the public dashboard.','error');await loadAll();}});
-$('signupForm').addEventListener('submit',async e=>{e.preventDefault();$('signupMessage').textContent='Creating account…';const email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value;const {data:result,error}=await sb.auth.signUp({email,password});if(error){$('signupMessage').textContent=error.message;return;}$('signupPassword').value='';$('signupMessage').textContent=result.session?'Account created. Sign in with your approved email.':'Account created. Check your email for a verification link, then return here and sign in. Your email must first be approved by the BFB X Tracker administrator.';});
+$('signupForm').addEventListener('submit',async e=>{e.preventDefault();$('signupMessage').textContent='Creating account…';const email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value;const {data:result,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname+'?welcome=1'}});if(error){$('signupMessage').textContent=error.message;return;}$('signupPassword').value='';$('signupMessage').textContent=result.session?'Account created. Sign in with your approved email.':'Account created. Check your email for a verification link, then return here and sign in. Your email must first be approved by the BFB X Tracker administrator.';});
 
 $('playerSignupForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const message=$('playerSignupMessage');message.textContent='Creating your player account…';
  const name=$('newBladerName').value.trim(),combos=$('newBladerCombos').value.trim(),decks=$('newBladerDecks').value.trim(),email=$('newBladerEmail').value.trim().toLowerCase(),password=$('newBladerPassword').value;
- const {data:result,error}=await sb.auth.signUp({email,password,options:{data:{player_profile:true,blader_name:name,combos,decks}}});
+ const {data:result,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname+'?welcome=1',data:{player_profile:true,blader_name:name,combos,decks}}});
  if(error){message.textContent=error.message;return;}
  $('newBladerPassword').value='';
  message.textContent=result.session?'Profile created. You can sign in now.':'Account created. Verify your email, then sign in to manage your profile.';
@@ -1726,7 +1738,16 @@ const deleteGroup=e.target.closest('[data-delete-group]');if(deleteGroup&&isSupe
 const removeViewer=e.target.closest('[data-remove-viewer]');if(removeViewer&&isSuperAdmin){if(!confirm('Remove this approved viewer? They will lose access to full details.'))return;const {error}=await sb.from('approved_viewers').delete().eq('id',removeViewer.dataset.removeViewer);if(error)banner('Could not remove viewer: '+error.message,'error');else{await loadApprovedViewers();banner('Viewer access removed.','success');}return;}const profile=e.target.closest('[data-profile]');if(profile){openPlayerProfile(profile.dataset.profile);return;}const go=e.target.closest('[data-go]');if(go){setView(go.dataset.go);return;}const reset=e.target.closest('[data-reset]');if(reset){({player:resetPlayer,combo:resetCombo,tournament:resetTournament,match:resetMatch})[reset.dataset.reset]?.();return;}const edit=e.target.closest('[data-edit]');if(edit){fillEdit(edit.dataset.edit,edit.dataset.id);return;}const del=e.target.closest('[data-delete]');if(del&&isAdmin){if(!isSuperAdmin){banner('This admin role cannot delete records.','error');return;}if(del.dataset.delete==='player'){const target=data.players.find(p=>p.id===del.dataset.id);if(!target)return;pendingPlayerDeleteId=target.id;$('deletePlayerDescription').textContent='Delete '+target.name+'? Their profile, combos, tournament registrations and match history will be permanently removed.';$('deletePlayerModal').classList.add('is-open');$('deletePlayerYes').focus();return;}const tableName=tableFor[del.dataset.delete];if(!tableName||!confirm('Delete this '+del.dataset.delete+'? This cannot be undone.'))return;const {error}=await sb.from(tableName).delete().eq('id',del.dataset.id);if(error)banner('Could not delete: '+error.message,'error');else await loadAll(true);}});
 $('exportBackup').addEventListener('click',()=>{const backup={exported_at:new Date().toISOString(),source:'supabase-beyblade-x',...data};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='beyblade-x-cloud-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
 $('matchDate').value=new Date().toLocaleDateString('en-CA');
-await refreshAuth();await loadAll();await applyViewAs();if(session?.user?.user_metadata?.player_profile&&(isAdmin||isViewer)){try{await ensureMyPlayer();await loadAll();}catch(err){console.warn('Could not sync Blader signup profile:',err.message);}}
+await refreshAuth();
+if(new URLSearchParams(window.location.search).get('welcome')==='1'&&session?.user){
+ $('emailWelcomeScreen').classList.add('active');
+ $('welcomeContinue').addEventListener('click',()=>{
+  $('emailWelcomeScreen').classList.remove('active');
+  const cleanUrl=window.location.pathname+window.location.hash;
+  window.history.replaceState({},document.title,cleanUrl);
+ });
+}
+await loadAll();await applyViewAs();if(session?.user?.user_metadata?.player_profile&&(isAdmin||isViewer)){try{await ensureMyPlayer();await loadAll();}catch(err){console.warn('Could not sync Blader signup profile:',err.message);}}
 renderBladePicker('');renderRatchetPicker('');renderBitPicker('');
 const savedNav=readNavigationState();
 const allowedRoutes=['overview','players','playerProfile','rankings','combos','myProfile','matches','tournaments','admin'];
