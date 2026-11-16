@@ -1806,7 +1806,7 @@ renderBladePicker('');renderRatchetPicker('');renderBitPicker('');
 const savedNav=readNavigationState();
 const allowedRoutes=['overview','players','playerProfile','rankings','combos','myProfile','matches','tournaments','admin'];
 const hashRoute=decodeURIComponent((location.hash||'').replace(/^#/,'')).split('/')[0];
-const restoreView=allowedRoutes.includes(hashRoute)?hashRoute:savedNav.view;
+const restoreView=allowedRoutes.includes(savedNav.view)&&savedNav.view!=='overview'?savedNav.view:(allowedRoutes.includes(hashRoute)?hashRoute:(allowedRoutes.includes(savedNav.view)?savedNav.view:'overview'));
 if(!isAdmin&&restoreView==='admin'){setView('overview');}
 else if(restoreView==='tournaments'&&savedNav.tournamentId&&data.tournaments.some(t=>t.id===savedNav.tournamentId)){openTournamentWorkspace(savedNav.tournamentId);selectedTournamentTab=['groups','matches','table','bracket','bladers'].includes(savedNav.tournamentTab)?savedNav.tournamentTab:'groups';selectedTableGroup=savedNav.tableGroup||'all';renderTournamentTab();if(savedNav.bracketMode==='list'){document.querySelectorAll('[data-bracket-view]').forEach(b=>b.classList.toggle('active',b.dataset.bracketView==='list'));document.querySelectorAll('[data-bracket-panel]').forEach(p=>p.classList.toggle('hide',p.dataset.bracketPanel!=='list'));}setView('tournaments');}
 else if(restoreView==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
