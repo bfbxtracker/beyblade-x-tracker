@@ -1006,14 +1006,32 @@ function participantDeckPickerMarkup(entryId,slot,part,value=''){
  return '<div class="bx-participant-picker"><label>'+cap+(part==='ratchet'?' (Optional)':'')+'</label><input type="hidden" name="'+part+slot+'" id="'+id+'" value="'+E(value)+'"><button type="button" class="blade-picker-trigger" data-pdeck-trigger="'+id+'"><span data-pdeck-selected="'+id+'">'+E(value||('Choose '+cap))+'</span><span class="blade-picker-arrow">▾</span></button><div class="blade-picker hide" data-pdeck-panel="'+id+'"><input type="search" data-pdeck-search="'+id+'" placeholder="Search '+cap+'…" autocomplete="off"><div class="blade-picker-count" data-pdeck-count="'+id+'"></div><div class="blade-picker-options" data-pdeck-options="'+id+'"></div></div></div>';
 }
 function renderParticipantDeckPicker(id,part,selected=''){
- const panel=document.querySelector('[data-pdeck-panel="'+id+'"]'),search=document.querySelector('[data-pdeck-search="'+id+'"]'),count=document.querySelector('[data-pdeck-count="'+id+'"]'),options=document.querySelector('[data-pdeck-options="'+id+'"]'),field=document.getElementById(id),label=document.querySelector('[data-pdeck-selected="'+id+'']);
+ const panel=document.querySelector('[data-pdeck-panel="'+id+'"]');
+ const search=document.querySelector('[data-pdeck-search="'+id+'"]');
+ const count=document.querySelector('[data-pdeck-count="'+id+'"]');
+ const options=document.querySelector('[data-pdeck-options="'+id+'"]');
+ const field=document.getElementById(id);
+ const label=document.querySelector('[data-pdeck-selected="'+id+'"]');
  if(!panel||!search||!count||!options||!field||!label)return;
- const q=search.value.trim().toLowerCase(),source=part==='blade'?BLADE_CATALOG:part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG;
- const items=source.filter(x=>part==='blade'?(!q||x.name.toLowerCase().includes(q)||x.series.toLowerCase().includes(q)):part==='ratchet'?(!q||x.name.toLowerCase().includes(q)):(!q||x.code.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)));
- field.value=selected;label.textContent=selected||('Choose '+part);
+ const q=(search.value||'').trim().toLowerCase();
+ const source=part==='blade'?BLADE_CATALOG:(part==='ratchet'?RATCHET_CATALOG:BIT_CATALOG);
+ const items=source.filter(x=>{
+  if(!q)return true;
+  if(part==='blade')return x.name.toLowerCase().includes(q)||x.series.toLowerCase().includes(q);
+  if(part==='ratchet')return x.name.toLowerCase().includes(q);
+  return x.code.toLowerCase().includes(q)||x.name.toLowerCase().includes(q);
+ });
+ field.value=selected;
+ label.textContent=selected||('Choose '+part);
  const none=part==='ratchet'?'<button type="button" class="blade-option" data-pdeck-value="" data-pdeck-id="'+id+'"><span><strong>No Ratchet</strong></span></button>':'';
  count.textContent=items.length+(part==='ratchet'?1:0)+' '+part+'s shown';
- options.innerHTML=none+items.map(x=>{const value=part==='bit'?x.code:x.name,title=part==='bit'?x.code+' — '+x.name:x.name;return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-pdeck-value="'+E(value)+'" data-pdeck-id="'+id+'"><img loading="lazy" decoding="async" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+(part==='blade'?E(x.series):part==='bit'?E(x.code):'Ratchet')+'</small></span></button>';}).join('')||none||'<div class="empty">No matching parts.</div>';
+ const cards=items.map(x=>{
+  const value=part==='bit'?x.code:x.name;
+  const title=part==='bit'?x.code+' — '+x.name:x.name;
+  const sub=part==='blade'?x.series:(part==='bit'?x.code:'Ratchet');
+  return '<button type="button" class="blade-option '+(value===selected?'active':'')+'" data-pdeck-value="'+E(value)+'" data-pdeck-id="'+id+'"><img loading="lazy" decoding="async" src="'+E(x.image)+'" alt="'+E(title)+'"><span><strong>'+E(title)+'</strong><small>'+E(sub)+'</small></span></button>';
+ }).join('');
+ options.innerHTML=none+cards||'<div class="empty">No matching parts.</div>';
 }
 document.addEventListener('click',e=>{
  const trigger=e.target.closest('[data-pdeck-trigger]');
