@@ -1291,6 +1291,7 @@ document.addEventListener('change',async e=>{
  deckImagesVisible=next;syncDeckVisibilityControls();renderTournamentTab();
  banner(next?'Deck images are now visible to everyone.':'Deck images are now hidden from everyone.','success');
 });
+let hasShownAdminConnectionNotice=false;
 async function loadAll(showMessage=false){
  if(busy)return;busy=true;
  try{
@@ -1316,7 +1317,7 @@ async function loadAll(showMessage=false){
   const ownProfile=data.players.find(p=>p.auth_user_id===session?.user?.id);
   $('lastSync').textContent='Last updated: '+new Date().toLocaleTimeString();
   if(showMessage)banner('Database updated successfully. Approved members can see these records.','success');
-  else banner('Connected. Full details are visible to approved members only.','success');
+  else if((isAdmin||isSinanContentAdmin)&&!hasShownAdminConnectionNotice){banner('Connected. Full details are visible to approved members only.','success');hasShownAdminConnectionNotice=true;}
  }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
  finally{busy=false;}
 }
