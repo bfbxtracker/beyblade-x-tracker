@@ -1467,11 +1467,11 @@ function showAuth(){
 async function refreshAuth(){
  try{
   const {data:{session:s},error}=await sb.auth.getSession();if(error)throw error;
-  session=s;isAdmin=false;isSuperAdmin=false;isViewer=false;isSinanContentAdmin=String(s?.user?.email||'').toLowerCase()==='sinanislam80@gmail.com';
+  session=s;isAdmin=false;isSuperAdmin=false;isViewer=false;isSinanContentAdmin=false;
   if(session){
    const [superRole,contentRole]=await Promise.all([sb.rpc('is_bx_admin'),sb.rpc('is_bx_content_admin')]);
    if(superRole.error)throw superRole.error;if(contentRole.error)throw contentRole.error;
-   isSuperAdmin=!!superRole.data;isAdmin=isSuperAdmin||!!contentRole.data;
+   isSuperAdmin=!!superRole.data;isSinanContentAdmin=!!contentRole.data&&!isSuperAdmin;isAdmin=isSuperAdmin||!!contentRole.data;
    if(!isAdmin){const v=await sb.rpc('is_bx_approved_viewer');if(v.error)throw v.error;isViewer=!!v.data;}else isViewer=true;
   }
   // Always discard the temporary View As preview on a fresh page load.
