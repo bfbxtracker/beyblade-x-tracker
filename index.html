@@ -721,6 +721,14 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 #emailWelcomeScreen #welcomeContinue{min-width:180px;padding:12px 24px;background:#7dc8f7!important;border:1px solid #7dc8f7!important;color:#04131b!important;font-weight:900;box-shadow:0 0 18px rgba(53,200,255,.45)}
 
  .bx-deck-visibility-control{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:#A8BDCC;white-space:nowrap}.bx-deck-visibility-control input{appearance:none;width:56px;height:22px;border-radius:20px;background:#34434a;position:relative;cursor:pointer;transition:background .18s;flex:0 0 56px;margin:0}.bx-deck-visibility-control input:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;border-radius:50%;background:#FFD84D;transition:transform .18s;z-index:1}.bx-deck-visibility-control input:after{content:"OFF";position:absolute;right:6px;top:4px;font-size:8px;line-height:14px;font-weight:900;letter-spacing:.2px;color:#ff5b5b}.bx-deck-visibility-control input:checked{background:#43bec6}.bx-deck-visibility-control input:checked:before{transform:translateX(34px);background:#FFD84D}.bx-deck-visibility-control input:checked:after{content:"ON";left:7px;right:auto;color:#39d98a}.bx-deck-visibility-control input:disabled{cursor:default;opacity:.9}
+
+/* Deck visibility controls: keep both toggles stacked at the far right. */
+.bx-deck-visibility-controls{display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-right:-9px}
+.bx-deck-visibility-controls .bx-own-deck-visibility{width:112px;min-width:112px;padding:5px 8px;font-size:10px}
+.bx-deck-visibility-controls .bx-own-deck-visibility:before{display:none}
+.bx-deck-visibility-controls .bx-combo-toggle.is-on{color:#8db7ff!important;border-color:#315da8!important;background:#10264a!important}
+.bx-deck-visibility-controls .bx-combo-toggle.is-off{color:#ffad68!important;border-color:#a95d22!important;background:#38200f!important}
+.bx-deck-hidden-part{height:100px;display:grid;place-items:center;color:#A8BDCC;font-size:11px;border:1px dashed #40545E;border-radius:8px}
 </style>
 </head>
 <body>
