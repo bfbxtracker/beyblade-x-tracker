@@ -928,7 +928,7 @@ const BIT_CATALOG = ["A","B","BS","C","D","DB","DS","E","F","FB","FF","G","GB","
 "A":"Accel","B":"Ball","BS":"Bound Spike","C":"Cyclone","D":"Dot","DB":"Disk Ball","DS":"Disk Spike","E":"Elevate","F":"Flat","FB":"Free Ball","FF":"Free Flat","G":"Glide","GB":"Glide Ball","GF":"Glide Flat","GN":"Glide Needle","GP":"Glide Point","GR":"Glide Rush","GU":"Glide Unite","H":"Hexa","HN":"High Needle","HT":"High Taper","I":"Ignition","J":"Jolt","K":"Kick","L":"Level","LF":"Launch Flat","LO":"Low Orb","LR":"Low Rush","M":"Merge","MN":"Metal Needle","N":"Needle","Nr":"Narrow","O":"Orb","Op":"Operate","P":"Point","Q":"Quake","R":"Rush","RA":"Rubber Accel","S":"Spike","T":"Taper","TK":"Taper Kick","TP":"Taper Point","Tr":"Turbo","U":"Unite","UF":"Under Flat","UN":"Under Needle","V":"Vortex","W":"Wedge","WB":"Wall Ball","WW":"Wall Wedge","Y":"Yielding","Z":"Zap"
 })[code]||code,image:'https://img.beybladehub.app/bits/'+code+'.webp'}));
 
-function banner(message,kind='info'){const el=$('banner');el.className='notice'+(kind==='error'?' error':kind==='success'?' success':'');el.textContent=message;}
+function banner(message,kind='info'){const el=$('banner');if(kind!=='error'){el.className='notice hide';el.textContent='';return;}const key='bfbxErrorNoticeShown:'+String(message||'');let alreadyShown=false;try{alreadyShown=sessionStorage.getItem(key)==='1';}catch(storageError){}if(alreadyShown){el.className='notice hide';el.textContent='';return;}el.className='notice error';el.textContent=message;try{sessionStorage.setItem(key,'1');}catch(storageError){}}
 function displayDate(s){if(!s)return '—';return E(s);}
 function pName(id){return data.players.find(p=>p.id===id)?.name||'Unknown player';}
 function cName(id){return data.combos.find(c=>c.id===id)?.name||'—';}
