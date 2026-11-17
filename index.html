@@ -771,9 +771,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-banner-lightbox img{max-width:94vw;max-height:90vh;width:auto;height:auto;object-fit:contain;border-radius:10px;box-shadow:0 12px 50px #000;cursor:default}
 .hero-banner-lightbox-close{position:absolute;top:18px;right:22px;border:1px solid #8aa5b5;background:#07131e;color:#fff;border-radius:50%;width:40px;height:40px;font-size:24px;cursor:pointer}
 
-.hero-banner-gallery-nav{position:absolute;left:10px;right:10px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.hero-banner-gallery-nav{position:absolute;left:22px;right:22px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:2}
 .hero-banner-gallery-nav button{pointer-events:auto;border:1px solid #5c8497;background:#07131dcc;color:#fff;border-radius:50%;width:34px;height:34px;font-size:23px;cursor:pointer}
-.hero-banner-gallery-nav span{background:#07131dcc;color:#fff;padding:4px 9px;border-radius:20px;font-size:11px}
+.hero-banner-gallery-nav span{background:#07131dcc;color:#fff;padding:4px 9px;border-radius:20px;font-size:11px}.hero-banner-gallery-nav span.hide{display:none!important}
 .hero-banner-admin{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:flex-end;gap:8px}
 .hero-banner-admin button,.hero-banner-admin label{background:#07131eeF;color:#9bdcff;border:1px solid #4a7389;border-radius:7px;padding:8px 12px;font-size:11px;font-weight:750;cursor:pointer}
 .hero-banner-admin .hero-banner-remove{color:#ffaaa8;border-color:#8a5050}
@@ -1290,7 +1290,7 @@ function renderDashboardBanner(){
  if(dashboardBannerIndex>=items.length)dashboardBannerIndex=0;
  if(items.length){img.src=items[dashboardBannerIndex].image_url;img.classList.remove('hide');placeholder.classList.add('hide');}
  else{img.removeAttribute('src');img.classList.add('hide');placeholder.classList.remove('hide');}
- if(nav){nav.classList.toggle('hide',items.length<2);if(count)count.textContent=(dashboardBannerIndex+1)+' / '+items.length;}
+ if(nav){nav.classList.toggle('hide',items.length<2);if(count){count.textContent=(dashboardBannerIndex+1)+' / '+items.length;count.classList.toggle('hide',!isAdmin);}}
  if(admin)admin.classList.toggle('hide',!isAdmin);
  const remove=$('heroBannerRemove');if(remove){remove.disabled=!items.length;remove.textContent=items[dashboardBannerIndex]?.legacy?'Remove banner':'Remove this image';}
  if(dashboardBannerTimer)clearInterval(dashboardBannerTimer);
