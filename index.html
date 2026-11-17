@@ -739,6 +739,10 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 /* Player Directory: clearer Blader names and slightly larger avatars. */
 #playersDirectory .player-link{font-size:14px;font-weight:850;letter-spacing:.1px}
 #playersDirectory td{vertical-align:middle}
+
+/* Force bold, larger Blader names in the Player Directory over shared button styles. */
+#playersDirectory table tbody tr td:first-child .player-link,
+#playersDirectory .player-link{font-size:14px!important;font-weight:900!important;letter-spacing:.15px!important;text-shadow:0 0 .35px currentColor}
 </style>
 </head>
 <body>
