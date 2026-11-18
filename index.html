@@ -450,9 +450,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 @media(max-width:520px){.brand{gap:9px}.brand-mark{width:58px;height:58px;flex-basis:58px}.brand-copy h1{font-size:clamp(17px,5vw,23px)}.brand-shoot{font-size:10px}}
 
 /* Two balanced square dashboard hero panels */
-.tournament-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:stretch;gap:16px;min-height:0;padding:18px;margin:8px 0 17px;background:transparent;box-shadow:none;border-radius:0;color:var(--fg)}
+.tournament-hero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:16px;min-height:0;padding:18px;margin:8px 0 17px;background:transparent;box-shadow:none;border-radius:0;color:var(--fg)}
 .tournament-hero:after{display:none}
-.hero-info-square,.hero-banner-square{position:relative;aspect-ratio:1/1;min-width:0;max-height:420px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0c1112}.hero-info-square{aspect-ratio:1.1/1}
+.hero-info-square,.hero-banner-square{position:relative;aspect-ratio:1/1;min-width:0;max-height:420px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0c1112}.hero-info-square{aspect-ratio:5/3;width:calc(100% - 22px);margin-right:22px;justify-self:start}
 .hero-info-square{display:flex;flex-direction:column;justify-content:center;padding:clamp(16px,3vw,30px);background:linear-gradient(145deg,#101819,#080c0d)}
 .hero-info-square.is-loading>*{visibility:hidden!important}.hero-info-square.is-loading:before{visibility:hidden!important}
 .hero-info-square h2{font-size:clamp(21px,3vw,32px);line-height:1.18;margin:10px 0}
