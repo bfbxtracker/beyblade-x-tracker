@@ -67,6 +67,9 @@ body{background:var(--bg)!important;color:var(--fg)!important}
 .top{background:#172126!important;border-color:var(--border)!important}
 h1,h2,h3,.stat-value,.profile-stat b{color:var(--fg)!important}
 h1 span,.eyebrow,.rank,.player-link{color:var(--blue)!important}
+/* Player names are text-like links everywhere: remove the dark button layer behind them */
+button.player-link,.player-link{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;border-radius:0!important;outline-offset:2px;font-weight:700!important;color:var(--blue)!important}
+button.player-link:hover,.player-link:hover{background:transparent!important;border-color:transparent!important;color:var(--blue2)!important;text-decoration:underline}
 p,.muted,.footer,.statusline{color:var(--muted)!important}
 .card,.panel{background:var(--panel)!important;border-color:var(--border)!important;box-shadow:var(--shadow)!important}
 button{background:#26343B!important;color:var(--fg)!important;border-color:var(--border)!important}
