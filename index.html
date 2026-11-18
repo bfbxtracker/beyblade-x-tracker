@@ -687,6 +687,8 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-tree-slot-score{padding-top:2px}
 /* Clean, non-overlapping knockout tree with simple Blader slots */
 .bx-bracket-tree{display:grid!important;grid-template-columns:repeat(4,minmax(190px,1fr))!important;align-items:center;gap:22px!important;overflow-x:auto!important;overflow-y:visible!important;padding:18px 8px 24px!important;min-width:0}
+/* Explicitly honor the hidden state: the tree's display:grid!important must not override .hide */
+.bx-bracket-tree.hide{display:none!important}.bx-bracket-list{display:block}.bx-bracket-list.hide{display:none!important}
 .bx-bracket-round{min-width:190px!important;width:auto!important;max-width:none!important;flex:none!important;display:flex;flex-direction:column;justify-content:space-around;gap:18px!important;position:relative;box-sizing:border-box}
 .bx-bracket-round:has(.bx-bracket-round-editor),.bx-stage-r16:has(.bx-bracket-round-editor){flex:initial!important;flex-basis:auto!important;min-width:190px!important}
 .bx-bracket-round h3,.bx-bracket-round>small{position:relative;z-index:2}
