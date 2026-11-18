@@ -1735,9 +1735,9 @@ async function prepareBannerImage(file){
   image.onload=()=>{
    try{
     const width=1200,height=900;
-    const isSquare=Math.abs(image.naturalWidth-image.naturalHeight)/Math.max(image.naturalWidth,image.naturalHeight)<0.03;
-    const squareImageMaxSize=780;
-    const scale=Math.min(width/image.naturalWidth,height/image.naturalHeight,isSquare?squareImageMaxSize/Math.max(image.naturalWidth,image.naturalHeight):Infinity);
+    // Fit every source ratio fully inside the 4:3 banner. Portrait and square images
+    // use the full 900px frame height, leaving black bars only on the left and right.
+    const scale=Math.min(width/image.naturalWidth,height/image.naturalHeight);
     const drawWidth=Math.round(image.naturalWidth*scale),drawHeight=Math.round(image.naturalHeight*scale);
     const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
     const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,width,height);
