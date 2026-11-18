@@ -453,13 +453,13 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-info-square p{font-size:14px;color:var(--muted)}
 .hero-info-square #heroTournamentSub{display:grid;gap:6px;margin:8px 0 5px;font-size:14px!important;font-weight:800!important;line-height:1.5;color:#eef7fb;text-decoration:none!important}.hero-info-square #heroTournamentSub .hero-meta-row{display:flex;align-items:flex-start;gap:7px;font-size:14px!important;font-weight:800!important;color:#eef7fb!important;text-decoration:none!important}.hero-info-square #heroTournamentSub .hero-meta-row>span{font-size:14px!important;font-weight:800!important;color:#eef7fb!important;text-decoration:none!important}.hero-meta-row svg{width:15px;height:15px;flex:0 0 15px;margin-top:3px;color:#7DC8F7}.hero-info-square #heroTournamentSub a,.hero-info-square #heroTournamentSub span{text-decoration:none!important}
 .hero-info-square .hero-chip{align-self:flex-start;margin-top:18px;border-color:#7DC8F7;color:#7DC8F7;background:#7DC8F712;white-space:normal}
-.hero-banner-square{display:grid;place-items:center;aspect-ratio:4/3;max-height:none;background:#000;border-color:#294144}
+.hero-banner-square{display:grid;place-items:center;aspect-ratio:5/3;max-height:none;background:#000;border-color:#294144}
 .hero-banner-square>img{width:100%;height:100%;object-fit:contain;padding:0;background:#000}
 .hero-banner-placeholder{display:flex;flex-direction:column;align-items:center;gap:7px;color:#7DC8F7;font-weight:800;letter-spacing:1.5px;text-align:center}
 #heroBannerPlaceholder{display:none!important}
 .hero-banner-placeholder small{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0}
 .hero-banner-upload{position:absolute;left:12px;right:12px;bottom:12px;text-align:center;padding:10px;border:1px solid #7DC8F7;border-radius:7px;background:#050909ef;color:#7DC8F7;font-size:12px;font-weight:700;cursor:pointer}
-@media(max-width:650px){.tournament-hero{grid-template-columns:1fr;padding:0;gap:12px}.hero-info-square,.hero-banner-square{width:100%;max-height:none}.hero-info-square{aspect-ratio:1/1}.hero-banner-square{aspect-ratio:4/3}}
+@media(max-width:650px){.tournament-hero{grid-template-columns:1fr;padding:0;gap:12px}.hero-info-square,.hero-banner-square{width:100%;max-height:none}.hero-info-square{aspect-ratio:1/1}.hero-banner-square{aspect-ratio:5/3}}
 /* Public dashboard: readable non-clickable top-player list */
 .public-top-players{display:grid;gap:6px}
 .public-top-player{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid #26394A;border-radius:7px;background:#0b1112}
@@ -804,7 +804,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-banner-crop-modal{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:16px}
 .hero-banner-crop-modal.hide{display:none!important}
 .hero-banner-crop-dialog{width:min(620px,96vw);max-height:94vh;overflow:auto;background:#0b1216;border:1px solid #426174;border-radius:12px;padding:18px;color:#eaf5ff;box-shadow:0 16px 60px #000}
-.hero-banner-crop-stage{width:min(100%,440px);aspect-ratio:1/1;margin:14px auto;background:#05080b;border:1px solid #416174;border-radius:8px;overflow:hidden;position:relative;touch-action:none;cursor:grab}
+.hero-banner-crop-stage{width:min(100%,560px);aspect-ratio:5/3;margin:14px auto;background:#05080b;border:1px solid #416174;border-radius:8px;overflow:hidden;position:relative;touch-action:none;cursor:grab}
 .hero-banner-crop-stage:active{cursor:grabbing}
 .hero-banner-crop-stage img{position:absolute;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .hero-banner-crop-zoom{display:flex;align-items:center;gap:12px;max-width:440px;margin:12px auto;font-size:12px;font-weight:750}
@@ -1720,7 +1720,7 @@ $('heroBannerRemove').addEventListener('click',async()=>{if(!isAdmin)return;cons
 let bannerCropQueue=[],bannerCropIndex=0,bannerCropResolve=null,bannerCropImageState=null;
 function updateBannerCropPreview(){const stage=$('heroBannerCropStage'),img=$('heroBannerCropImage'),state=bannerCropImageState;if(!stage||!img||!state)return;const w=stage.clientWidth,h=stage.clientHeight,base=Math.max(w/state.width,h/state.height),scale=base*state.zoom;img.style.width=(state.width*scale)+'px';img.style.height=(state.height*scale)+'px';img.style.left=(w-state.width*scale)/2+state.x+'px';img.style.top=(h-state.height*scale)/2+state.y+'px';}
 function openBannerCrop(file,index,total){return new Promise(resolve=>{bannerCropResolve=resolve;const modal=$('heroBannerCropModal'),img=$('heroBannerCropImage'),url=URL.createObjectURL(file);bannerCropImageState={file,url,width:0,height:0,x:0,y:0,zoom:1};img.onload=()=>{bannerCropImageState.width=img.naturalWidth;bannerCropImageState.height=img.naturalHeight;bannerCropImageState.x=0;bannerCropImageState.y=0;$('heroBannerCropZoom').value='1';$('heroBannerCropProgress').textContent=(index+1)+' of '+total;modal.classList.remove('hide');updateBannerCropPreview();};img.src=url;});}
-function finishBannerCrop(accepted){const state=bannerCropImageState;if(!state)return;let blob=null;if(accepted){const stage=$('heroBannerCropStage'),size=1200,previewBase=Math.max(stage.clientWidth/state.width,stage.clientHeight/state.height),scale=previewBase*state.zoom,offsetX=(stage.clientWidth-state.width*scale)/2+state.x,offsetY=(stage.clientHeight-state.height*scale)/2+state.y,ratio=size/stage.clientWidth,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');ctx.fillStyle='#070b10';ctx.fillRect(0,0,size,size);ctx.drawImage($('heroBannerCropImage'),offsetX*ratio,offsetY*ratio,state.width*scale*ratio,state.height*scale*ratio);blob=canvas.toBlob?null:null;return new Promise(resolve=>canvas.toBlob(b=>{URL.revokeObjectURL(state.url);$('heroBannerCropModal').classList.add('hide');bannerCropImageState=null;resolve(b);},'image/jpeg',.92));}URL.revokeObjectURL(state.url);$('heroBannerCropModal').classList.add('hide');bannerCropImageState=null;return Promise.resolve(null);}
+function finishBannerCrop(accepted){const state=bannerCropImageState;if(!state)return;let blob=null;if(accepted){const stage=$('heroBannerCropStage'),size=1200,previewBase=Math.max(stage.clientWidth/state.width,stage.clientHeight/state.height),scale=previewBase*state.zoom,offsetX=(stage.clientWidth-state.width*scale)/2+state.x,offsetY=(stage.clientHeight-state.height*scale)/2+state.y,ratio=size/stage.clientWidth,canvas=document.createElement('canvas');canvas.width=size;canvas.height=720;const ctx=canvas.getContext('2d');ctx.fillStyle='#070b10';ctx.fillRect(0,0,size,size);ctx.drawImage($('heroBannerCropImage'),offsetX*ratio,offsetY*ratio,state.width*scale*ratio,state.height*scale*ratio);blob=canvas.toBlob?null:null;return new Promise(resolve=>canvas.toBlob(b=>{URL.revokeObjectURL(state.url);$('heroBannerCropModal').classList.add('hide');bannerCropImageState=null;resolve(b);},'image/jpeg',.92));}URL.revokeObjectURL(state.url);$('heroBannerCropModal').classList.add('hide');bannerCropImageState=null;return Promise.resolve(null);}
 $('heroBannerCropZoom').addEventListener('input',e=>{if(bannerCropImageState){bannerCropImageState.zoom=Number(e.target.value);updateBannerCropPreview();}});
 let bannerCropDrag=null;
 $('heroBannerCropStage').addEventListener('pointerdown',e=>{if(!bannerCropImageState)return;bannerCropDrag={x:e.clientX,y:e.clientY,ox:bannerCropImageState.x,oy:bannerCropImageState.y};e.currentTarget.setPointerCapture(e.pointerId);});
@@ -1734,8 +1734,8 @@ async function prepareBannerImage(file){
   const url=URL.createObjectURL(file),image=new Image();
   image.onload=()=>{
    try{
-    const width=1200,height=900;
-    // Fit every source ratio fully inside the 4:3 banner. Portrait and square images
+    const width=1200,height=720;
+    // Fit every source ratio fully inside the 5:3 banner. Portrait and square images
     // use the full 900px frame height, leaving black bars only on the left and right.
     const scale=Math.min(width/image.naturalWidth,height/image.naturalHeight);
     const drawWidth=Math.round(image.naturalWidth*scale),drawHeight=Math.round(image.naturalHeight*scale);
