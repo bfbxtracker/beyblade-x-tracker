@@ -941,7 +941,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL='https://wlxilsrypqrscjanbsgh.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_WgbFmUFUJpz5A6YGUw5tfA_nxebIDGf';
 const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){const panel=document.getElementById('passwordRecoveryPanel');if(panel)panel.classList.remove('hide');const msg=document.getElementById('passwordRecoveryMessage');if(msg)msg.textContent='Choose a new password to finish recovering this account.';const route='#admin';if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);}});
+sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){const panel=document.getElementById('passwordRecoveryPanel');if(panel)panel.classList.remove('hide');const msg=document.getElementById('passwordRecoveryMessage');if(msg)msg.textContent='Choose a new password to finish recovering this account.';setView('admin');showAuth();panel?.scrollIntoView({behavior:'smooth',block:'center'});}});
 const $=id=>document.getElementById(id);
 const E=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const data={players:[],combos:[],tournaments:[],matches:[],scoring:[],tournament_groups:[],tournament_participants:[],dashboard_banners:[]};
