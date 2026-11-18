@@ -1333,7 +1333,7 @@ function renderDashboardBanner(){
  if(admin)admin.classList.toggle('hide',!isAdmin);
  const remove=$('heroBannerRemove');if(remove){remove.disabled=!items.length;remove.textContent=items[dashboardBannerIndex]?.legacy?'Remove banner':'Remove this image';}
  if(dashboardBannerTimer)clearInterval(dashboardBannerTimer);
- dashboardBannerTimer=items.length>1&&!$('heroBannerLightbox')?.classList.contains('is-open')?setInterval(()=>{dashboardBannerIndex=(dashboardBannerIndex+1)%dashboardBannerItems().length;renderDashboardBanner();},4000):null;
+ dashboardBannerTimer=items.length>1&&!$('heroBannerLightbox')?.classList.contains('is-open')?setInterval(()=>{dashboardBannerIndex=(dashboardBannerIndex+1)%dashboardBannerItems().length;renderDashboardBanner();},5000):null;
 }
 function renderPublicDashboard(summary){
  publicSummary=summary||{};
