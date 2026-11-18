@@ -1672,8 +1672,8 @@ document.addEventListener('click',async e=>{
   const p2=prompt('Replace Blader 2 (enter exact existing blader name):',pName(m.player2_id));if(p2===null)return;
   const a=data.players.find(x=>x.name.toLowerCase()===p1.trim().toLowerCase()),b=data.players.find(x=>x.name.toLowerCase()===p2.trim().toLowerCase());
   if(!a||!b||a.id===b.id){banner('Enter two different existing blader names.','error');return;}
-  const score1=prompt('Blader 1 score:',String(m.player1_points));if(score1===null)return;
-  const score2=prompt('Blader 2 score:',String(m.player2_points));if(score2===null)return;
+  const score1=prompt('Blader 1: '+pName(m.player1_id)+' — score:',String(m.player1_points));if(score1===null)return;
+  const score2=prompt('Blader 2: '+pName(m.player2_id)+' — score:',String(m.player2_points));if(score2===null)return;
   const combo1Name=prompt('Blader 1 combo name (leave blank to clear):',cName(m.combo1_id)==='—'?'':cName(m.combo1_id));if(combo1Name===null)return;
   const combo2Name=prompt('Blader 2 combo name (leave blank to clear):',cName(m.combo2_id)==='—'?'':cName(m.combo2_id));if(combo2Name===null)return;
   const combo1=data.combos.find(x=>x.name.trim().toLowerCase()===combo1Name.trim().toLowerCase()),combo2=data.combos.find(x=>x.name.trim().toLowerCase()===combo2Name.trim().toLowerCase());
