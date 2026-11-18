@@ -941,7 +941,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL='https://wlxilsrypqrscjanbsgh.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_WgbFmUFUJpz5A6YGUw5tfA_nxebIDGf';
 const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){const panel=document.getElementById('passwordRecoveryPanel');if(panel)panel.classList.remove('hide');const msg=document.getElementById('passwordRecoveryMessage');if(msg)msg.textContent='Choose a new password to finish recovering this account.';setView('admin');showAuth();panel?.scrollIntoView({behavior:'smooth',block:'center'});}});
+sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){window.bfbxPasswordRecovery=true;const panel=document.getElementById('passwordRecoveryPanel');if(panel)panel.classList.remove('hide');const msg=document.getElementById('passwordRecoveryMessage');if(msg)msg.textContent='Choose a new password to finish recovering this account.';history.replaceState(null,'',location.pathname+location.search+'#admin');setView('admin');showAuth();requestAnimationFrame(()=>panel?.scrollIntoView({behavior:'smooth',block:'center'}));}});
 const $=id=>document.getElementById(id);
 const E=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const data={players:[],combos:[],tournaments:[],matches:[],scoring:[],tournament_groups:[],tournament_participants:[],dashboard_banners:[]};
@@ -2080,6 +2080,8 @@ if(new URLSearchParams(window.location.search).get('welcome')==='1'&&session?.us
 }
 await loadAll();await applyViewAs();if(session?.user?.user_metadata?.player_profile&&(isAdmin||isViewer)){try{await ensureMyPlayer();await loadAll();}catch(err){console.warn('Could not sync Blader signup profile:',err.message);}}
 renderBladePicker('');renderRatchetPicker('');renderBitPicker('');
+if(window.bfbxPasswordRecovery){$('passwordRecoveryPanel').classList.remove('hide');setView('admin');showAuth();requestAnimationFrame(()=>$('passwordRecoveryPanel').scrollIntoView({behavior:'smooth',block:'center'}));}
+else {
 const savedNav=readNavigationState();
 const allowedRoutes=['overview','players','playerProfile','rankings','combos','myProfile','matches','tournaments','admin'];
 const hashRoute=decodeURIComponent((location.hash||'').replace(/^#/,'')).split('/')[0];
@@ -2090,6 +2092,7 @@ else if(restoreView==='tournaments'&&savedNav.tournamentId&&data.tournaments.som
 else if(restoreView==='playerProfile'&&savedNav.profileId&&data.players.some(p=>p.id===savedNav.profileId)){openPlayerProfile(savedNav.profileId);}
 else if(allowedRoutes.includes(restoreView)){selectedTournamentId=restoreView==='tournaments'?selectedTournamentId:null;setView(restoreView);}
 else setView('overview');
+}
 
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll().then(applyViewAs);},900000);
 </script>
