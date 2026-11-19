@@ -1843,10 +1843,18 @@ function openTournamentFixtureEditor(id){
  $('tournamentFixtureEditFinish').innerHTML='<option value="">Not specified</option>'+[...new Set([...finishes,m.finish_type].filter(Boolean))].map(x=>'<option value="'+E(x)+'">'+E(x)+'</option>').join('');
  $('tournamentFixtureEditFinish').value=m.finish_type||'';
  $('tournamentFixtureEditNotes').value=m.notes||'';
- $('tournamentFixtureEditModal').classList.add('is-open');
+ const modal=$('tournamentFixtureEditModal');
+ modal.classList.add('is-open');modal.style.display='flex';modal.setAttribute('aria-hidden','false');
  $('tournamentFixtureEditS1').focus();
 }
-function closeTournamentFixtureEditor(){$('tournamentFixtureEditModal').classList.remove('is-open');}
+function closeTournamentFixtureEditor(){const modal=$('tournamentFixtureEditModal');modal.classList.remove('is-open');modal.style.display='none';modal.setAttribute('aria-hidden','true');}
+document.addEventListener('click',e=>{
+ const edit=e.target.closest('[data-admin-edit-match]');
+ if(!edit)return;
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+ if(!isAdmin){banner('Only admins and content admins can edit tournament fixtures.','error');return;}
+ openTournamentFixtureEditor(edit.dataset.adminEditMatch);
+},true);
 $('tournamentFixtureEditCancel').addEventListener('click',closeTournamentFixtureEditor);
 $('tournamentFixtureEditModal').addEventListener('click',e=>{if(e.target===$('tournamentFixtureEditModal'))closeTournamentFixtureEditor();});
 $('tournamentFixtureEditForm').addEventListener('submit',async e=>{
