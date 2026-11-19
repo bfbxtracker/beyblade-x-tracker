@@ -1135,11 +1135,11 @@ function render(){const s=winStats();const uniqueWinners=new Set(data.matches.fi
 const featured=[...data.tournaments].filter(t=>t.tournament_date&&t.tournament_date>=new Date().toISOString().slice(0,10)).sort((a,b)=>(a.tournament_date||'').localeCompare(b.tournament_date||'')||(b.created_at||'').localeCompare(a.created_at||''))[0]||null;$('heroTournamentTitle').textContent=featured?featured.name:'No upcoming tournament scheduled';document.querySelector('.hero-info-square')?.classList.remove('is-loading');document.querySelector('.hero-info-square')?.setAttribute('data-bg-text',featured?.background_text?.trim()||'BF X');renderDashboardBanner();$('heroTournamentSub').innerHTML=featured?`<span class="hero-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>${E(featured.tournament_date||'Date to be announced')}</span></span>${featured.location?`<span class="hero-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>${E(featured.location)}</span></span>`:''}`:'<span>Manage tournaments, participants, groups, match records and results in one place.</span>';
 const tournamentPlayers=featured?new Set([...data.tournament_participants.filter(x=>x.tournament_id===featured.id).map(x=>x.player_id),...data.matches.filter(m=>m.tournament_id===featured.id).flatMap(m=>[m.player1_id,m.player2_id])]):new Set();const tournamentLeaders=featured?winStats(data.matches.filter(m=>m.tournament_id===featured.id)).filter(x=>tournamentPlayers.has(x.id)).sort((a,b)=>b.w-a.w||b.rate-a.rate||b.diff-a.diff||a.name.localeCompare(b.name)):[];$('topPlayers').innerHTML=featured?table(['#','Player','W-L-D','Win %'],tournamentLeaders.slice(0,5).map((x,i)=>row([`<span class="rank">${i+1}</span>`,playerButton(x.id,x.name),`${x.w}-${x.l}-${x.d}`,x.rate.toFixed(1)+'%']))):'<div class="empty">No upcoming tournament. Top Players will appear when a tournament is scheduled.</div>';
 $('playersDirectory').innerHTML=table(['Blader','Matches','Wins','Win rate','Profile'],s.map(x=>{const realName=isAdmin?String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim():'';const avatar=x.profile_image_url?'<img src="'+E(x.profile_image_url)+'" alt="" loading="lazy" decoding="async" style="width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;vertical-align:middle;border:1px solid #527080">':'';const bladerLabel='<span style="display:inline-flex;align-items:center;gap:7px">'+avatar+playerButton(x.id,x.name)+(realName?' <small class="bx-admin-viewer-real-name" style="color:#fff;font-size:11px;font-weight:400">('+E(realName)+')</small>':'')+'</span>';return row([bladerLabel,x.played,x.w,x.rate.toFixed(1)+'%',`<button type="button" class="small" data-profile="${E(x.id)}">View profile</button>`]);}));
-const latest=[...data.matches].sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||'')||(b.created_at||'').localeCompare(a.created_at||''));
+const latest=data.matches.filter(m=>!m.is_scheduled).sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||'')||(b.created_at||'').localeCompare(a.created_at||''));
 $('recentMatches').innerHTML=table(['Players','Score','Tournament'],latest.slice(0,6).map(x=>row([`${playerButton(x.player1_id,pName(x.player1_id))} vs ${playerButton(x.player2_id,pName(x.player2_id))}`,`${x.player1_points}–${x.player2_points}`,E(tName(x.tournament_id))])));
 renderMainTournamentStandings();
 $('combosTable').innerHTML=table(['Combo','Blade','Ratchet','Bit','Type','Owner'],data.combos.map(x=>row([`<strong>${E(x.name)}</strong>`,E(x.blade),E(x.ratchet),E(x.bit),`<span class="tag">${E(x.type)}</span>`,E(pName(x.owner_id))])));
-$('matchesTable').innerHTML=table(['Date','Tournament','Round','Players','Combos','Score','Finish'],latest.map(x=>row([displayDate(x.match_date),E(tName(x.tournament_id)),E([x.round_name,data.tournament_groups.find(g=>g.id===x.group_id)?.name].filter(Boolean).join(' · ')),`${E(pName(x.player1_id))} vs ${E(pName(x.player2_id))}`,`${E(cName(x.combo1_id))} / ${E(cName(x.combo2_id))}`,`<strong>${x.player1_points}–${x.player2_points}</strong>`,E(x.finish_type)])));
+$('matchesTable').innerHTML=table(['Date','Tournament','Round','Players','Combos','Score','Finish'],latest.map(x=>row([displayDate(x.match_date),E(tName(x.tournament_id)),E([x.round_name,data.tournament_groups.find(g=>g.id===x.group_id)?.name].filter(Boolean).join(' · ')),`${E(pName(x.player1_id))} vs ${E(pName(x.player2_id))}`,`${E(cName(x.combo1_id))} / ${E(cName(x.combo2_id))}`,x.is_scheduled?'<span class="scheduled-match-label">Scheduled fixture</span>':`<strong>${x.player1_points}–${x.player2_points}</strong>`,E(x.is_scheduled?'Not played':x.finish_type)])));
 options('tournamentFilter',data.tournaments,'Select a tournament');renderTournament();
 if(isAdmin){populateAdminOptions();renderAdminLists();}
 }
@@ -1313,7 +1313,7 @@ function renderTournamentTab(){
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
- const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
+ const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||'')||(a.is_scheduled&&b.is_scheduled?Number((a.notes||'').match(/Fixture (\\d+)/)?.[1]||0)-Number((b.notes||'').match(/Fixture (\\d+)/)?.[1]||0):0));
  let out='';
  if(selectedTournamentTab==='table'){
   const groupMatches=matches.filter(m=>m.group_id&&!m.is_scheduled);
@@ -1356,9 +1356,9 @@ function renderTournamentTab(){
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
-   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date',...((isSuperAdmin||isSinanContentAdmin)?['Actions']:[])],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),tournamentPlayerCell(m.player1_id),m.is_scheduled?'<span class="scheduled-match-label">Scheduled</span>':m.player1_points+'–'+m.player2_points,tournamentPlayerCell(m.player2_id),displayDate(m.match_date),...((isSuperAdmin||isSinanContentAdmin)?['<button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Delete</button>']:[])])));
+   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date',...((isSuperAdmin||isSinanContentAdmin)?['Actions']:[])],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),tournamentPlayerCell(m.player1_id),m.is_scheduled?'<span class="scheduled-match-label">Scheduled</span>':m.player1_points+'–'+m.player2_points,tournamentPlayerCell(m.player2_id),displayDate(m.match_date),...((isSuperAdmin||isSinanContentAdmin)?[m.is_scheduled?'<button type="button" class="small" data-record-scheduled-match="'+E(m.id)+'">Record result</button>':'<button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Delete</button>']:[])])));
   }else if(selectedTournamentTab==='bracket'){
-   const knockout=matches.filter(m=>m.round_name&&!/group/i.test(m.round_name));
+   const knockout=matches.filter(m=>!m.is_scheduled&&!m.group_id&&m.round_name&&!/group/i.test(m.round_name));
    const stageOf=name=>{
     const n=(name||'').toLowerCase().replace(/[._-]/g,' ').replace(/\\s+/g,' ').trim();
     if(/third|3rd|bronze/.test(n))return 'third';
@@ -1613,6 +1613,22 @@ document.addEventListener('dragend',e=>{e.target.closest('.bx-standing-drag')?.c
 document.addEventListener('dragover',e=>{const target=e.target.closest('.bx-standing-drag[draggable="true"]');if(target){e.preventDefault();target.classList.add('drag-over');}});
 document.addEventListener('dragleave',e=>e.target.closest('.bx-standing-drag')?.classList.remove('drag-over'));
 document.addEventListener('drop',async e=>{const target=e.target.closest('.bx-standing-drag[draggable="true"]');if(!target||!(isSuperAdmin||isSinanContentAdmin))return;e.preventDefault();target.classList.remove('drag-over');let source;try{source=JSON.parse(e.dataTransfer.getData('text/plain')||'{}');}catch{return;}const groupId=target.dataset.standingGroup;if(!source.playerId||source.groupId!==groupId||source.playerId===target.dataset.standingPlayer)return;const groupEntries=data.tournament_participants.filter(x=>x.tournament_id===selectedTournamentId&&x.group_id===groupId);const ordered=[...groupEntries].sort((a,b)=>{if(a.seed!=null&&b.seed!=null)return a.seed-b.seed;if(a.seed!=null)return -1;if(b.seed!=null)return 1;return 0;});const from=ordered.findIndex(x=>x.player_id===source.playerId),to=ordered.findIndex(x=>x.player_id===target.dataset.standingPlayer);if(from<0||to<0)return;const [moved]=ordered.splice(from,1);ordered.splice(to,0,moved);try{for(let i=0;i<ordered.length;i++){const {error}=await sb.from('tournament_participants').update({seed:i+1}).eq('id',ordered[i].id);if(error)throw error;ordered[i].seed=i+1;}await loadAll(true);renderTournamentTab();banner('Group player order updated.','success');}catch(err){banner('Could not save group order: '+err.message,'error');}});
+document.addEventListener('click',e=>{
+ const recordFixture=e.target.closest('[data-record-scheduled-match]');if(!recordFixture)return;
+ if(!isAdmin){banner('Only admins can record match results.','error');return;}
+ const m=data.matches.find(x=>x.id===recordFixture.dataset.recordScheduledMatch);if(!m||!m.is_scheduled)return;
+ $('matchId').value=m.id;$('matchDate').value=m.match_date||'';
+ $('matchTournament').value=m.tournament_id||'';
+ $('matchGroup').value=m.group_id||'';
+ $('matchRound').value=m.round_name||'';
+ $('matchP1').value=pName(m.player1_id);$('matchP2').value=pName(m.player2_id);
+ $('matchS1').value='0';$('matchS2').value='0';
+ $('matchC1').value='';$('matchC2').value='';$('matchFinish').value='';
+ $('matchNotes').value=m.notes||'';
+ const nav=document.querySelector('[data-view="matches"]');if(nav)nav.click();
+ $('matchForm').scrollIntoView({behavior:'smooth',block:'start'});
+ banner('Enter the score and save to turn this scheduled fixture into a completed match.','info');
+});
 document.addEventListener('click',async e=>{
  const tournamentEdit=e.target.closest('[data-tournament-player-edit]');if(tournamentEdit){openTournamentPlayerEdit(tournamentEdit.dataset.tournamentPlayerEdit);return;}
  if(e.target===$('tournamentPlayerEditModal')){closeTournamentPlayerEdit();return;}
