@@ -1901,6 +1901,9 @@ document.addEventListener('submit',async e=>{
     const losers=r12.map(m=>{const w=Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;return w===m.player1_id?{id:m.player2_id,score:Number(m.player2_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))}:w===m.player2_id?{id:m.player1_id,score:Number(m.player1_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score||b.margin-a.margin).slice(0,2);
     const allowed=new Set([...wins,...losers.map(x=>x.id)]);
     if(r12.length!==6||wins.length!==6||!allowed.has(player1_id)||!allowed.has(player2_id))throw new Error('Super 8 requires all six Round of 12 results and only the six winners plus two best-scoring losers.');
+    const seedList=r12.map(m=>({id:Number(m.player1_points)>Number(m.player2_points)?m.player1_id:m.player2_id,score:Math.max(Number(m.player1_points),Number(m.player2_points)),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points)),kind:'Winner'})).concat(losers.map(x=>({...x,kind:'Best loser'}))).sort((a,b)=>b.score-a.score||b.margin-a.margin||a.kind.localeCompare(b.kind)||pName(a.id).localeCompare(pName(b.id)));
+    const qfPairs=[[0,7],[3,4],[1,6],[2,5]],qfNo=Number(knockoutForm.dataset.riseQf),qf=qfPairs[qfNo-1];
+    if(!qf||seedList[qf[0]]?.id!==player1_id||seedList[qf[1]]?.id!==player2_id)throw new Error('This quarter-final must follow the published Super 8 seed fixture.');
    }
    const stageKey=name=>{const n=String(name||'').toLowerCase();return /round of 12|round 12|last 12|round of 16|round 16|last 16|r16/.test(n)?'r12':/quarter|super 8/.test(n)?'quarter':/semi/.test(n)?'semi':/final/.test(n)?'final':'other';};
    const currentRound=data.matches.filter(m=>m.tournament_id===tournament_id&&stageKey(m.round_name)===stage);
