@@ -1176,7 +1176,14 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(!isAdmin)return '';
  const labels={r12:'Round of 12',quarter:'Quarter-final',semi:'Semi-final',final:'Grand Final'};
  const capacities={r12:6,quarter:4,semi:2,final:1};
- const label=labels[stage],capacity=capacities[stage],eligible=entries.map(e=>data.players.find(p=>p.id===e.player_id)).filter(Boolean);
+ const label=labels[stage],capacity=capacities[stage];
+ const round12=data.matches.filter(m=>m.tournament_id===tid&&/round of 12|round 12/i.test(m.round_name||''));
+ const winnerOf=m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;
+ const loserOf=m=>{const w=winnerOf(m);return w===m.player1_id?m.player2_id:w===m.player2_id?m.player1_id:null;};
+ const winners=round12.map(winnerOf).filter(Boolean);
+ const bestLosers=round12.filter(m=>winnerOf(m)).map(m=>({id:loserOf(m),score:loserOf(m)===m.player1_id?Number(m.player1_points):Number(m.player2_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))})).sort((a,b)=>b.score-a.score||a.margin-b.margin).slice(0,2).map(x=>x.id);
+ const qualified=stage==='quarter'&&round12.length===6&&winners.length===6?[...winners,...bestLosers]:entries.map(e=>e.player_id);
+ const eligible=qualified.map(id=>data.players.find(p=>p.id===id)).filter(Boolean);
  const opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(p.viewer_name?p.viewer_name+' — '+p.name:p.name)+'</option>').join('');
  const full=stageMatches.length>=capacity;
  const player=number=>'<div class="bx-knockout-blader-block"><label>Blader '+number+'<select name="player'+number+'_id" required><option value="">Choose qualified Blader</option>'+opts+'</select></label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
@@ -1834,7 +1841,7 @@ document.addEventListener('submit',async e=>{
    await loadAll();selectedTournamentId=tournament_id;renderTournamentTab();banner(name+' created.','success');
   }else if(knockoutForm){
    const fd=new FormData(knockoutForm),tournament_id=knockoutForm.dataset.tournamentId;
-   const stage=knockoutForm.dataset.stage,isRiseTournament=/beyfans\\s*x\\s*rise/i.test(data.tournaments.find(t=>t.id===tournament_id)?.name||''),capacity={r16:isRiseTournament?4:8,quarter:4,semi:2,final:1}[stage];
+   const stage=knockoutForm.dataset.stage,isRiseTournament=/beyfans\\s*x\\s*rise/i.test(data.tournaments.find(t=>t.id===tournament_id)?.name||''),capacity={r12:6,quarter:4,semi:2,final:1}[stage];
    async function resolveKnockoutPlayer(idField){
     const playerId=String(fd.get(idField)||'');
     if(!playerId)throw new Error('Choose a player registered in this tournament Group Stage.');
