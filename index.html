@@ -839,6 +839,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 
 .standing-serial-select{width:84px;max-width:100%;padding:5px 4px;border:1px solid #345267;border-radius:5px;background:#0b1214;color:#7DC8F7;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.standing-serial-select:focus{outline:1px solid #7DC8F7;border-color:#7DC8F7}
 .scheduled-match-label{display:inline-flex;align-items:center;padding:3px 9px;border:1px solid #35566b;border-radius:20px;color:#7DC8F7;background:#14283B;font-size:11px;font-weight:800;white-space:nowrap}
+#tournamentFixtureEditModal{position:fixed;inset:0;z-index:10002;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.80)}#tournamentFixtureEditModal.is-open{display:flex}#tournamentFixtureEditModal .delete-player-dialog{width:min(100%,680px);max-height:92vh;overflow-y:auto;padding:22px;border:1px solid #4169E1;border-radius:12px;background:#101820;box-shadow:0 18px 60px rgba(0,0,0,.7)}#tournamentFixtureEditModal .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}#tournamentFixtureEditModal label{display:block;margin:10px 0 5px}#tournamentFixtureEditModal input,#tournamentFixtureEditModal select,#tournamentFixtureEditModal textarea{width:100%;margin-bottom:7px}#tournamentFixtureEditModal textarea{resize:vertical;min-height:60px}#tournamentFixtureEditModal p{margin:0 0 12px;color:#b8cbd6}@media(max-width:560px){#tournamentFixtureEditModal{padding:8px}#tournamentFixtureEditModal .delete-player-dialog{padding:15px}#tournamentFixtureEditModal .form-grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -1813,13 +1814,68 @@ document.addEventListener('click',async e=>{
   if(!confirm('Remove this knockout match record?'))return;
   try{const {error}=await sb.from('matches').delete().eq('id',deleteMatch.dataset.adminDeleteMatch);if(error)throw error;await loadAll();renderTournamentTab();banner('Knockout match removed.','success');}catch(err){banner('Could not remove match: '+err.message,'error');}
  }else if(editMatch){
-  const m=data.matches.find(x=>x.id===editMatch.dataset.adminEditMatch);if(!m)return;
-  fillEdit('match',m.id);
-  const nav=document.querySelector('[data-view="matches"]');if(nav)nav.click();
-  $('matchForm').scrollIntoView({behavior:'smooth',block:'start'});
-  banner('Fixture loaded. Edit the date, group, round, players, combos, points, status and notes, then save.','success');
+  openTournamentFixtureEditor(editMatch.dataset.adminEditMatch);
  }
 });
+function openTournamentFixtureEditor(id){
+ if(!isAdmin)return;
+ const m=data.matches.find(x=>x.id===id);if(!m)return;
+ const tournament=data.tournaments.find(t=>t.id===m.tournament_id);
+ $('tournamentFixtureEditTitle').textContent='Edit fixture · '+(tournament?.name||'Tournament');
+ $('tournamentFixtureEditId').value=m.id;
+ $('tournamentFixtureEditDate').value=m.match_date||'';
+ $('tournamentFixtureEditRound').value=m.round_name||'';
+ $('tournamentFixtureEditStatus').value=m.is_scheduled?'scheduled':'completed';
+ $('tournamentFixtureEditP1').innerHTML=data.players.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>'<option value="'+E(p.id)+'">'+E(p.name)+'</option>').join('');
+ $('tournamentFixtureEditP2').innerHTML=$('tournamentFixtureEditP1').innerHTML;
+ $('tournamentFixtureEditP1').value=m.player1_id||'';
+ $('tournamentFixtureEditP2').value=m.player2_id||'';
+ $('tournamentFixtureEditS1').value=Number(m.player1_points)||0;
+ $('tournamentFixtureEditS2').value=Number(m.player2_points)||0;
+ const groups=data.tournament_groups.filter(g=>g.tournament_id===m.tournament_id);
+ $('tournamentFixtureEditGroup').innerHTML='<option value="">No group / knockout</option>'+groups.map(g=>'<option value="'+E(g.id)+'">'+E(g.name)+'</option>').join('');
+ $('tournamentFixtureEditGroup').value=m.group_id||'';
+ const combos=data.combos.slice().sort((a,b)=>a.name.localeCompare(b.name));
+ const comboOptions='<option value="">No combo selected</option>'+combos.map(c=>'<option value="'+E(c.id)+'">'+E(c.name)+'</option>').join('');
+ $('tournamentFixtureEditC1').innerHTML=comboOptions;$('tournamentFixtureEditC2').innerHTML=comboOptions;
+ $('tournamentFixtureEditC1').value=m.combo1_id||'';$('tournamentFixtureEditC2').value=m.combo2_id||'';
+ const finishes=data.scoring.map(x=>x.finish_type).filter(Boolean);
+ $('tournamentFixtureEditFinish').innerHTML='<option value="">Not specified</option>'+[...new Set([...finishes,m.finish_type].filter(Boolean))].map(x=>'<option value="'+E(x)+'">'+E(x)+'</option>').join('');
+ $('tournamentFixtureEditFinish').value=m.finish_type||'';
+ $('tournamentFixtureEditNotes').value=m.notes||'';
+ $('tournamentFixtureEditModal').classList.add('is-open');
+ $('tournamentFixtureEditS1').focus();
+}
+function closeTournamentFixtureEditor(){$('tournamentFixtureEditModal').classList.remove('is-open');}
+$('tournamentFixtureEditCancel').addEventListener('click',closeTournamentFixtureEditor);
+$('tournamentFixtureEditModal').addEventListener('click',e=>{if(e.target===$('tournamentFixtureEditModal'))closeTournamentFixtureEditor();});
+$('tournamentFixtureEditForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!isAdmin)return;
+ const id=$('tournamentFixtureEditId').value,p1=$('tournamentFixtureEditP1').value,p2=$('tournamentFixtureEditP2').value;
+ const s1=Number($('tournamentFixtureEditS1').value),s2=Number($('tournamentFixtureEditS2').value);
+ if(!p1||!p2||p1===p2){banner('Choose two different Bladers for this fixture.','error');return;}
+ if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0){banner('Scores must be non-negative whole numbers.','error');return;}
+ const save=$('tournamentFixtureEditSave');save.disabled=true;save.textContent='Saving…';
+ try{
+  const {error}=await sb.from('matches').update({
+   match_date:$('tournamentFixtureEditDate').value,
+   group_id:$('tournamentFixtureEditGroup').value||null,
+   round_name:$('tournamentFixtureEditRound').value.trim()||null,
+   player1_id:p1,player2_id:p2,
+   combo1_id:$('tournamentFixtureEditC1').value||null,
+   combo2_id:$('tournamentFixtureEditC2').value||null,
+   player1_points:s1,player2_points:s2,
+   finish_type:$('tournamentFixtureEditFinish').value||null,
+   notes:$('tournamentFixtureEditNotes').value.trim()||null,
+   is_scheduled:$('tournamentFixtureEditStatus').value==='scheduled'
+  }).eq('id',id);
+  if(error)throw error;
+  closeTournamentFixtureEditor();await loadAll();selectedTournamentId=data.matches.find(x=>x.id===id)?.tournament_id||selectedTournamentId;renderTournamentTab();
+  banner('Fixture updated. Scores and result are saved.','success');
+ }catch(err){banner('Could not update fixture: '+err.message,'error');}
+ finally{save.disabled=false;save.textContent='Save fixture';}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('tournamentFixtureEditModal')?.classList.contains('is-open'))closeTournamentFixtureEditor();});
 function closeDashboardBannerLightbox(){const box=$('heroBannerLightbox');if(!box)return;box.classList.add('hide');box.classList.remove('is-open');renderDashboardBanner();}
 $('heroTournamentBanner').addEventListener('click',()=>{const src=$('heroTournamentBanner').src;if(!src)return;const box=$('heroBannerLightbox'),large=$('heroBannerLightboxImage');large.src=src;box.classList.remove('hide');box.classList.add('is-open');if(dashboardBannerTimer)clearInterval(dashboardBannerTimer);dashboardBannerTimer=null;});
 $('heroBannerLightbox').addEventListener('click',e=>{if(e.target===$('heroBannerLightbox')||e.target===$('heroBannerLightboxClose'))closeDashboardBannerLightbox();});
@@ -2260,6 +2316,7 @@ else setView('overview');
 
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll().then(applyViewAs);},900000);
 </script>
+<div id="tournamentFixtureEditModal" role="dialog" aria-modal="true" aria-labelledby="tournamentFixtureEditTitle"><form id="tournamentFixtureEditForm" class="delete-player-dialog" style="text-align:left"><h2 id="tournamentFixtureEditTitle">Edit tournament fixture</h2><p>Update the Bladers, their scores, and the fixture details. Saving a completed result removes it from the scheduled fixtures.</p><input type="hidden" id="tournamentFixtureEditId"><div class="form-grid"><div><label for="tournamentFixtureEditDate">Match date</label><input id="tournamentFixtureEditDate" type="date" required></div><div><label for="tournamentFixtureEditStatus">Fixture status</label><select id="tournamentFixtureEditStatus"><option value="scheduled">Scheduled</option><option value="completed">Completed result</option></select></div><div><label for="tournamentFixtureEditGroup">Group</label><select id="tournamentFixtureEditGroup"></select></div><div><label for="tournamentFixtureEditRound">Round</label><input id="tournamentFixtureEditRound" maxlength="100" placeholder="Round 1 / Final"></div><div><label for="tournamentFixtureEditP1">Blader 1</label><select id="tournamentFixtureEditP1" required></select></div><div><label for="tournamentFixtureEditP2">Blader 2</label><select id="tournamentFixtureEditP2" required></select></div><div><label for="tournamentFixtureEditS1">Blader 1 score</label><input id="tournamentFixtureEditS1" type="number" min="0" step="1" value="0" required></div><div><label for="tournamentFixtureEditS2">Blader 2 score</label><input id="tournamentFixtureEditS2" type="number" min="0" step="1" value="0" required></div><div><label for="tournamentFixtureEditC1">Blader 1 combo</label><select id="tournamentFixtureEditC1"></select></div><div><label for="tournamentFixtureEditC2">Blader 2 combo</label><select id="tournamentFixtureEditC2"></select></div><div><label for="tournamentFixtureEditFinish">Finish type</label><select id="tournamentFixtureEditFinish"></select></div></div><label for="tournamentFixtureEditNotes">Notes</label><textarea id="tournamentFixtureEditNotes" rows="2" placeholder="Optional fixture notes"></textarea><div class="delete-player-actions"><button type="submit" class="primary" id="tournamentFixtureEditSave">Save fixture</button><button type="button" id="tournamentFixtureEditCancel">Cancel</button></div></form></div>
 <div id="tournamentPlayerEditModal" role="dialog" aria-modal="true" aria-labelledby="tournamentPlayerEditTitle"><form id="tournamentPlayerEditForm" class="delete-player-dialog" style="text-align:left"><h2 id="tournamentPlayerEditTitle">Edit tournament player details</h2><p>Edit the Blader profile, tournament group, seed, serial and manual tournament record. Match scores remain available in the fixture editor.</p><input type="hidden" id="tournamentPlayerEditId"><label for="tournamentPlayerEditName">Blader name</label><input id="tournamentPlayerEditName" maxlength="100" required><label for="tournamentPlayerEditViewer">Verified viewer name</label><input id="tournamentPlayerEditViewer" maxlength="100" placeholder="Optional"><label for="tournamentPlayerEditTeam">Team</label><input id="tournamentPlayerEditTeam" maxlength="100" placeholder="Optional"><label for="tournamentPlayerEditLocation">Location</label><input id="tournamentPlayerEditLocation" maxlength="120" placeholder="Optional"><label for="tournamentPlayerEditNotes">Blader details / notes</label><textarea id="tournamentPlayerEditNotes" rows="2" placeholder="Optional profile details"></textarea><label for="tournamentPlayerEditGroup">Tournament group</label><select id="tournamentPlayerEditGroup"><option value="">Unassigned</option></select><div class="form-grid"><div><label for="tournamentPlayerEditPlayed">Played</label><input id="tournamentPlayerEditPlayed" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditWins">Wins</label><input id="tournamentPlayerEditWins" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditLosses">Losses</label><input id="tournamentPlayerEditLosses" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditDraws">Draws</label><input id="tournamentPlayerEditDraws" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditSeed">Seed / order</label><input id="tournamentPlayerEditSeed" type="number" min="1" step="1" placeholder="Optional"></div><div><label for="tournamentPlayerEditSerial">Serial</label><input id="tournamentPlayerEditSerial" maxlength="40" placeholder="Optional"></div></div><small class="muted">Table points are calculated automatically as 3 × wins + draws. Played must equal wins + losses + draws.</small><div class="delete-player-actions"><button type="submit" class="primary" id="tournamentPlayerEditSave">Save changes</button><button type="button" id="tournamentPlayerEditCancel">Cancel</button></div></form></div>
 <div id="deletePlayerModal" role="dialog" aria-modal="true" aria-labelledby="deletePlayerTitle" aria-describedby="deletePlayerDescription"><div class="delete-player-dialog"><h2 id="deletePlayerTitle">Are You Sure, Buddy?</h2><p id="deletePlayerDescription">Delete this Blader? Their profile, combos, tournament registrations and match history will be permanently removed.</p><div class="delete-player-actions"><button type="button" id="deletePlayerYes">Yes, Delete</button><button type="button" id="deletePlayerNo">No</button></div></div></div>
 </body></html>
