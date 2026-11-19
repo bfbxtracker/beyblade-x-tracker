@@ -1174,7 +1174,7 @@ function tournamentAdminGroupControls(tid,groups,entries){
 }
 function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(!isAdmin)return '';
- const isRise=/beyfans\\s*x\\s*rise/i.test(data.tournaments.find(t=>t.id===tid)?.name||'');
+ const isRise=/beyfans\s*x\s*rise/i.test(data.tournaments.find(t=>t.id===tid)?.name||'');
  const labels={r12:'Round of 12',quarter:'Super 8 · Quarter-finals',semi:'Semi-finals',final:'Grand Final'};
  const capacities={r12:6,quarter:4,semi:2,final:1},label=labels[stage],capacity=capacities[stage];
  const round12=data.matches.filter(m=>m.tournament_id===tid&&/round of 12|round 12/i.test(m.round_name||''));
@@ -1256,7 +1256,7 @@ function drawBracketConnectors(){
 function tournamentPlayerCell(pid){const entry=data.tournament_participants.find(e=>e.tournament_id===selectedTournamentId&&e.player_id===pid);return playerButton(pid,pName(pid))+renderKnockoutDeck(entry?.deck||[]);}
 function renderTournamentTab(){
  const id=selectedTournamentId,t=data.tournaments.find(x=>x.id===id);if(!t)return;
- const isRiseChampionship=/beyfans\\s*x\\s*rise/i.test(t.name||'');
+ const isRiseChampionship=/beyfans\s*x\s*rise/i.test(t.name||'');
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
@@ -1881,7 +1881,7 @@ document.addEventListener('submit',async e=>{
    await loadAll();selectedTournamentId=tournament_id;renderTournamentTab();banner(name+' created.','success');
   }else if(knockoutForm){
    const fd=new FormData(knockoutForm),tournament_id=knockoutForm.dataset.tournamentId;
-   const stage=knockoutForm.dataset.stage,isRiseTournament=/beyfans\\s*x\\s*rise/i.test(data.tournaments.find(t=>t.id===tournament_id)?.name||''),capacity={r12:6,quarter:4,semi:2,final:1}[stage];
+   const stage=knockoutForm.dataset.stage,isRiseTournament=/beyfans\s*x\s*rise/i.test(data.tournaments.find(t=>t.id===tournament_id)?.name||''),capacity={r12:6,quarter:4,semi:2,final:1}[stage];
    async function resolveKnockoutPlayer(idField){
     const playerId=String(fd.get(idField)||'');
     if(!playerId)throw new Error('Choose a player registered in this tournament Group Stage.');
