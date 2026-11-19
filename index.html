@@ -1877,6 +1877,20 @@ document.addEventListener('submit',async e=>{
    }
    const player1_id=await resolveKnockoutPlayer('player1_id'),player2_id=await resolveKnockoutPlayer('player2_id');
    if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different Bladers.');
+   if(isRiseTournament&&stage==='r12'){
+    const fixture=Number(knockoutForm.dataset.riseFixture),pairs=[[0,1,2,3],[1,1,0,3],[2,1,3,3],[3,1,2,3],[0,2,1,2],[2,2,3,2]];
+    const spec=pairs[fixture-1],groups=data.tournament_groups.filter(g=>g.tournament_id===tournament_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
+    if(!spec||groups.length<4)throw new Error('Create four groups before recording Round of 12 fixtures.');
+    const ranked=groups.map(g=>{const rows=data.tournament_participants.filter(e=>e.tournament_id===tournament_id&&e.group_id===g.id).map(e=>({id:e.player_id,w:0,margin:0,points:0,against:0}));data.matches.filter(m=>m.tournament_id===tournament_id&&m.group_id===g.id).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.points+=ap;a.against+=bp;b.points+=bp;b.against+=ap;if(ap>bp){a.w++;a.margin+=ap-bp;}else if(bp>ap){b.w++;b.margin+=bp-ap;}});return rows.sort((a,b)=>b.w-a.w||b.margin-a.margin||(b.points-b.against)-(a.points-a.against)||pName(a.id).localeCompare(pName(b.id));});
+    if(ranked[spec[0]][spec[1]-1]?.id!==player1_id||ranked[spec[2]][spec[3]-1]?.id!==player2_id)throw new Error('This fixture must use the specified group standings positions.');
+   }
+   if(isRiseTournament&&stage==='quarter'){
+    const r12=data.matches.filter(m=>m.tournament_id===tournament_id&&/round of 12|round 12/i.test(m.round_name||''));
+    const wins=r12.map(m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null).filter(Boolean);
+    const losers=r12.map(m=>{const w=Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;return w===m.player1_id?{id:m.player2_id,score:Number(m.player2_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))}:w===m.player2_id?{id:m.player1_id,score:Number(m.player1_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score||b.margin-a.margin).slice(0,2);
+    const allowed=new Set([...wins,...losers.map(x=>x.id)]);
+    if(r12.length!==6||wins.length!==6||!allowed.has(player1_id)||!allowed.has(player2_id))throw new Error('Super 8 requires all six Round of 12 results and only the six winners plus two best-scoring losers.');
+   }
    const stageKey=name=>{const n=String(name||'').toLowerCase();return /round of 12|round 12|last 12|round of 16|round 16|last 16|r16/.test(n)?'r12':/quarter|super 8/.test(n)?'quarter':/semi/.test(n)?'semi':/final/.test(n)?'final':'other';};
    const currentRound=data.matches.filter(m=>m.tournament_id===tournament_id&&stageKey(m.round_name)===stage);
    if(currentRound.length>=capacity)throw new Error('This round already has all '+capacity+' matches.');
