@@ -1096,7 +1096,7 @@ function renderTournament(){
  if(!list.length){host.innerHTML='<div class="empty">No tournaments have been added yet.</div>';return;}
  const buckets=new Map();
  list.forEach(t=>{const owner=t.organizer||t.organizer_name||t.created_by_name||'BFB Community';if(!buckets.has(owner))buckets.set(owner,[]);buckets.get(owner).push(t);});
- host.innerHTML=[...buckets.entries()].map(([owner,items])=>'<div class="tournament-organizer">'+E(owner)+'</div>'+items.map(t=>'<button type="button" class="tournament-directory-card" data-open-tournament="'+E(t.id)+'"><span><strong>'+E(t.name)+'</strong><small>'+E(t.format||'Tournament')+' · '+E(displayDate(t.tournament_date)||'Date not set')+'</small></span><span class="chevron">›</span></button>').join('')).join('');
+ host.innerHTML=[...buckets.entries()].map(([owner,items])=>'<div class="tournament-organizer">'+E(owner)+'</div>'+items.map(t=>'<button type="button" class="tournament-directory-card" data-open-tournament="'+E(t.id)+'"><span><strong>'+E(t.name)+'</strong><small>'+E(displayDate(t.tournament_date)||'Date not set')+'</small></span><span class="chevron">›</span></button>').join('')).join('');
 }
 function openTournamentWorkspace(id){
  const t=data.tournaments.find(x=>x.id===id);if(!t)return;
