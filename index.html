@@ -840,6 +840,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .standing-serial-select{width:84px;max-width:100%;padding:5px 4px;border:1px solid #345267;border-radius:5px;background:#0b1214;color:#7DC8F7;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.standing-serial-select:focus{outline:1px solid #7DC8F7;border-color:#7DC8F7}
 .scheduled-match-label{display:inline-flex;align-items:center;padding:3px 9px;border:1px solid #35566b;border-radius:20px;color:#7DC8F7;background:#14283B;font-size:11px;font-weight:800;white-space:nowrap}
 #tournamentFixtureEditModal{position:fixed;inset:0;z-index:10002;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.80)}#tournamentFixtureEditModal.is-open{display:flex}#tournamentFixtureEditModal .delete-player-dialog{width:min(100%,680px);max-height:92vh;overflow-y:auto;padding:22px;border:1px solid #4169E1;border-radius:12px;background:#101820;box-shadow:0 18px 60px rgba(0,0,0,.7)}#tournamentFixtureEditModal .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}#tournamentFixtureEditModal label{display:block;margin:10px 0 5px}#tournamentFixtureEditModal input,#tournamentFixtureEditModal select,#tournamentFixtureEditModal textarea{width:100%;margin-bottom:7px}#tournamentFixtureEditModal textarea{resize:vertical;min-height:60px}#tournamentFixtureEditModal p{margin:0 0 12px;color:#b8cbd6}@media(max-width:560px){#tournamentFixtureEditModal{padding:8px}#tournamentFixtureEditModal .delete-player-dialog{padding:15px}#tournamentFixtureEditModal .form-grid{grid-template-columns:minmax(0,1fr)}}
+.tournament-round-fixtures{margin:16px 0;padding:14px;border:1px solid #35566b;border-left:4px solid #7DC8F7;background:#0d1518;border-radius:8px}.tournament-round-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}.tournament-round-heading h3{margin:0;color:#7DC8F7;font-size:16px}.tournament-round-heading span{font-size:11px;color:#a9c0cd;font-weight:700}.tournament-round-fixtures .table-scroll{margin-top:0}.tournament-round-fixtures table{min-width:760px}.tournament-round-fixtures th:first-child,.tournament-round-fixtures td:first-child{width:68px;text-align:center;font-weight:800;color:#7DC8F7}
 </style>
 </head>
 <body>
@@ -1314,7 +1315,10 @@ function renderTournamentTab(){
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
- const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||'')||(a.is_scheduled&&b.is_scheduled?Number((a.notes||'').split('Fixture ').pop()||0)-Number((b.notes||'').split('Fixture ').pop()||0):0));
+ const matches=data.matches.filter(m=>m.tournament_id===id);
+ const fixtureNumber=m=>{const hit=String(m.notes||'').match(/Fixture\\s*(\\d+)/i);return hit?Number(hit[1]):Number.MAX_SAFE_INTEGER;};
+ const roundNumber=m=>{const hit=String(m.round_name||'').match(/round\\s*(\\d+)/i);return hit?Number(hit[1]):99;};
+ matches.sort((a,b)=>roundNumber(a)-roundNumber(b)||fixtureNumber(a)-fixtureNumber(b)||(a.match_date||'').localeCompare(b.match_date||'')||String(a.created_at||'').localeCompare(String(b.created_at||'')));
  let out='';
  if(selectedTournamentTab==='table'){
   const groupMatches=matches.filter(m=>m.group_id&&!m.is_scheduled);
@@ -1357,7 +1361,20 @@ function renderTournamentTab(){
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
-   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins.</p>'+table(['Group / Round','Blader','Score','Opponent','Date',...((isSuperAdmin||isSinanContentAdmin)?['Actions']:[])],matches.map(m=>row([E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),tournamentPlayerCell(m.player1_id),m.is_scheduled?'<span class="scheduled-match-label">Scheduled</span>':m.player1_points+'–'+m.player2_points,tournamentPlayerCell(m.player2_id),displayDate(m.match_date),...(isAdmin?['<div class="button-row"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Edit</button>'+(m.is_scheduled?'<button type="button" class="small" data-record-scheduled-match="'+E(m.id)+'">Record result</button>':'')+((isSuperAdmin||isSinanContentAdmin)?'<button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Delete</button>':'')+'</div>']:[])])));
+   const matchActions=m=>isAdmin?'<div class="button-row"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Edit</button>'+(m.is_scheduled?'<button type="button" class="small" data-record-scheduled-match="'+E(m.id)+'">Record result</button>':'')+((isSuperAdmin||isSinanContentAdmin)?'<button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Delete</button>':'')+'</div>':'';
+   const matchRow=(m,serial)=>row([E(serial),E(groups.find(g=>g.id===m.group_id)?.name||'—'),tournamentPlayerCell(m.player1_id),m.is_scheduled?'<span class="scheduled-match-label">Scheduled</span>':E(m.player1_points)+'–'+E(m.player2_points),tournamentPlayerCell(m.player2_id),displayDate(m.match_date),...(isAdmin?[matchActions(m)]:[])]);
+   out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins. Fixture numbers follow the official schedule.</p>';
+   if(isRiseChampionship){
+    const rounds=[1,2,3].map(n=>({number:n,items:matches.filter(m=>roundNumber(m)===n)}));
+    rounds.forEach(round=>{
+     const rows=round.items.map((m,i)=>matchRow(m,fixtureNumber(m)!==Number.MAX_SAFE_INTEGER?fixtureNumber(m):i+1));
+     out+='<section class="tournament-group-card tournament-round-fixtures"><div class="tournament-round-heading"><h3>Round '+round.number+'</h3><span>'+round.items.length+' fixtures</span></div>'+table(['Match #','Group','Blader','Score','Opponent','Date',...(isAdmin?['Actions']:[])],rows)+'</section>';
+    });
+    const other=matches.filter(m=>roundNumber(m)>3);
+    if(other.length)out+='<section class="tournament-group-card tournament-round-fixtures"><div class="tournament-round-heading"><h3>Other / Knockout Matches</h3><span>'+other.length+' fixtures</span></div>'+table(['Match #','Group','Blader','Score','Opponent','Date',...(isAdmin?['Actions']:[])],other.map((m,i)=>matchRow(m,fixtureNumber(m)!==Number.MAX_SAFE_INTEGER?fixtureNumber(m):'—')))+'</section>';
+   }else{
+    out+=table(['Match #','Group / Round','Blader','Score','Opponent','Date',...(isAdmin?['Actions']:[])],matches.map((m,i)=>row([E(fixtureNumber(m)!==Number.MAX_SAFE_INTEGER?fixtureNumber(m):i+1),E([groups.find(g=>g.id===m.group_id)?.name,m.round_name].filter(Boolean).join(' · ')||'—'),tournamentPlayerCell(m.player1_id),m.is_scheduled?'<span class="scheduled-match-label">Scheduled</span>':E(m.player1_points)+'–'+E(m.player2_points),tournamentPlayerCell(m.player2_id),displayDate(m.match_date),...(isAdmin?[matchActions(m)]:[])])));
+   }
   }else if(selectedTournamentTab==='bracket'){
    const knockout=matches.filter(m=>!m.is_scheduled&&!m.group_id&&m.round_name&&!/group/i.test(m.round_name));
    const stageOf=name=>{
