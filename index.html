@@ -1251,7 +1251,7 @@ function renderTournamentTab(){
    return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
   }).join('');
   const best=groups.flatMap(g=>calcGroup(g,groupMatches.filter(m=>m.group_id===g.id))).filter(x=>x.played>0).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff)[0];
-  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total margin across won matches only. The +/− column shows overall points difference. Tap a blader name to open their full record.</p>';
+  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total margin across won matches only. The +/− column shows overall points difference. Top 3 from each group qualify for the Round of 12. Tap a blader name to open their full record.</p>';
   if(best)out+='<div class="standings-champion"><span class="champion-cup">♕</span><div><small>TOURNAMENT LEADER</small><h3>'+playerButton(best.id,best.name)+'</h3><p>Best group-stage record — '+best.w+' wins, margin '+best.diff+'</p></div></div>';
   out+='<div class="standings-filter"><button type="button" data-table-group="all" class="'+(selectedTableGroup==='all'?'active':'')+'">All</button>'+groups.map(g=>'<button type="button" data-table-group="'+E(g.id)+'" class="'+(selectedTableGroup===g.id?'active':'')+'">'+E(g.name)+'</button>').join('')+'</div>'+ (groupRows||'<div class="empty">No group match results have been recorded yet.</div>')+'</div>';
  }else{
@@ -1303,6 +1303,8 @@ function renderTournamentTab(){
    out='<h3>Bladers</h3><p class="muted">Participants and their tournament records.</p>'+table(['Blader','Played','Wins','Losses','Points'],entries.map(e=>{const x=stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0};return row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,x.points]);}));
   }
  }
+ const stageCounts={group:matches.filter(m=>m.group_id).length,r12:matches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:matches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:matches.filter(m=>/semi/i.test(m.round_name||'')).length,final:matches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
+ out='<div class="bx-admin-editor" style="margin-bottom:14px"><h3>BEYFANS X RISE · 16-PLAYER CHAMPIONSHIP FORMAT</h3><p>Group Stage: 4 groups × 4 players · 3 matches per player · Top 3 from each group qualify (12 players). Round of 12: 6 knockout matches · 6 winners + 2 highest-scoring losers advance. Super 8: 4 Quarter-finals · Semi-finals: 2 · Grand Final: 1.</p><p><strong>Recorded so far:</strong> Group '+stageCounts.group+'/24 · R12 '+stageCounts.r12+'/6 · Super 8 '+stageCounts.quarter+'/4 · Semi '+stageCounts.semi+'/2 · Final '+stageCounts.final+'/1</p></div>'+out;
  $('tournamentTabContent').innerHTML=out;
  if(selectedTournamentTab==='bracket'){
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(drawBracketConnectors));
