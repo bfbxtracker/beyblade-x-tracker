@@ -1316,8 +1316,8 @@ function renderTournamentTab(){
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
  const matches=data.matches.filter(m=>m.tournament_id===id);
- const fixtureNumber=m=>{const hit=String(m.notes||'').match(/Fixture\\s*(\\d+)/i);return hit?Number(hit[1]):Number.MAX_SAFE_INTEGER;};
- const roundNumber=m=>{const hit=String(m.round_name||'').match(/round\\s*(\\d+)/i);return hit?Number(hit[1]):99;};
+ const fixtureNumber=m=>{const hit=String(m.notes||'').match(/Fixture\s*(\d+)/i);return hit?Number(hit[1]):Number.MAX_SAFE_INTEGER;};
+ const roundNumber=m=>{const hit=String(m.round_name||'').match(/round\s*(\d+)/i);return hit?Number(hit[1]):99;};
  matches.sort((a,b)=>roundNumber(a)-roundNumber(b)||fixtureNumber(a)-fixtureNumber(b)||(a.match_date||'').localeCompare(b.match_date||'')||String(a.created_at||'').localeCompare(String(b.created_at||'')));
  let out='';
  if(selectedTournamentTab==='table'){
