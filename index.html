@@ -830,6 +830,9 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .hero-banner-admin #heroBannerManageDelete,.hero-banner-admin .hero-banner-upload{position:static!important;display:inline-flex;align-items:center;justify-content:center;margin:0;white-space:nowrap}
 .hero-banner-delete-actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px;margin-top:18px}
 .hero-banner-delete-actions button{position:static!important;display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin:0;white-space:nowrap}
+
+.bx-group-serial{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-right:5px;padding:0 5px;border-radius:4px;background:#173448;border:1px solid #2b6079;color:#8edaff;font-size:10px;font-weight:800;vertical-align:middle}
+.bx-standing-serial{display:inline-block;min-width:38px;color:#8edaff;font-size:11px;font-weight:800;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1282,9 +1285,10 @@ function renderTournamentTab(){
    return [...map.values()].map(x=>({...x,diff:x.points-x.against})).sort((a,b)=>{const ea=entries.find(e=>e.player_id===a.id),eb=entries.find(e=>e.player_id===b.id);if(ea?.seed!=null&&eb?.seed!=null&&ea.seed!==eb.seed)return ea.seed-eb.seed;if(ea?.seed!=null&&eb?.seed==null)return -1;if(ea?.seed==null&&eb?.seed!=null)return 1;return b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff||a.name.localeCompare(b.name);});
   };
   const groupRows=activeGroups.map(g=>{
-   const gm=groupMatches.filter(m=>m.group_id===g.id),st=calcGroup(g,gm);
-   const canReorder=isSuperAdmin||isSinanContentAdmin,rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>','<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+tournamentPlayerCell(x.id)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.winMargin,x.diff>0?'+'+x.diff:x.diff]));
-   return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
+   const gm=groupMatches.filter(m=>m.group_id===g.id),st=calcGroup(g,gm),serialPlayers=entries.filter(e=>e.group_id===g.id);
+   const serialOf=pid=>{const n=serialPlayers.findIndex(e=>e.player_id===pid)+1;return n?g.name+'-'+n:'—';};
+   const canReorder=isSuperAdmin||isSinanContentAdmin,rows=st.map((x,i)=>row(['<span class="rank">'+(i+1)+'</span>','<span class="bx-standing-serial">'+E(serialOf(x.id))+'</span>','<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+tournamentPlayerCell(x.id)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.winMargin,x.diff>0?'+'+x.diff:x.diff]));
+   return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['Rank','Serial','Blader','P','W','L','Margin','+/−'],rows)+'</div>';
   }).join('');
   const best=groups.flatMap(g=>calcGroup(g,groupMatches.filter(m=>m.group_id===g.id))).filter(x=>x.played>0).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff)[0];
   out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total margin across won matches only. The +/− column shows overall points difference. Top 3 from each group qualify for the Round of 12. Tap a blader name to open their full record.</p>';
@@ -1295,7 +1299,7 @@ function renderTournamentTab(){
   if(selectedTournamentTab==='groups'){
    out='<h3>Groups</h3><p class="muted">Players registered in each group.</p>';
    if(!groups.length)out+='<div class="empty">No groups have been created for this tournament yet.</div>';
-   groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+renderKnockoutDeck(e.deck)+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+((isSuperAdmin||isSinanContentAdmin)?'<button type="button" class="small danger" data-tournament-tab-delete-group="'+E(g.id)+'">Delete group</button>':'')+'</div>';});
+   groups.forEach(g=>{const players=entries.filter(e=>e.group_id===g.id);out+='<div class="tournament-group-card"><h3>'+E(g.name)+' <small class="muted">'+players.length+' bladers</small></h3>'+(players.length?players.map((e,i)=>'<span class="tournament-blader-chip"><span class="bx-group-serial">'+(i+1)+'</span>'+playerButton(e.player_id,pName(e.player_id))+renderKnockoutDeck(e.deck)+'</span>').join(''):'<p class="muted">No players assigned yet.</p>')+((isSuperAdmin||isSinanContentAdmin)?'<button type="button" class="small danger" data-tournament-tab-delete-group="'+E(g.id)+'">Delete group</button>':'')+'</div>';});
    const unassigned=entries.filter(e=>!e.group_id);if(unassigned.length)out+='<div class="tournament-group-card"><h3>Unassigned</h3>'+unassigned.map(e=>'<span class="tournament-blader-chip">'+playerButton(e.player_id,pName(e.player_id))+'</span>').join('')+'</div>';
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
