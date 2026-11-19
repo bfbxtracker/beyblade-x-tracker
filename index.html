@@ -1190,6 +1190,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const r12Fixtures=[['A1 vs B3',0,1,1,3],['B1 vs A3',1,3,0,3],['C1 vs D3',2,3,3,3],['D1 vs C3',3,3,2,3],['A2 vs B2',0,2,1,2],['C2 vs D2',2,2,3,2]];
  const r12Name=m=>String(m.round_name||'').match(/R12[- ]?([1-6])/i)?.[1];
  if(isRise&&stage==='r12'){
+  const groupStageComplete=groupMatches.length===24&&groups.length===4&&groups.every(g=>entries.filter(e=>e.group_id===g.id).length===4);
   const forms=r12Fixtures.map((fx,i)=>{
    const fixtureNo=i+1,existing=stageMatches.some(m=>Number(r12Name(m))===fixtureNo);
    const groupA=standings[fx[1]],rankA=fx[2],groupB=standings[fx[3]],rankB=fx[4];
@@ -1197,7 +1198,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
    const select=(side,g,rank)=>'<label>Blader '+side+' · '+(g?.group?.name||'Group')+' #'+rank+'<select name="player'+side+'_id" required><option value="">'+(g?.players?.[rank-1]?'Choose qualifier':'Waiting for group standings')+'</option>'+option(g,rank)+'</select></label>';
    return existing?'<div class="bx-admin-editor"><strong>R12-'+fixtureNo+' · '+fx[0]+'</strong><p>Match already recorded.</p></div>':'<form class="bx-admin-editor bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="r12" data-rise-fixture="'+fixtureNo+'"><h4>R12-'+fixtureNo+' · '+fx[0]+'</h4><input type="hidden" name="round_name" value="Round of 12 · R12-'+fixtureNo+'">'+select(1,groupA,rankA)+select(2,groupB,rankB)+'<label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label><button class="primary" type="submit" '+(!groupA?.players?.[rankA-1]||!groupB?.players?.[rankB-1]?'disabled':'')+'>Save R12-'+fixtureNo+'</button></form>';
   }).join('');
-  return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Round of 12 fixed fixtures</h4><p>Each fixture is assigned from the specified group standings: top 3 from each group qualify. Record all six matches to determine the six direct qualifiers and two best-scoring losers.</p>'+forms+'</div>';
+  return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Round of 12 fixed fixtures</h4><p>Each fixture is assigned from the specified group standings: top 3 from each group qualify. Record all six matches to determine the six direct qualifiers and two best-scoring losers.</p>'+(groupStageComplete?'':'<p><strong>Complete the 24 group-stage matches with four groups of four players before recording Round of 12 fixtures.</strong></p>')+forms+'</div>';
  }
  const r12Results=round12.filter(m=>winnerOf(m));
  const winners=r12Results.map(winnerOf).filter(Boolean);
@@ -1890,6 +1891,8 @@ document.addEventListener('submit',async e=>{
    const player1_id=await resolveKnockoutPlayer('player1_id'),player2_id=await resolveKnockoutPlayer('player2_id');
    if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different Bladers.');
    if(isRiseTournament&&stage==='r12'){
+    const groupMatches=data.matches.filter(m=>m.tournament_id===tournament_id&&m.group_id),groups=data.tournament_groups.filter(g=>g.tournament_id===tournament_id);
+    if(groupMatches.length!==24||groups.length!==4||!groups.every(g=>data.tournament_participants.filter(e=>e.tournament_id===tournament_id&&e.group_id===g.id).length===4))throw new Error('Complete all 24 Group Stage matches with four groups of four players before Round of 12.');
     const fixture=Number(knockoutForm.dataset.riseFixture),pairs=[[0,1,1,3],[1,1,0,3],[2,1,3,3],[3,1,2,3],[0,2,1,2],[2,2,3,2]];
     const spec=pairs[fixture-1],groups=data.tournament_groups.filter(g=>g.tournament_id===tournament_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
     if(!spec||groups.length<4)throw new Error('Create four groups before recording Round of 12 fixtures.');
