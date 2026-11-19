@@ -1204,6 +1204,17 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const bestLoserRows=r12Results.map(m=>({id:loserOf(m),score:loserOf(m)===m.player1_id?Number(m.player1_points):Number(m.player2_points),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points))})).sort((a,b)=>b.score-a.score||b.margin-a.margin||pName(a.id).localeCompare(pName(b.id))).slice(0,2);
  const qualified=stage==='quarter'&&round12.length===6&&winners.length===6?[...winners,...bestLoserRows.map(x=>x.id)]:entries.map(e=>e.player_id);
  const seedRows=stage==='quarter'?r12Results.map(m=>({id:winnerOf(m),score:Math.max(Number(m.player1_points),Number(m.player2_points)),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points)),kind:'Winner'})).concat(bestLoserRows.map(x=>({...x,kind:'Best loser'}))).sort((a,b)=>b.score-a.score||b.margin-a.margin||a.kind.localeCompare(b.kind)): [];
+ if(isRise&&stage==='quarter'){
+  const qfPairs=[[0,7],[3,4],[1,6],[2,5]];
+  const qfForms=qfPairs.map((pair,i)=>{
+   const no=i+1,existing=stageMatches.some(m=>/QF[- ]?\d+/i.test(m.round_name||'')&&Number(String(m.round_name).match(/QF[- ]?(\d+)/i)?.[1])===no);
+   const a=seedRows[pair[0]],b=seedRows[pair[1]];
+   const one=(side,item,seed)=>'<label>Seed '+seed+'<select name="player'+side+'_id" required><option value="'+E(item?.id||'')+'">'+(item?E(pName(item.id)):'Waiting for all R12 results')+'</option></select></label>';
+   return existing?'<div class="bx-admin-editor"><strong>QF-'+no+' · Seed '+(pair[0]+1)+' vs Seed '+(pair[1]+1)+'</strong><p>Match already recorded.</p></div>':'<form class="bx-admin-editor bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="quarter" data-rise-qf="'+no+'"><h4>QF-'+no+' · Seed '+(pair[0]+1)+' vs Seed '+(pair[1]+1)+'</h4><input type="hidden" name="round_name" value="Quarter-final · QF-'+no+'">'+one(1,a,pair[0]+1)+one(2,b,pair[1]+1)+'<label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="0" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="0" required></label><button class="primary" type="submit" '+(!a||!b?'disabled':'')+'>Save QF-'+no+'</button></form>';
+  }).join('');
+  const guide='<div class="bx-seed-guide"><h4>Super 8 qualification & seed ranking</h4><p>Six R12 winners and the two highest-scoring R12 losers qualify. Seeds are ranked by R12 performance: score, then score margin.</p>'+seedRows.map((x,i)=>'<p><strong>Seed '+(i+1)+'</strong> · '+E(pName(x.id))+' · '+E(x.kind)+' · '+x.score+' points</p>').join('')+'</div>';
+  return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Super 8 fixed quarter-final fixtures</h4>'+guide+qfForms+'</div>';
+ }
  const ordered=stage==='quarter'?seedRows.map(x=>x.id):qualified;
  const eligible=ordered.map(id=>data.players.find(p=>p.id===id)).filter(Boolean);
  const opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(p.viewer_name?p.viewer_name+' — '+p.name:p.name)+'</option>').join('');
