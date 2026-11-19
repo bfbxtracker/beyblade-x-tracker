@@ -1174,19 +1174,18 @@ function tournamentAdminGroupControls(tid,groups,entries){
 }
 function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(!isAdmin)return '';
- const isRiseTournament=/beyfans\s*x\s*rise/i.test(data.tournaments.find(t=>t.id===tid)?.name||''),capacity={r16:isRiseTournament?4:8,quarter:4,semi:2,final:1}[stage],roundLabels={r16:isRiseTournament?'Round of 12':'Round of 16',quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
- const label=roundLabels[stage],eligible=entries.map(e=>data.players.find(p=>p.id===e.player_id)).filter(Boolean),opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(p.viewer_name?p.viewer_name+' — '+p.name:p.name)+'</option>').join(''),full=stageMatches.length>=capacity;
- const previous={quarter:roundLabels.r16,semi:'Quarter-final',final:'Semi-final'}[stage];
- const player=number=>'<div class="bx-knockout-player-head"><label>Player '+number+(previous?' · Drop winner':'')+(stage==='r16'?'<select name="player'+number+'_id" required><option value="">Choose a Group Stage player</option>'+opts+'</select>':'<select name="player'+number+'_id" required><option value="">Waiting for winner</option>'+opts+'</select>')+(previous?'<div class="bx-knockout-dropzone" data-knockout-drop-side="'+number+'">↧ Drop winner from '+previous+' here</div>':'')+'</label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
- if(previous){
-  return '<div class="bx-admin-editor bx-bracket-round-editor bx-knockout-auto-stage"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · Drag a completed winner from '+previous+' into each slot. Their Group Stage deck is displayed automatically.</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+'</div><button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
- }
- return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' Player slots</p><datalist id="bxR16BladerOptions">'+data.players.map(p=>'<option value="'+E(p.name)+'"></option>').join('')+'</datalist><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'"><div class="bx-knockout-blader-block">'+player(1)+'</div><div class="bx-knockout-blader-block">'+player(2)+'</div><button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
+ const labels={r12:'Round of 12',quarter:'Quarter-final',semi:'Semi-final',final:'Grand Final'};
+ const capacities={r12:6,quarter:4,semi:2,final:1};
+ const label=labels[stage],capacity=capacities[stage],eligible=entries.map(e=>data.players.find(p=>p.id===e.player_id)).filter(Boolean);
+ const opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(p.viewer_name?p.viewer_name+' — '+p.name:p.name)+'</option>').join('');
+ const full=stageMatches.length>=capacity;
+ const player=number=>'<div class="bx-knockout-blader-block"><label>Blader '+number+'<select name="player'+number+'_id" required><option value="">Choose qualified Blader</option>'+opts+'</select></label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' player slots. Select players manually; for Super 8, include the six winners and the two highest-scoring Round of 12 losers.</p><form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+label+'">'+player(1)+player(2)+'<button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
 function drawBracketConnectors(){
  const tree=document.querySelector('.bx-bracket-tree');if(!tree)return;
  tree.querySelectorAll('.bx-bracket-connectors').forEach(x=>x.remove());
- const stages=['r16','quarter','semi','final'];
+ const stages=['r12','quarter','semi','final'];
  const rect=tree.getBoundingClientRect(),width=tree.scrollWidth,height=tree.scrollHeight;
  const ns='http://www.w3.org/2000/svg';
  const svg=document.createElementNS(ns,'svg');svg.setAttribute('class','bx-bracket-connectors');svg.setAttribute('viewBox','0 0 '+width+' '+height);svg.setAttribute('width',width);svg.setAttribute('height',height);
@@ -1263,16 +1262,16 @@ function renderTournamentTab(){
    const stageOf=name=>{
     const n=(name||'').toLowerCase().replace(/[._-]/g,' ').replace(/\\s+/g,' ').trim();
     if(/third|3rd|bronze/.test(n))return 'third';
-    if(/round of 12|round 12|last 12|top 12|12 team/.test(n))return 'r16';
-     if(/round of 16|round 16|last 16|r16|top 16|sweet 16|16 team/.test(n))return 'r16';
+    if(/round of 12|round 12|last 12|top 12|12 team/.test(n))return 'r12';
+     if(/round of 16|round 16|last 16|r16|top 16|sweet 16|16 team/.test(n))return 'r12';
     if(/quarter|last 8|top 8|qf|quarterfinal/.test(n))return 'quarter';
     if(/semi|last 4|top 4|sf|semifinal/.test(n))return 'semi';
     if(/^final$|grand final|championship final/.test(n))return 'final';
-    const m=n.match(/round\\s*(\\d+)/);if(m){const v=Number(m[1]);if(v>=16)return 'r16';if(v>=8)return 'quarter';if(v>=4)return 'semi';if(v===1)return 'final';}
+    const m=n.match(/round\\s*(\\d+)/);if(m){const v=Number(m[1]);if(v>=12)return 'r12';if(v>=8)return 'quarter';if(v>=4)return 'semi';if(v===1)return 'final';}
     return 'other';
    };
    const isRiseTournament=/beyfans\s*x\s*rise/i.test(data.tournaments.find(t=>t.id===id)?.name||''),openingRoundLabel=isRiseTournament?'Round of 12':'Round of 16';
-    const stages=[{id:'r16',label:openingRoundLabel,hint:'First to 4'},{id:'quarter',label:'Quarter-finals',hint:'First to 5'},{id:'semi',label:'Semi-finals',hint:'First to 5'},{id:'final',label:'Final',hint:'First to 7'}];
+    const stages=[{id:'r12',label:openingRoundLabel,hint:'6 matches · 6 winners + 2 best-scoring losers'},{id:'quarter',label:'Super 8 · Quarter-finals',hint:'4 matches · 8 qualified Bladers'},{id:'semi',label:'Semi-finals',hint:'2 matches'},{id:'final',label:'Grand Final',hint:'1 championship match'}];
    const winnerOf=m=>Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null;
    const loserOf=m=>{const w=winnerOf(m);return w===m.player1_id?m.player2_id:w===m.player2_id?m.player1_id:null;};
    const third=knockout.filter(m=>stageOf(m.round_name)==='third');
@@ -1288,7 +1287,7 @@ function renderTournamentTab(){
    const r16Matches=main.filter(m=>stageOf(m.round_name)==='r16').sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
    if(isAdmin)out+='<section class="bx-r16-admin-top">'+tournamentAdminKnockoutControls(id,entries,'r16',r16Matches)+'</section>';
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+E(pName(runner))+'</p></div></div>';
-   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));const capacity={r16:isRiseTournament?4:8,quarter:4,semi:2,final:1}[stage.id];const blanks=isAdmin&&stage.id!=='r16'?Array.from({length:Math.max(0,capacity-stageMatches.length)},(_,i)=>'<div class="bx-bracket-match bx-empty-match" data-knockout-target-match data-tournament-id="'+E(id)+'" data-stage="'+stage.id+'" data-slot-index="'+(stageMatches.length+i)+'"><div class="bx-match-code">'+stage.label+'</div>'+[1,2].map(side=>'<div class="bx-tree-slot bx-knockout-tree-drop" data-knockout-target-side="'+side+'"><span class="bx-tree-slot-content"><span class="bx-tree-slot-label">Blader '+side+'</span></span></div>').join('')+'</div>').join(''):'';return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+stageMatches.map(matchCard).join('')+blanks+(stageMatches.length===0&&!isAdmin?'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>':'')+'</section>';}).join('')+'</div>';
+   out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));const capacity={r12:6,quarter:4,semi:2,final:1}[stage.id];const blanks=isAdmin&&stage.id!=='r12'?Array.from({length:Math.max(0,capacity-stageMatches.length)},(_,i)=>'<div class="bx-bracket-match bx-empty-match" data-knockout-target-match data-tournament-id="'+E(id)+'" data-stage="'+stage.id+'" data-slot-index="'+(stageMatches.length+i)+'"><div class="bx-match-code">'+stage.label+'</div>'+[1,2].map(side=>'<div class="bx-tree-slot bx-knockout-tree-drop" data-knockout-target-side="'+side+'"><span class="bx-tree-slot-content"><span class="bx-tree-slot-label">Blader '+side+'</span></span></div>').join('')+'</div>').join(''):'';return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+stageMatches.map(matchCard).join('')+blanks+(stageMatches.length===0&&!isAdmin?'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>':'')+'</section>';}).join('')+'</div>';
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
    if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
   }else{
@@ -1844,7 +1843,7 @@ document.addEventListener('submit',async e=>{
    }
    const player1_id=await resolveKnockoutPlayer('player1_id'),player2_id=await resolveKnockoutPlayer('player2_id');
    if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different Bladers.');
-   const stageKey=name=>{const n=String(name||'').toLowerCase();return /round of 12|round 12|last 12|round of 16|round 16|last 16|r16/.test(n)?'r16':/quarter/.test(n)?'quarter':/semi/.test(n)?'semi':/^final$|grand final/.test(n)?'final':'other';};
+   const stageKey=name=>{const n=String(name||'').toLowerCase();return /round of 12|round 12|last 12|round of 16|round 16|last 16|r16/.test(n)?'r12':/quarter|super 8/.test(n)?'quarter':/semi/.test(n)?'semi':/final/.test(n)?'final':'other';};
    const currentRound=data.matches.filter(m=>m.tournament_id===tournament_id&&stageKey(m.round_name)===stage);
    if(currentRound.length>=capacity)throw new Error('This round already has all '+capacity+' matches.');
    if(currentRound.some(m=>[m.player1_id,m.player2_id].includes(player1_id)||[m.player1_id,m.player2_id].includes(player2_id)))throw new Error('A Blader is already assigned to a match in this round. Remove or edit that match first.');
@@ -1942,7 +1941,7 @@ document.addEventListener('drop',async e=>{
  if(allMatches.length>=( {quarter:4,semi:2,final:1}[stage]||0)){banner('This round is full.','error');return;}
  const ids=[slots[0].dataset.playerId,slots[1].dataset.playerId];
  if(allMatches.some(m=>ids.some(pid=>[m.player1_id,m.player2_id].includes(pid)))){banner('A Blader is already assigned to another match in this round.','error');return;}
- const labels={quarter:'Quarter-final',semi:'Semi-final',final:'Final'};
+ const labels={r12:'Round of 12',quarter:'Quarter-final',semi:'Semi-final',final:'Grand Final'};
  const {error}=await sb.from('matches').insert({tournament_id,round_name:labels[stage],player1_id:ids[0],player2_id:ids[1],player1_deck:JSON.parse(slots[0].dataset.deck||'[]'),player2_deck:JSON.parse(slots[1].dataset.deck||'[]'),player1_points:0,player2_points:0});
  if(error){banner('Could not save '+labels[stage]+' match: '+error.message,'error');return;}
  await loadAll();selectedTournamentId=tournament_id;selectedTournamentTab='bracket';renderTournamentTab();banner(labels[stage]+' match created from the bracket. Add scores using Edit.','success');
