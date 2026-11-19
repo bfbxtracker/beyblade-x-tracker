@@ -1187,7 +1187,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
   groupMatches.filter(m=>m.group_id===g.id).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.points+=ap;a.against+=bp;b.points+=bp;b.against+=ap;if(ap>bp){a.w++;a.winMargin+=ap-bp;}else if(bp>ap){b.w++;b.winMargin+=bp-ap;}});
   return {group:g,players:rows.map(x=>({...x,diff:x.points-x.against})).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff||pName(a.id).localeCompare(pName(b.id)))};
  });
- const r12Fixtures=[['A1 vs B3',0,2,1,3],['B1 vs A3',1,3,0,3],['C1 vs D3',2,3,3,3],['D1 vs C3',3,3,2,3],['A2 vs B2',0,2,1,2],['C2 vs D2',2,2,3,2]];
+ const r12Fixtures=[['A1 vs B3',0,1,1,3],['B1 vs A3',1,3,0,3],['C1 vs D3',2,3,3,3],['D1 vs C3',3,3,2,3],['A2 vs B2',0,2,1,2],['C2 vs D2',2,2,3,2]];
  const r12Name=m=>String(m.round_name||'').match(/R12[- ]?([1-6])/i)?.[1];
  if(isRise&&stage==='r12'){
   const forms=r12Fixtures.map((fx,i)=>{
@@ -1878,7 +1878,7 @@ document.addEventListener('submit',async e=>{
    const player1_id=await resolveKnockoutPlayer('player1_id'),player2_id=await resolveKnockoutPlayer('player2_id');
    if(!player1_id||!player2_id||player1_id===player2_id)throw new Error('Choose two different Bladers.');
    if(isRiseTournament&&stage==='r12'){
-    const fixture=Number(knockoutForm.dataset.riseFixture),pairs=[[0,1,2,3],[1,1,0,3],[2,1,3,3],[3,1,2,3],[0,2,1,2],[2,2,3,2]];
+    const fixture=Number(knockoutForm.dataset.riseFixture),pairs=[[0,1,1,3],[1,1,0,3],[2,1,3,3],[3,1,2,3],[0,2,1,2],[2,2,3,2]];
     const spec=pairs[fixture-1],groups=data.tournament_groups.filter(g=>g.tournament_id===tournament_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
     if(!spec||groups.length<4)throw new Error('Create four groups before recording Round of 12 fixtures.');
     const ranked=groups.map(g=>{const rows=data.tournament_participants.filter(e=>e.tournament_id===tournament_id&&e.group_id===g.id).map(e=>({id:e.player_id,w:0,margin:0,points:0,against:0}));data.matches.filter(m=>m.tournament_id===tournament_id&&m.group_id===g.id).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.points+=ap;a.against+=bp;b.points+=bp;b.against+=ap;if(ap>bp){a.w++;a.margin+=ap-bp;}else if(bp>ap){b.w++;b.margin+=bp-ap;}});return rows.sort((a,b)=>b.w-a.w||b.margin-a.margin||(b.points-b.against)-(a.points-a.against)||pName(a.id).localeCompare(pName(b.id));});
