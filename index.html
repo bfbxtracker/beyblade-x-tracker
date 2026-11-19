@@ -1106,7 +1106,7 @@ function table(headers,rows){if(!rows.length)return '<div class="empty">No recor
 function row(cells){return '<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';}
 function playerOptionLabel(x){return x.viewer_name?x.viewer_name+' — '+x.name:x.name;}
 function options(id,items,emptyLabel,selected=null){const el=$(id),old=selected===null?el.value:selected;el.innerHTML=`<option value="">${E(emptyLabel)}</option>`+items.map(x=>`<option value="${E(x.id)}">${E(items===data.players?playerOptionLabel(x):x.name)}</option>`).join('');if(items.some(x=>x.id===old))el.value=old;}
-function playerButton(id,name){const p=data.players.find(x=>x.id===id),viewer=String(p?.viewer_name||'').trim(),hasProfile=!!p;return `<button type="button" class="player-link ${hasProfile?'has-blader-profile':''}" data-profile="${E(id)}"><span class="player-identity">${viewer?`<strong class="player-viewer-name">${E(viewer)}</strong>`:''}<span class="player-blader-name">${E(name)}</span></span></button>`;}
+function playerButton(id,name){const p=data.players.find(x=>x.id===id),viewer=String(p?.viewer_name||'').trim(),hasProfile=!!(p&&(viewer||p.profile_image_url||p.team||p.location||p.notes));return `<button type="button" class="player-link ${hasProfile?'has-blader-profile':''}" data-profile="${E(id)}"><span class="player-identity">${viewer?`<strong class="player-viewer-name">${E(viewer)}</strong>`:''}<span class="player-blader-name">${E(name)}</span></span></button>`;}
 
 function openPlayerProfile(id){
  const p=data.players.find(x=>x.id===id);if(!p)return;window.bfbxCurrentProfileId=id;
