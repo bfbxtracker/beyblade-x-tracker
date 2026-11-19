@@ -1313,7 +1313,7 @@ function renderTournamentTab(){
  document.querySelectorAll('[data-tournament-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tournamentTab===selectedTournamentTab));
  const groups=data.tournament_groups.filter(g=>g.tournament_id===id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
  const entries=data.tournament_participants.filter(p=>p.tournament_id===id);
- const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||'')||(a.is_scheduled&&b.is_scheduled?Number((a.notes||'').match(/Fixture (\\d+)/)?.[1]||0)-Number((b.notes||'').match(/Fixture (\\d+)/)?.[1]||0):0));
+ const matches=data.matches.filter(m=>m.tournament_id===id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||'')||(a.is_scheduled&&b.is_scheduled?Number((a.notes||'').split('Fixture ').pop()||0)-Number((b.notes||'').split('Fixture ').pop()||0):0));
  let out='';
  if(selectedTournamentTab==='table'){
   const groupMatches=matches.filter(m=>m.group_id&&!m.is_scheduled);
