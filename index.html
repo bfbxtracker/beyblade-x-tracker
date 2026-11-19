@@ -1093,7 +1093,7 @@ function renderMainTournamentStandings(){
  const rows=publicTournamentStandings.filter(x=>x.tournament_id===selectedPublicTournamentId).sort((a,b)=>Number(a.rank)-Number(b.rank));
  host.innerHTML=rows.length?table(['Rank','Player','Team','Group','Serial','P','W','L','D','Points','Win margin','+/−'],rows.map(x=>row([
   '<span class="rank">'+Number(x.rank)+'</span>',
-  x.is_verified?'<button type="button" class="player-link bx-public-profile-link" data-public-profile="'+E(x.player_id)+'"><strong>'+E(x.player_name)+'</strong></button>':'<strong>'+E(x.player_name)+'</strong>',
+  x.is_verified?'<button type="button" class="player-link bx-public-profile-link" data-public-profile="'+E(x.player_id)+'"><strong style="color:#7DC8F7!important">'+E(x.player_name)+'</strong></button>':'<strong>'+E(x.player_name)+'</strong>',
   E(x.team||'—'),E(x.group_name||'—'),E(x.serial||''),
   Number(x.played)||0,Number(x.wins)||0,Number(x.losses)||0,Number(x.draws)||0,
   Number(x.points)||0,Number(x.win_margin)||0,(Number(x.point_diff)||0)>0?'+'+Number(x.point_diff):Number(x.point_diff)||0
