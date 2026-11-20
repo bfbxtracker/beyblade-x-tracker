@@ -248,18 +248,19 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .standings-group-card th{font-size:11px;color:#A8BDCC;background:transparent}
 .standings-group-card td{font-size:13px}
  .standings-group-card td:nth-child(2) .player-link{font-weight:700!important}
-/* Red Blader names across every tournament tab */
-#tournamentWorkspace #tournamentTabContent .player-link,
-#tournamentWorkspace #tournamentTabContent .player-link .player-blader-name,
-#tournamentWorkspace #tournamentTabContent .tournament-blader-chip,
-#tournamentWorkspace #tournamentTabContent .bx-admin-assignment>strong,
-#tournamentWorkspace #tournamentTabContent .bx-match-player .player-link,
-#tournamentWorkspace #tournamentTabContent .bx-match-player.is-winner .player-link,
-#tournamentWorkspace #tournamentTabContent .bx-champion h2 .player-link{
+/* Only verified Bladers are red; unverified/non-approved names stay white */
+#tournamentWorkspace #tournamentTabContent .player-link.is-verified-blader .player-blader-name{
  color:#ff4b55!important;
 }
-#tournamentWorkspace #tournamentTabContent [data-group-player-option] span{
+#tournamentWorkspace #tournamentTabContent .player-link:not(.is-verified-blader) .player-blader-name,
+#tournamentWorkspace #tournamentTabContent .player-link:not(.is-verified-blader) .player-viewer-name{
+ color:#fff!important;
+}
+#tournamentWorkspace #tournamentTabContent [data-group-player-option][data-verified="true"] span{
  color:#ff4b55!important;
+}
+#tournamentWorkspace #tournamentTabContent [data-group-player-option]:not([data-verified="true"]) span{
+ color:#fff!important;
 }
 /* Make blader names more prominent throughout tournament tabs */
 .tournament-workspace .player-link,.tournament-group-card .player-link,.tournament-standings .player-link,.bx-tree-slot .player-link{font-weight:700!important}
@@ -1126,7 +1127,7 @@ function table(headers,rows){if(!rows.length)return '<div class="empty">No recor
 function row(cells){return '<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';}
 function playerOptionLabel(x){return x.viewer_name?x.viewer_name+' — '+x.name:x.name;}
 function options(id,items,emptyLabel,selected=null){const el=$(id),old=selected===null?el.value:selected;el.innerHTML=`<option value="">${E(emptyLabel)}</option>`+items.map(x=>`<option value="${E(x.id)}">${E(items===data.players?playerOptionLabel(x):x.name)}</option>`).join('');if(items.some(x=>x.id===old))el.value=old;}
-function playerButton(id,name){const p=data.players.find(x=>x.id===id),viewer=String(p?.viewer_name||'').trim(),hasProfile=!!(p&&(p.auth_user_id||viewer||p.profile_image_url||p.team||p.location||p.notes));return `<button type="button" class="player-link ${hasProfile?'has-blader-profile':''}" data-profile="${E(id)}"><span class="player-identity">${viewer?`<strong class="player-viewer-name">${E(viewer)}</strong>`:''}<span class="player-blader-name">${E(name)}</span></span></button>`;}
+function playerButton(id,name){const p=data.players.find(x=>x.id===id),viewer=String(p?.viewer_name||'').trim(),hasProfile=!!(p&&(p.auth_user_id||viewer||p.profile_image_url||p.team||p.location||p.notes)),isVerified=!!p?.auth_user_id;return `<button type="button" class="player-link ${hasProfile?'has-blader-profile':''} ${isVerified?'is-verified-blader':''}" data-profile="${E(id)}"><span class="player-identity">${viewer?`<strong class="player-viewer-name">${E(viewer)}</strong>`:''}<span class="player-blader-name">${E(name)}</span></span></button>`;}
 
 function openPlayerProfile(id){
  const p=data.players.find(x=>x.id===id);if(!p)return;window.bfbxCurrentProfileId=id;
@@ -1238,7 +1239,7 @@ function renderGroupPlayerSuggestions(input){
  if(!panel)return;
  const q=input.value.trim().toLowerCase(),assigned=new Set(data.tournament_participants.filter(e=>e.tournament_id===tid).map(e=>e.player_id));
  const matches=data.players.filter(p=>!assigned.has(p.id)&&(!q||p.name.toLowerCase().includes(q)||String(p.viewer_name||'').toLowerCase().includes(q)));
-  panel.innerHTML=matches.map(p=>'<button type="button" data-group-player-option data-tournament-id="'+E(tid)+'" data-player-name="'+E(p.name)+'" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:10px 12px;border:0;background:#fff;color:#111;text-align:left;cursor:pointer">'+(p.viewer_name?'<strong style="font-size:13px;font-weight:800">'+E(p.viewer_name)+'</strong>':'')+'<span style="font-size:'+(p.viewer_name?'11px':'13px')+';font-weight:600;color:'+(p.auth_user_id?'#7DC8F7':'#111')+'">'+E(p.name)+'</span></button>').join('')||'<div style="padding:10px 12px;color:#555">No matching existing Bladers. You can add a new name.</div>';
+  panel.innerHTML=matches.map(p=>'<button type="button" data-group-player-option data-verified="'+(p.auth_user_id?'true':'false')+'" data-tournament-id="'+E(tid)+'" data-player-name="'+E(p.name)+'" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:10px 12px;border:0;background:#fff;color:#111;text-align:left;cursor:pointer">'+(p.viewer_name?'<strong style="font-size:13px;font-weight:800;color:'+(p.auth_user_id?'#7DC8F7':'#fff')+'">'+E(p.viewer_name)+'</strong>':'')+'<span style="font-size:'+(p.viewer_name?'11px':'13px')+';font-weight:600;color:'+(p.auth_user_id?'#ff4b55':'#fff')+'">'+E(p.name)+'</span></button>').join('')||'<div style="padding:10px 12px;color:#555">No matching existing Bladers. You can add a new name.</div>';
  panel.classList.remove('hide');
 }
 function tournamentAdminGroupControls(tid,groups,entries){
