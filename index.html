@@ -359,6 +359,10 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 
 /* Admin-only in-tournament stage editors */
 .bx-admin-editor{margin:16px 0;padding:15px;border:1px solid #7DC8F7;border-radius:6px;background:#0b1415}
+.bx-rise-format-summary{margin:8px 0 10px;padding:9px 12px}
+.bx-rise-format-summary h3{font-size:13px;line-height:1.3;margin:0 0 4px}
+.bx-rise-format-summary p{font-size:11px;line-height:1.35;margin:0 0 6px}
+.bx-rise-format-summary p:last-child{margin-bottom:0}
 .bx-admin-editor h3,.bx-admin-stage-editors>h3{margin:0 0 5px;color:#7DC8F7;font-size:15px}
 .bx-admin-editor p{font-size:12px;color:#A8BDCC;margin:0 0 12px}
 .bx-admin-editor form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;margin:10px 0}
@@ -1418,7 +1422,7 @@ function renderTournamentTab(){
   }
  }
  const completedMatches=matches.filter(m=>!m.is_scheduled),stageCounts={group:completedMatches.filter(m=>m.group_id).length,r12:completedMatches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:completedMatches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:completedMatches.filter(m=>/semi/i.test(m.round_name||'')).length,final:completedMatches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
- if(isRiseChampionship)out='<div class="bx-admin-editor" style="margin-bottom:14px"><h3>BEYFANS X RISE · 16-PLAYER CHAMPIONSHIP FORMAT</h3><p>Group Stage: 4 groups × 4 players · 3 matches per player · Top 3 from each group qualify (12 players). Round of 12: 6 knockout matches · 6 winners + 2 highest-scoring losers advance. Super 8: 4 Quarter-finals · Semi-finals: 2 · Grand Final: 1.</p><p><strong>Recorded so far:</strong> Group '+stageCounts.group+'/24 · R12 '+stageCounts.r12+'/6 · Super 8 '+stageCounts.quarter+'/4 · Semi '+stageCounts.semi+'/2 · Final '+stageCounts.final+'/1</p></div>'+out;
+ if(isRiseChampionship)out='<div class="bx-admin-editor bx-rise-format-summary"><h3>BEYFANS X RISE · 16-PLAYER CHAMPIONSHIP FORMAT</h3><p>Group Stage: 4 groups × 4 players · 3 matches per player · Top 3 from each group qualify (12 players). Round of 12: 6 knockout matches · 6 winners + 2 highest-scoring losers advance. Super 8: 4 Quarter-finals · Semi-finals: 2 · Grand Final: 1.</p><p><strong>Recorded so far:</strong> Group '+stageCounts.group+'/24 · R12 '+stageCounts.r12+'/6 · Super 8 '+stageCounts.quarter+'/4 · Semi '+stageCounts.semi+'/2 · Final '+stageCounts.final+'/1</p></div>'+out;
  $('tournamentTabContent').innerHTML=out;
  if(selectedTournamentTab==='bracket'){
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(drawBracketConnectors));
