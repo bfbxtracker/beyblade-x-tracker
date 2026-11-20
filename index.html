@@ -1168,7 +1168,7 @@ function openTournamentWorkspace(id){
  selectedTournamentId=id;selectedTournamentTab='groups';selectedTableGroup='all';saveNavigationState();
  $('tournamentDirectory').classList.add('hide');$('tournamentWorkspace').classList.remove('hide');
  $('selectedTournamentName').textContent=t.name;
- $('selectedTournamentMeta').textContent=[t.format,displayDate(t.tournament_date),t.location].filter(Boolean).join(' · ');
+ $('selectedTournamentMeta').textContent=[t.format,displayDate(t.tournament_date),t.location].filter(v=>v&&String(v).trim().toLowerCase()!=='other').join(' · ');
  renderTournamentTab();
 }
 
