@@ -300,6 +300,43 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .standings-group-card table{width:100%;white-space:nowrap}
 .standings-group-card th{font-size:11px;color:#A8BDCC;background:transparent}
 .standings-group-card td{font-size:13px}
+
+/* Compact standings rows: names and results only, without deck details */
+#tournamentTabContent .standings-group-card table tbody td{
+ padding:5px 7px!important;
+ height:38px;
+ line-height:1.2!important;
+ vertical-align:middle!important;
+}
+#tournamentTabContent .standings-group-card table tbody tr{
+ height:38px!important;
+}
+#tournamentTabContent .standings-group-card td .bx-standing-drag{
+ display:inline-flex;
+ align-items:center;
+ gap:5px;
+ min-height:0!important;
+ height:auto!important;
+ padding:0!important;
+ margin:0!important;
+}
+#tournamentTabContent .standings-group-card td .player-link{
+ display:inline-flex;
+ align-items:center;
+ padding:0!important;
+ margin:0!important;
+ line-height:1.2!important;
+ white-space:nowrap;
+}
+#tournamentTabContent .standings-group-card td .player-identity{
+ display:inline-flex;
+ flex-direction:column;
+ gap:1px;
+ line-height:1.15!important;
+}
+#tournamentTabContent .standings-group-card td .bx-drag-grip{
+ line-height:1!important;
+}
  .standings-group-card td:nth-child(2) .player-link{font-weight:700!important}
 /* Only verified Bladers are red; unverified/non-approved names stay white */
 #tournamentWorkspace #tournamentTabContent .player-link.is-verified-blader .player-blader-name{
@@ -1418,7 +1455,7 @@ function renderTournamentTab(){
    const canReorder=isSuperAdmin||isSinanContentAdmin,rows=st.map((x,i)=>{
     const participant=entries.find(e=>e.player_id===x.id&&e.group_id===g.id),manual=!!participant?.standing_manual;
     const edit=canReorder?'<div class="standing-edit-grid tournament-standing-edit">'+[['played',x.played],['wins',x.w],['losses',x.l],['draws',x.d]].map(([field,value])=>'<label>'+field[0].toUpperCase()+field.slice(1)+'<input class="standing-input" data-tournament-standing-field="'+field+'" type="number" min="0" step="1" value="'+value+'"></label>').join('')+'<button type="button" class="standing-save-icon" data-tournament-standing-save="'+E(participant?.id||'')+'">SAVE</button>'+(manual?'<button type="button" class="small ghost" data-tournament-standing-reset="'+E(participant?.id||'')+'">Reset to match records</button>':'')+'</div>':'';
-    const serialOptions=Array.from({length:serialPlayers.length},(_,n)=>{const value=g.name+'-'+(n+1);return '<option value="'+E(value)+'" '+(participant?.serial===value?'selected':'')+'>'+E(value)+'</option>';}).join('');const serialCell=canReorder?'<select class="standing-serial-select" data-tournament-serial="'+E(participant?.id||'')+'"><option value="">— Assign —</option>'+serialOptions+'</select>':'<span class="bx-standing-serial">'+E(participant?.serial||'')+'</span>';return row(['<span class="rank">'+(i+1)+'</span>',serialCell,'<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+tournamentPlayerCell(x.id)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.d,x.tablePoints,x.winMargin,x.diff>0?'+'+x.diff:x.diff,edit]);
+    const serialOptions=Array.from({length:serialPlayers.length},(_,n)=>{const value=g.name+'-'+(n+1);return '<option value="'+E(value)+'" '+(participant?.serial===value?'selected':'')+'>'+E(value)+'</option>';}).join('');const serialCell=canReorder?'<select class="standing-serial-select" data-tournament-serial="'+E(participant?.id||'')+'"><option value="">— Assign —</option>'+serialOptions+'</select>':'<span class="bx-standing-serial">'+E(participant?.serial||'')+'</span>';return row(['<span class="rank">'+(i+1)+'</span>',serialCell,'<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+playerButton(x.id,x.name)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.d,x.tablePoints,x.winMargin,x.diff>0?'+'+x.diff:x.diff,edit]);
    });
    return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['Rank','Serial','Blader','P','W','L','D','Points','Margin','+/−',...(canReorder?['Tournament adjustments']:[])],rows)+'</div>';
   }).join('');
