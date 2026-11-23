@@ -295,6 +295,12 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .standings-filter{display:flex;gap:5px;margin:16px 0;flex-wrap:nowrap}
 .standings-filter button{flex:1;background:#090d0e;color:#A8BDCC;border:1px solid #26394A;border-radius:4px;font-weight:600}
 .standings-filter button.active{background:#7DC8F7;color:#041719;border-color:#7DC8F7}
+#rankingsTable .yearly-rank-editor{display:flex;align-items:center;gap:6px;min-width:132px}
+#rankingsTable .yearly-rank-editor input{width:66px;min-width:66px;padding:5px 7px;font-size:12px;border-radius:6px}
+#rankingsTable .yearly-rank-editor .standing-save-icon{white-space:nowrap}
+#rankingsTable .player-link{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+@media(max-width:650px){#mainStandingsMode{flex-direction:column}#rankingsTable .yearly-rank-editor{min-width:118px}}
+
 .standings-group-card{border:1px solid #26394A;border-left:4px solid #7DC8F7;background:#0c1011;border-radius:5px;padding:14px;margin:13px 0}
 .standings-group-card h3{color:#7DC8F7;margin:0 0 8px}
 .standings-group-card table{width:100%;white-space:nowrap}
@@ -972,7 +978,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 <section id="overview" class="view"><div class="tournament-hero"><div class="hero-info-square is-loading" data-bg-text="BF X"><div class="hero-kicker">BEYFANS X BD TOURNAMENT CENTER</div><h2 id="heroTournamentTitle">Your Beyblade X arena starts here.</h2><p id="heroTournamentSub">Manage tournaments, participants, groups, match records and results in one place.</p><div class="hero-actions"><button type="button" onclick="document.querySelector('[data-view=players]').click()">Browse Bladers</button><button type="button" onclick="document.querySelector('[data-view=tournaments]').click()">View Tournaments</button></div><div class="hero-chip">TOURNAMENT RECORDS • OFFLINE PLAY</div></div><div class="hero-banner-square hero-banner-gallery" id="heroBannerSquare"><div class="hero-banner-placeholder" id="heroBannerPlaceholder"><span>TOURNAMENT BANNERS</span><small>Images rotate automatically</small></div><img id="heroTournamentBanner" class="hide" alt="Tournament banner"><div class="hero-banner-gallery-nav hide" id="heroBannerNav"><button type="button" id="heroBannerPrev" aria-label="Previous banner">‹</button><span id="heroBannerCount"></span><button type="button" id="heroBannerNext" aria-label="Next banner">›</button></div><div class="hero-banner-admin hide" id="heroBannerAdmin"><button type="button" class="hero-banner-remove" id="heroBannerRemove">Remove this image</button><button type="button" id="heroBannerManageDelete">Delete photos</button><label class="hero-banner-upload" for="heroBannerUpload">＋ Add images</label></div><input id="heroBannerUpload" class="hide" type="file" accept="image/png,image/jpeg,image/webp" multiple></div><div id="heroBannerLightbox" class="hero-banner-lightbox hide" role="dialog" aria-modal="true" aria-label="Enlarged tournament banner"><button type="button" id="heroBannerLightboxClose" class="hero-banner-lightbox-close" aria-label="Close">×</button><img id="heroBannerLightboxImage" alt="Enlarged tournament banner"></div><div id="heroBannerDeleteModal" class="hero-banner-delete-modal hide" role="dialog" aria-modal="true" aria-label="Delete banner photos"><div class="hero-banner-delete-dialog"><div class="hero-banner-delete-head"><strong>Select photos to delete</strong><button type="button" id="heroBannerDeleteClose" aria-label="Close">×</button></div><p>Select photos to delete, or drag them to change the slideshow order. Changes to the order are saved when you press Save order.</p><div class="hero-banner-delete-toolbar"><button type="button" id="heroBannerManageAdd">＋ Add images</button><button type="button" id="heroBannerSaveOrder" disabled>Save order</button></div><div id="heroBannerDeleteList" class="hero-banner-delete-list"></div><div class="hero-banner-delete-actions"><button type="button" id="heroBannerDeleteCancel">Cancel</button><button type="button" id="heroBannerDeleteConfirm" disabled>Delete selected</button></div></div></div><div id="heroBannerCropModal" class="hero-banner-crop-modal hide" role="dialog" aria-modal="true" aria-label="Crop banner image"><div class="hero-banner-crop-dialog"><div class="hero-banner-delete-head"><strong>Banner image preview</strong><span id="heroBannerCropProgress"></span></div><p>Adjust the image position and zoom. Zoom out to fit the full image, or zoom in to crop.</p><div id="heroBannerCropStage" class="hero-banner-crop-stage"><img id="heroBannerCropImage" alt="Crop preview"></div><label class="hero-banner-crop-zoom">Zoom <input id="heroBannerCropZoom" type="range" min="1" max="3" step=".01" value="1"></label><div class="hero-banner-delete-actions"><button type="button" id="heroBannerCropCancel">Cancel upload</button><button type="button" id="heroBannerCropConfirm">Use image</button></div></div></div></div><div class="stats" id="stats"></div><div class="grid"><div class="panel"><div class="section-head"><h2>Top Players</h2><button class="small ghost" data-go="rankings">Full rankings →</button></div><div id="topPlayers"></div><div id="recentMatches" class="hide" aria-hidden="true"></div></div></div></section>
 <section id="players" class="view hide"><div class="panel"><div class="section-head"><div><h2>Player Directory</h2><p class="muted">Open a player profile to view their competitive record.</p></div></div><div id="playersDirectory"></div></div></section>
 <section id="playerProfile" class="view hide"><div class="panel"><div class="actions" style="margin-top:0;margin-bottom:14px"><button type="button" class="ghost" id="backToPlayers">← Back to players</button></div><div id="playerProfileContent"></div></div></section>
-<section id="rankings" class="view hide"><div class="panel"><h2>Tournament Standings</h2><p class="muted">Select a tournament to view its public standings, ranked from highest to lowest by wins, winning margin and point difference.</p><div class="actions" style="margin:12px 0"><label for="rankingsTournamentFilter">Tournament</label><select id="rankingsTournamentFilter" style="min-width:min(100%,320px)"><option value="">Loading tournaments…</option></select></div><div id="rankingsTable"></div></div></section>
+<section id="rankings" class="view hide"><div class="panel"><h2>Standings</h2><p class="muted">View the overall yearly ranking of all Bladers or select an individual tournament to see its standings.</p><div class="standings-filter" id="mainStandingsMode"><button type="button" data-main-ranking-mode="yearly" class="active">Overall Yearly Ranking</button><button type="button" data-main-ranking-mode="tournament">Tournament Rankings</button></div><div class="actions" id="yearlyRankingControls" style="margin:12px 0;align-items:end"><label for="rankingsYearFilter">Ranking year</label><select id="rankingsYearFilter" style="min-width:min(100%,180px)"></select><small class="muted">Admins and Content Admins can edit player positions.</small></div><div class="actions hide" id="tournamentRankingControls" style="margin:12px 0"><label for="rankingsTournamentFilter">Tournament</label><select id="rankingsTournamentFilter" style="min-width:min(100%,320px)"><option value="">Loading tournaments…</option></select></div><div id="rankingsTable"></div></div></section>
 <section id="combos" class="view hide"><div class="panel"><h2>Beyblade Combo Database</h2><div id="combosTable"></div></div></section>
 <section id="myProfile" class="view hide">
  <div class="panel">
@@ -1082,6 +1088,7 @@ const $=id=>document.getElementById(id);
 const E=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const data={players:[],combos:[],tournaments:[],matches:[],scoring:[],tournament_groups:[],tournament_participants:[],dashboard_banners:[]};
 let publicTournamentStandings=[],publicTournamentList=[],selectedPublicTournamentId='';
+let publicYearlyStandings=[],selectedPublicRankingMode='yearly',selectedPublicRankingYear=new Date().getFullYear();
 let session=null,isAdmin=false,isSuperAdmin=false,isViewer=false,isSinanContentAdmin=false,currentView='overview',busy=false,publicSummary=null,viewAs='admin',deckImagesVisible=false;
 const keys=['players','combos','tournaments','matches','scoring'];
 // BeybladeHub blade catalogue (names and image asset codes from its public Blade database).
@@ -1170,6 +1177,14 @@ function renderKnockoutDeck(deck){
 }
 function tName(id){return data.tournaments.find(t=>t.id===id)?.name||'Friendly / Other';}
 function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,against:0}]));for(const x of matches){if(x.is_scheduled)continue;let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;a.played++;b.played++;a.points+=Number(x.player1_points)||0;b.points+=Number(x.player2_points)||0;a.against+=Number(x.player2_points)||0;b.against+=Number(x.player1_points)||0;if(x.player1_points>x.player2_points){a.w++;b.l++}else if(x.player1_points<x.player2_points){a.l++;b.w++}else{a.d++;b.d++}}return [...m.values()].map(x=>({...x,points:3*x.w+x.d,rate:x.played?100*x.w/x.played:0,diff:x.points-x.against,hasStandingResults:x.played>0})).sort((a,b)=>b.points-a.points||b.w-a.w||b.rate-a.rate||b.played-a.played||a.name.localeCompare(b.name));}
+async function loadPublishedYearlyStandings(year=selectedPublicRankingYear){
+ try{
+  const {data:result,error}=await sb.rpc('get_public_yearly_standings',{p_year:year});
+  if(error)throw error;
+  publicYearlyStandings=Array.isArray(result?.players)?result.players:[];
+ }catch(error){console.warn('Public yearly standings could not be loaded:',error);publicYearlyStandings=[];}
+ renderMainTournamentStandings();
+}
 async function loadPublishedTournamentStandings(){
  try{
   const {data:result,error}=await sb.rpc('get_public_tournament_standings');
@@ -1178,7 +1193,7 @@ async function loadPublishedTournamentStandings(){
   publicTournamentStandings=Array.isArray(result?.standings)?result.standings:[];
   if(!publicTournamentList.some(t=>t.id===selectedPublicTournamentId))selectedPublicTournamentId=publicTournamentList[0]?.id||'';
  }catch(error){console.warn('Public tournament standings could not be loaded:',error);publicTournamentList=[];publicTournamentStandings=[];selectedPublicTournamentId='';}
- renderMainTournamentStandings();
+ await loadPublishedYearlyStandings(selectedPublicRankingYear);
 }
 async function openPublicBladerProfile(id){
  const host=$('playerProfileContent');if(!host)return;
@@ -1200,10 +1215,43 @@ async function openPublicBladerProfile(id){
  '<section class="my-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.date)])))+'</section></div>';
 }
 function renderMainTournamentStandings(){
- const filter=$('rankingsTournamentFilter'),host=$('rankingsTable');if(!filter||!host)return;
- filter.innerHTML='<option value="">Select a tournament</option>'+publicTournamentList.map(t=>'<option value="'+E(t.id)+'">'+E(t.name)+(t.tournament_date?' · '+E(t.tournament_date):'')+'</option>').join('');
- filter.value=selectedPublicTournamentId;
- if(!selectedPublicTournamentId){host.innerHTML='<div class="empty">No tournament standings are available yet.</div>';return;}
+ const host=$('rankingsTable'),filter=$('rankingsTournamentFilter'),yearFilter=$('rankingsYearFilter');
+ if(!host)return;
+ if(filter){
+  filter.innerHTML='<option value="">Select a tournament</option>'+publicTournamentList.map(t=>'<option value="'+E(t.id)+'">'+E(t.name)+(t.tournament_date?' · '+E(t.tournament_date):'')+'</option>').join('');
+  filter.value=selectedPublicTournamentId;
+ }
+ if(yearFilter){
+  const current=new Date().getFullYear(),years=Array.from({length:6},(_,i)=>current-i);
+  yearFilter.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
+  yearFilter.value=String(selectedPublicRankingYear);
+ }
+ const yearlyMode=selectedPublicRankingMode==='yearly';
+ $('yearlyRankingControls')?.classList.toggle('hide',!yearlyMode);
+ $('tournamentRankingControls')?.classList.toggle('hide',yearlyMode);
+ document.querySelectorAll('[data-main-ranking-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mainRankingMode===selectedPublicRankingMode));
+ if(yearlyMode){
+  let html='<div class="table-scroll"><table><thead><tr><th>Rank</th><th>Blader</th><th>Team</th>';
+  if(isAdmin)html+='<th>Edit yearly rank</th>';
+  html+='</tr></thead><tbody>';
+  const rows=[...publicYearlyStandings].sort((a,b)=>{
+   const ar=a.rank==null?99999:Number(a.rank),br=b.rank==null?99999:Number(b.rank);
+   return ar-br||String(a.player_name||'').localeCompare(String(b.player_name||''));
+  });
+  rows.forEach(x=>{
+   const player=x.is_verified?'<button type="button" class="player-link bx-public-profile-link" data-public-profile="'+E(x.player_id)+'"><strong style="color:#7DC8F7!important">'+E(x.player_name)+'</strong></button>':'<strong>'+E(x.player_name)+'</strong>';
+   const realName=x.viewer_name?'<small class="muted" style="display:block">'+E(x.viewer_name)+'</small>':'';
+   let editor='';
+   if(isAdmin)editor='<div class="yearly-rank-editor"><input type="number" min="1" max="10000" step="1" inputmode="numeric" aria-label="Yearly rank for '+E(x.player_name)+'" placeholder="Rank" value="'+(x.rank==null?'':Number(x.rank))+'" data-yearly-rank-input="'+E(x.player_id)+'"><button type="button" class="standing-save-icon" data-yearly-rank-save="'+E(x.player_id)+'">SAVE</button></div>';
+   html+='<tr><td><span class="rank">'+(x.rank==null?'—':Number(x.rank))+'</span></td><td>'+player+realName+'</td><td>'+E(x.team||'—')+'</td>';
+   if(isAdmin)html+='<td>'+editor+'</td>';
+   html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  host.innerHTML=rows.length?html:'<div class="empty">No Bladers are available for the yearly ranking yet.</div>';
+  return;
+ }
+ if(!selectedPublicTournamentId){host.innerHTML='<div class="empty">Select a tournament to view its standings.</div>';return;}
  const rows=publicTournamentStandings.filter(x=>x.tournament_id===selectedPublicTournamentId).sort((a,b)=>Number(a.rank)-Number(b.rank));
  host.innerHTML=rows.length?table(['Rank','Player','Team','Group','Serial','P','W','L','D','Points','Win margin','+/−'],rows.map(x=>row([
   '<span class="rank">'+Number(x.rank)+'</span>',
@@ -1311,6 +1359,7 @@ function renderParticipantDeckPicker(id,part,selected=''){
  options.innerHTML=none+cards||'<div class="empty">No matching parts.</div>';
 }
 document.addEventListener('click',e=>{
+ const mode=e.target.closest('[data-main-ranking-mode]');if(mode){selectedPublicRankingMode=mode.dataset.mainRankingMode;renderMainTournamentStandings();return;}
  const trigger=e.target.closest('[data-pdeck-trigger]');
  if(trigger){const id=trigger.dataset.pdeckTrigger,panel=document.querySelector('[data-pdeck-panel="'+id+'"]'),field=document.getElementById(id),part=id.split('-').pop(),open=panel.classList.contains('hide');document.querySelectorAll('[data-pdeck-panel]').forEach(x=>x.classList.add('hide'));if(open){panel.classList.remove('hide');renderParticipantDeckPicker(id,part,field.value);panel.querySelector('input[type="search"]').focus();}return;}
  const option=e.target.closest('[data-pdeck-value]');
@@ -1609,7 +1658,21 @@ async function loadDeckImageSetting(){
 document.addEventListener('change',async e=>{
 const tournamentSerialSelect=e.target.closest('[data-tournament-serial]');if(tournamentSerialSelect){if(!isAdmin)return;const participantId=tournamentSerialSelect.dataset.tournamentSerial,serial=tournamentSerialSelect.value||null;if(!participantId)return;if(serial&&data.tournament_participants.some(p=>p.id!==participantId&&p.tournament_id===selectedTournamentId&&p.group_id===data.tournament_participants.find(x=>x.id===participantId)?.group_id&&p.serial===serial)){banner('That serial is already assigned to another player in this group.','error');tournamentSerialSelect.value='';return;}tournamentSerialSelect.disabled=true;const {error}=await sb.from('tournament_participants').update({serial}).eq('id',participantId).eq('tournament_id',selectedTournamentId);if(error){tournamentSerialSelect.disabled=false;banner('Could not save serial: '+error.message,'error');return;}await loadAll();renderTournamentTab();banner(serial?'Serial '+serial+' assigned.':'Serial assignment cleared.','success');return;}
 });
+document.addEventListener('click',async e=>{
+ const save=e.target.closest('[data-yearly-rank-save]');if(!save)return;
+ if(!isAdmin){banner('Only admins and content admins can edit yearly rankings.','error');return;}
+ const playerId=save.dataset.yearlyRankSave,input=document.querySelector('[data-yearly-rank-input="'+playerId+'"]');
+ const raw=input?.value?.trim()??'',rank=raw===''?null:Number(raw);
+ if(rank!==null&&(!Number.isInteger(rank)||rank<1||rank>10000)){banner('Enter a whole-number rank from 1 to 10000.','error');return;}
+ save.disabled=true;save.textContent='…';
+ const {error}=await sb.rpc('set_yearly_player_rank',{p_year:selectedPublicRankingYear,p_player_id:playerId,p_rank:rank});
+ save.disabled=false;save.textContent='SAVE';
+ if(error){banner('Could not save yearly ranking: '+error.message,'error');return;}
+ await loadPublishedYearlyStandings(selectedPublicRankingYear);
+ banner(rank===null?'Yearly rank cleared.':'Yearly rank saved.','success');
+});
 document.addEventListener('change',async e=>{
+ const yearFilter=e.target.closest('#rankingsYearFilter');if(yearFilter){selectedPublicRankingYear=Number(yearFilter.value)||new Date().getFullYear();await loadPublishedYearlyStandings(selectedPublicRankingYear);return;}
  const rankingsFilter=e.target.closest('#rankingsTournamentFilter');if(rankingsFilter){selectedPublicTournamentId=rankingsFilter.value;renderMainTournamentStandings();return;}
  const toggle=e.target.closest('[data-deck-visibility-switch]');if(!toggle)return;
  if(!isAdmin){toggle.checked=deckImagesVisible;return;}
