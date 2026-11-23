@@ -490,6 +490,16 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-third-place h3{margin:0;color:#7DC8F7}
 .bx-third-place small{color:#A8BDCC;font-size:10px}
 .bx-third-place .bx-bracket-match{flex:1 1 220px;max-width:360px}
+.bx-third-place-content{display:flex;flex:1 1 260px;flex-direction:column;gap:9px;min-width:0}
+.bx-third-place-award{display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 12px;border:1px solid rgba(255,196,61,.48);border-radius:6px;background:rgba(255,196,61,.07);color:#f5d477}
+.bx-third-place-star{color:#ffc83d;font-size:19px;line-height:1;text-shadow:0 0 8px rgba(255,200,61,.35)}
+.bx-third-place-award strong{font-size:13px;color:#f4e6b2}
+.bx-third-place-editor{display:flex;flex-direction:column;gap:6px;padding:9px;border:1px solid #34494b;border-radius:6px;background:#0b1415}
+.bx-third-place-editor label{font-size:10px;color:#A8BDCC}
+.bx-third-place-editor>div{display:flex;gap:7px;align-items:center}
+.bx-third-place-editor input{flex:1;min-width:0;background:#050909;color:#effafa;border:1px solid #304447;border-radius:4px;padding:8px;font-size:11px}
+.bx-third-place-editor button{min-height:34px;padding:6px 12px}
+.bx-third-place-editor+.bx-bracket-match{margin-top:2px}
 @media(max-width:600px){.bx-bracket-head{align-items:flex-start;flex-wrap:wrap}.bx-bracket-tree{gap:15px}.bx-bracket-round{flex-basis:155px;min-width:155px}.bx-champion h2{font-size:20px}}
 
 
@@ -1733,7 +1743,10 @@ function renderTournamentTab(){
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+playerButton(runner,pName(runner))+'</p></div></div>';
    out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));const capacity={r12:6,quarter:4,semi:2,final:1}[stage.id];const blanks=isAdmin&&stage.id!=='r12'?Array.from({length:Math.max(0,capacity-stageMatches.length)},(_,i)=>'<div class="bx-bracket-match bx-empty-match" data-knockout-target-match data-tournament-id="'+E(id)+'" data-stage="'+stage.id+'" data-slot-index="'+(stageMatches.length+i)+'"><div class="bx-match-code">'+stage.label+'</div>'+[1,2].map(side=>'<div class="bx-tree-slot bx-knockout-tree-drop" data-knockout-target-side="'+side+'"><span class="bx-tree-slot-content"><span class="bx-tree-slot-label">Blader '+side+'</span></span></div>').join('')+'</div>').join(''):'';return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+stageMatches.map(matchCard).join('')+blanks+(stageMatches.length===0&&!isAdmin?'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>':'')+'</section>';}).join('')+'</div>';
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
-   if(third.length)out+='<section class="bx-third-place"><div><h3>Third-place match</h3><small>Recorded playoff result</small></div>'+third.map(matchCard).join('')+'</section>';
+   const tournamentRecord=data.tournaments.find(t=>t.id===id),thirdPlaceName=String(tournamentRecord?.third_place_name||'').trim();
+   if(isRiseChampionship||third.length||thirdPlaceName){
+    out+='<section class="bx-third-place"><div><h3>Third Place</h3><small>'+(third.length?'Recorded playoff result':'Third-place recognition')+'</small></div><div class="bx-third-place-content">'+(thirdPlaceName?'<div class="bx-third-place-award"><span class="bx-third-place-star" aria-hidden="true">★</span><strong>'+E(thirdPlaceName)+'</strong></div>':'')+(isAdmin?'<form class="bx-third-place-editor" data-third-place-form data-tournament-id="'+E(id)+'"><label for="thirdPlaceNameInput">Third-place name</label><div><input id="thirdPlaceNameInput" name="third_place_name" type="text" maxlength="80" placeholder="Enter third-place Blader name" value="'+E(thirdPlaceName)+'"><button class="primary" type="submit">Save name</button></div></form>':'')+third.map(matchCard).join('')+'</div></section>';
+   }
   }else{
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
    out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,x.points])));
@@ -2450,10 +2463,11 @@ document.addEventListener('submit',async e=>{
  const knockoutForm=e.target.closest('[data-admin-knockout-form]');
  const quarterFixtureForm=e.target.closest('[data-admin-quarter-fixture-form]');
  const semiFixtureForm=e.target.closest('[data-admin-semi-fixture-form]');
+ const thirdPlaceForm=e.target.closest('[data-third-place-form]');
  const finalFixtureForm=e.target.closest('[data-admin-final-fixture-form]');
  const deckForm=e.target.closest('[data-participant-deck-form]');
  const clearDeck=e.target.closest('[data-clear-participant-deck]');
- if(!groupForm&&!createGroupForm&&!knockoutForm&&!quarterFixtureForm&&!semiFixtureForm&&!finalFixtureForm&&!deckForm&&!clearDeck)return;
+ if(!groupForm&&!createGroupForm&&!knockoutForm&&!quarterFixtureForm&&!semiFixtureForm&&!finalFixtureForm&&!thirdPlaceForm&&!deckForm&&!clearDeck)return;
  e.preventDefault();if(!isAdmin){banner('Only tournament admins can make these changes.','error');return;}
  try{
   if(quarterFixtureForm){
@@ -2488,6 +2502,11 @@ document.addEventListener('submit',async e=>{
    const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
    if(result.error)throw result.error;
    await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner('Semi-final '+no+' saved.','success');
+  }else if(thirdPlaceForm){
+   const tid=thirdPlaceForm.dataset.tournamentId,thirdPlaceName=String(new FormData(thirdPlaceForm).get('third_place_name')||'').trim().slice(0,80);
+   const {error}=await sb.from('tournaments').update({third_place_name:thirdPlaceName||null}).eq('id',tid);
+   if(error)throw error;
+   await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner(thirdPlaceName?'Third-place name saved.':'Third-place name cleared.','success');
   }else if(finalFixtureForm){
    const fd=new FormData(finalFixtureForm),tid=finalFixtureForm.dataset.tournamentId;
    const p1=String(fd.get('player1_id')||''),p2=String(fd.get('player2_id')||'');
