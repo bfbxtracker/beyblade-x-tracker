@@ -2249,7 +2249,7 @@ document.addEventListener('submit',async e=>{
  e.preventDefault();
  if(!isAdmin){banner('Only admins and content admins can manage match rounds.','error');return;}
  const form=e.target,fd=new FormData(form),tid=form.dataset.tournamentId;
- const submit=form.querySelector('button[type="submit]');if(submit){submit.disabled=true;submit.textContent='Saving…';}
+ const submit=form.querySelector('button[type="submit"]');if(submit){submit.disabled=true;submit.textContent='Saving…';}
  try{
   if(roundCreate){
    const name=String(fd.get('round_name')||'').trim();
