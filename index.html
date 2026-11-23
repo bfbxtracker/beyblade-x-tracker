@@ -1222,7 +1222,7 @@ function renderMainTournamentStandings(){
   filter.value=selectedPublicTournamentId;
  }
  if(yearFilter){
-  const current=new Date().getFullYear(),years=Array.from({length:6},(_,i)=>current-i);
+  const current=new Date().getFullYear(),years=Array.from({length:7},(_,i)=>current+1-i);
   yearFilter.innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');
   yearFilter.value=String(selectedPublicRankingYear);
  }
