@@ -1910,9 +1910,10 @@ async function loadAll(showMessage=false){
   if(session&&(isViewer||isAdmin))renderMyProfile();
   const ownProfile=data.players.find(p=>p.auth_user_id===session?.user?.id);
   $('lastSync').textContent='Last updated: '+new Date().toLocaleTimeString();
+  window.bfbxLoadError=null;
   if(showMessage)banner('Database updated successfully. Approved members can see these records.','success');
   else if(isAdmin||isSinanContentAdmin){const noticeKey='bfbxAdminConnectionNoticeShown:'+String(session?.user?.id||'admin');let noticeAlreadyShown=false;try{noticeAlreadyShown=sessionStorage.getItem(noticeKey)==='1';}catch(storageError){}if(!noticeAlreadyShown){banner('Connected. Full details are visible to approved members only.','success');try{sessionStorage.setItem(noticeKey,'1');}catch(storageError){}}}
- }catch(e){banner('Unable to load data: '+e.message+' Check your Supabase security migration and connection.','error');}
+ }catch(e){window.bfbxLoadError=e?.message||String(e);banner('Unable to load data: '+window.bfbxLoadError+' Check your Supabase security migration and connection.','error');}
  finally{busy=false;}
 }
 function setMyPartPickerOpen(part,open){
@@ -2115,7 +2116,7 @@ async function refreshAuth(){
 }
 
 async function applyViewAs(){
- $('banner').classList.toggle('hide',!isAdmin&&!window.bfbxAuthError);
+ $('banner').classList.toggle('hide',!isAdmin&&!window.bfbxAuthError&&!window.bfbxLoadError);
  $('lastSync').classList.toggle('hide',!isAdmin);
  document.body.classList.toggle('view-as-member',isSuperAdmin&&viewAs==='member');
  document.body.classList.toggle('view-as-public',isSuperAdmin&&viewAs==='public');
