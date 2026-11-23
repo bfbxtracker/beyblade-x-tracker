@@ -1186,6 +1186,31 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 </main>
 
 <footer class="wrap footer">BFB X Tracker • Unofficial fan-made community platform. Not affiliated with Takara Tomy, Hasbro, or the Beyblade brand owners. Public data refreshes approximately every 15 seconds.</footer>
+<script>
+window.__bfbxAppReady=false;
+(function(){
+ function showBootIssue(message){
+  let box=document.getElementById('bfbxBootDiagnostic');
+  if(!box){
+   box=document.createElement('div');
+   box.id='bfbxBootDiagnostic';
+   box.style.cssText='position:relative;z-index:99999;margin:12px 22px;padding:12px 14px;border:1px solid #ff6262;border-left:4px solid #ff6262;border-radius:7px;background:#2a1014;color:#fff;font:13px/1.5 Arial,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere';
+   const anchor=document.getElementById('banner')||document.body.firstElementChild;
+   if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(box,anchor.nextSibling);else document.body.prepend(box);
+  }
+  box.textContent='BFB X Tracker startup problem: '+String(message||'The app did not finish initializing.')+' — Please send this message to the developer.';
+ }
+ window.addEventListener('error',function(event){
+  if(!window.__bfbxAppReady)showBootIssue(event.message||event.error?.message||'A JavaScript resource failed to load');
+ });
+ window.addEventListener('unhandledrejection',function(event){
+  if(!window.__bfbxAppReady)showBootIssue(event.reason?.message||String(event.reason||'An async startup task failed'));
+ });
+ window.setTimeout(function(){
+  if(!window.__bfbxAppReady)showBootIssue('The app did not finish initializing within 8 seconds. A script dependency may not have loaded, or startup stopped before the dashboard could render.');
+ },8000);
+})();
+</script>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const SUPABASE_URL='https://wlxilsrypqrscjanbsgh.supabase.co';
@@ -2886,6 +2911,7 @@ else setView('overview');
 }
 
 setInterval(()=>{if(document.visibilityState==='visible')void loadAll().then(applyViewAs);},900000);
+window.__bfbxAppReady=true;document.getElementById('bfbxBootDiagnostic')?.remove();
 </script>
 <div id="tournamentFixtureEditModal" role="dialog" aria-modal="true" aria-labelledby="tournamentFixtureEditTitle"><form id="tournamentFixtureEditForm" class="delete-player-dialog" style="text-align:left"><h2 id="tournamentFixtureEditTitle">Edit tournament fixture</h2><p>Update the Bladers, their scores, and the fixture details. Saving a completed result removes it from the scheduled fixtures.</p><input type="hidden" id="tournamentFixtureEditId"><div class="form-grid"><div><label for="tournamentFixtureEditDate">Match date</label><input id="tournamentFixtureEditDate" type="date" required></div><div><label for="tournamentFixtureEditStatus">Fixture status</label><select id="tournamentFixtureEditStatus"><option value="scheduled">Scheduled</option><option value="completed">Completed result</option></select></div><div><label for="tournamentFixtureEditGroup">Group</label><select id="tournamentFixtureEditGroup"></select></div><div><label for="tournamentFixtureEditRound">Round</label><input id="tournamentFixtureEditRound" maxlength="100" placeholder="Round 1 / Final"></div><div><label>Blader 1</label><input type="hidden" id="tournamentFixtureEditP1"><div class="fixture-blader-fixed" id="tournamentFixtureEditP1Name" aria-readonly="true"></div></div><div><label>Blader 2</label><input type="hidden" id="tournamentFixtureEditP2"><div class="fixture-blader-fixed" id="tournamentFixtureEditP2Name" aria-readonly="true"></div></div><div><label for="tournamentFixtureEditS1">Blader 1 score</label><input id="tournamentFixtureEditS1" type="number" min="0" step="1" value="0" required></div><div><label for="tournamentFixtureEditS2">Blader 2 score</label><input id="tournamentFixtureEditS2" type="number" min="0" step="1" value="0" required></div><div><label for="tournamentFixtureEditC1">Blader 1 combo</label><select id="tournamentFixtureEditC1"></select></div><div><label for="tournamentFixtureEditC2">Blader 2 combo</label><select id="tournamentFixtureEditC2"></select></div><div><label for="tournamentFixtureEditFinish">Finish type</label><select id="tournamentFixtureEditFinish"></select></div></div><label for="tournamentFixtureEditNotes">Notes</label><textarea id="tournamentFixtureEditNotes" rows="2" placeholder="Optional fixture notes"></textarea><div class="delete-player-actions"><button type="submit" class="primary" id="tournamentFixtureEditSave">Save fixture</button><button type="button" id="tournamentFixtureEditCancel">Cancel</button></div></form></div>
 <div id="tournamentPlayerEditModal" role="dialog" aria-modal="true" aria-labelledby="tournamentPlayerEditTitle"><form id="tournamentPlayerEditForm" class="delete-player-dialog" style="text-align:left"><h2 id="tournamentPlayerEditTitle">Edit tournament player details</h2><p>Edit the Blader profile, tournament group, seed, serial and manual tournament record. Match scores remain available in the fixture editor.</p><input type="hidden" id="tournamentPlayerEditId"><label for="tournamentPlayerEditName">Blader name</label><input id="tournamentPlayerEditName" maxlength="100" required><label for="tournamentPlayerEditViewer">Verified viewer name</label><input id="tournamentPlayerEditViewer" maxlength="100" placeholder="Optional"><label for="tournamentPlayerEditTeam">Team</label><input id="tournamentPlayerEditTeam" maxlength="100" placeholder="Optional"><label for="tournamentPlayerEditLocation">Location</label><input id="tournamentPlayerEditLocation" maxlength="120" placeholder="Optional"><label for="tournamentPlayerEditNotes">Blader details / notes</label><textarea id="tournamentPlayerEditNotes" rows="2" placeholder="Optional profile details"></textarea><label for="tournamentPlayerEditGroup">Tournament group</label><select id="tournamentPlayerEditGroup"><option value="">Unassigned</option></select><div class="form-grid"><div><label for="tournamentPlayerEditPlayed">Played</label><input id="tournamentPlayerEditPlayed" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditWins">Wins</label><input id="tournamentPlayerEditWins" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditLosses">Losses</label><input id="tournamentPlayerEditLosses" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditDraws">Draws</label><input id="tournamentPlayerEditDraws" type="number" min="0" step="1"></div><div><label for="tournamentPlayerEditSeed">Seed / order</label><input id="tournamentPlayerEditSeed" type="number" min="1" step="1" placeholder="Optional"></div><div><label for="tournamentPlayerEditSerial">Serial</label><input id="tournamentPlayerEditSerial" maxlength="40" placeholder="Optional"></div></div><small class="muted">Table points are calculated automatically as 3 × wins + draws. Played must equal wins + losses + draws.</small><div class="delete-player-actions"><button type="submit" class="primary" id="tournamentPlayerEditSave">Save changes</button><button type="button" id="tournamentPlayerEditCancel">Cancel</button></div></form></div>
