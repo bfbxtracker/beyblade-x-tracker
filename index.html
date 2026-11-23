@@ -1502,7 +1502,7 @@ function renderTournamentMatchRoundManager(tid,entries,groups,matches){
  const participantFor=pid=>entries.find(e=>e.player_id===pid);
  const deckFor=pid=>{const e=participantFor(pid);return Array.isArray(e?.deck)?e.deck:[];};
  const deckPreview=deck=>{const parts=Array.isArray(deck)?deck:[];return renderKnockoutDeck(parts)||(parts.length?'<small class="muted">Registered tournament deck saved · '+parts.length+' combos</small>':'<small class="muted">No tournament deck assigned</small>');};
- const playerOptions=selected=>'<option value="">Choose a Blader</option>'+eligible.map(e=>'<option value="'+E(e.player_id)+'" '+(e.player_id===selected?'selected':'')+'>'+E(pName(e.player_id))+' · '+E(groups.find(g=>g.id===e.group_id)?.name||'Group')+'</option>').join('');
+ const playerOptions=selected=>'<option value="">Choose a Blader</option>'+eligible.map(e=>{const player=data.players.find(p=>p.id===e.player_id),bladerName=pName(e.player_id),realName=String(player?.viewer_name||'').trim(),groupName=groups.find(g=>g.id===e.group_id)?.name||'Group';return '<option value="'+E(e.player_id)+'" '+(e.player_id===selected?'selected':'')+'>'+E(bladerName)+(realName?' ('+E(realName)+')':'')+' · '+E(groupName)+'</option>';}).join('');
  const renderEditor=(round,m)=>{
   const editing=!!m,player1=m?.player1_id||'',player2=m?.player2_id||'';
   const deck1=Array.isArray(m?.player1_deck)&&m.player1_deck.length?m.player1_deck:deckFor(player1);
