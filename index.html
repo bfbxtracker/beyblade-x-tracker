@@ -322,6 +322,8 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-round-deck-preview{min-height:24px;overflow:hidden}
 .bx-round-fixture-meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
 .bx-round-fixture-meta label{flex:1;min-width:150px}
+.bx-round-fixture-group-row{margin:0 0 12px}
+.bx-round-fixture-group-row label{max-width:100%;width:100%}
 .bx-round-fixture-card{border:1px solid #263f47;background:#0b1316;border-radius:9px;padding:12px;margin:10px 0}
 .bx-round-fixture-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .bx-round-fixture-top small{margin-left:auto;color:#a8bdcc}
@@ -1506,8 +1508,10 @@ function renderTournamentMatchRoundManager(tid,entries,groups,matches){
   const deck1=Array.isArray(m?.player1_deck)&&m.player1_deck.length?m.player1_deck:deckFor(player1);
   const deck2=Array.isArray(m?.player2_deck)&&m.player2_deck.length?m.player2_deck:deckFor(player2);
   const date=m?.match_date||new Date().toLocaleDateString('en-CA');
+  const groupOptions='<option value="">No group / knockout</option>'+groups.map(g=>'<option value="'+E(g.id)+'" '+(g.id===(m?.group_id||'')?'selected':'')+'>'+E(g.name)+'</option>').join('');
   return '<form class="bx-round-fixture-form" data-round-fixture-form data-tournament-id="'+E(tid)+'" data-round-id="'+E(round.id)+'" '+(editing?'data-match-id="'+E(m.id)+'"':'')+'>'+
    '<div class="bx-round-fixture-form-head"><strong>'+(editing?'Edit fixture':'Add player vs player fixture')+'</strong><span class="muted">Choose players registered in this tournament’s groups</span></div>'+
+   '<div class="bx-round-fixture-meta bx-round-fixture-group-row"><label>Group name<select name="group_id">'+groupOptions+'</select></label></div>'+
    '<div class="bx-round-fixture-sides">'+
     '<div class="bx-round-fixture-side"><label>Blader 1<select name="player1_id" data-round-player-select="1" required>'+playerOptions(player1)+'</select></label><div class="bx-round-deck-preview" data-round-deck-preview="1">'+deckPreview(deck1)+'</div><label>Points<input name="player1_points" type="number" min="0" step="1" value="'+(Number(m?.player1_points)||0)+'" required></label></div>'+
     '<div class="bx-round-fixture-vs">VS</div>'+
@@ -1534,7 +1538,7 @@ function renderTournamentMatchRoundManager(tid,entries,groups,matches){
    const deck1=Array.isArray(m.player1_deck)&&m.player1_deck.length?m.player1_deck:(p1?.deck||[]);
    const deck2=Array.isArray(m.player2_deck)&&m.player2_deck.length?m.player2_deck:(p2?.deck||[]);
    const fixtureNo=Number(String(m.notes||'').match(/Fixture\s*(\d+)/i)?.[1]||i+1);
-   out+='<article class="bx-round-fixture-card"><div class="bx-round-fixture-top"><strong>Fixture '+fixtureNo+'</strong><span class="tag">'+(m.is_scheduled?'Scheduled':'Completed')+'</span><small>'+E(displayDate(m.match_date))+'</small></div><div class="bx-round-fixture-match"><div class="bx-round-fixture-player"><strong>'+E(pName(m.player1_id))+'</strong>'+deckPreview(deck1)+'</div><div class="bx-round-fixture-score">'+(m.is_scheduled?'VS':Number(m.player1_points)+' – '+Number(m.player2_points))+'</div><div class="bx-round-fixture-player"><strong>'+E(pName(m.player2_id))+'</strong>'+deckPreview(deck2)+'</div></div>'+(isAdmin?'<div class="button-row"><button type="button" class="small" data-round-fixture-edit="'+E(m.id)+'">Edit fixture</button><button type="button" class="small ghost" data-round-fixture-swap="'+E(m.id)+'">⇄ Exchange players</button></div>':'')+'</article>';
+   out+='<article class="bx-round-fixture-card"><div class="bx-round-fixture-top"><strong>Fixture '+fixtureNo+'</strong>'+(m.group_id?'<span class="tag">'+E(groups.find(g=>g.id===m.group_id)?.name||'Group')+'</span>':'')+'<span class="tag">'+(m.is_scheduled?'Scheduled':'Completed')+'</span><small>'+E(displayDate(m.match_date))+'</small></div><div class="bx-round-fixture-match"><div class="bx-round-fixture-player"><strong>'+E(pName(m.player1_id))+'</strong>'+deckPreview(deck1)+'</div><div class="bx-round-fixture-score">'+(m.is_scheduled?'VS':Number(m.player1_points)+' – '+Number(m.player2_points))+'</div><div class="bx-round-fixture-player"><strong>'+E(pName(m.player2_id))+'</strong>'+deckPreview(deck2)+'</div></div>'+(isAdmin?'<div class="button-row"><button type="button" class="small" data-round-fixture-edit="'+E(m.id)+'">Edit fixture</button><button type="button" class="small ghost" data-round-fixture-swap="'+E(m.id)+'">⇄ Exchange players</button></div>':'')+'</article>';
   });
   if(isAdmin&&eligible.length>=2&&!roundMatches.some(m=>m.id===selectedTournamentMatchEditId))out+=renderEditor(round,null);
   out+='</section>';
@@ -2271,7 +2275,9 @@ document.addEventListener('submit',async e=>{
    if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)throw new Error('Points must be non-negative whole numbers.');
    const existing=data.matches.find(m=>m.id===form.dataset.matchId&&m.tournament_id===tid);
    const fixtureCount=data.matches.filter(m=>m.tournament_id===tid&&m.round_name===round.name).length;
-   const payload={tournament_id:tid,group_id:null,round_name:round.name,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:s1,player2_points:s2,match_date:String(fd.get('match_date')||new Date().toLocaleDateString('en-CA')),is_scheduled:String(fd.get('match_status'))==='scheduled',notes:existing?.notes||('Fixture '+(fixtureCount+1))};
+   const groupId=String(fd.get('group_id')||'');
+   if(groupId&&!groups.some(g=>g.id===groupId))throw new Error('Choose a group belonging to this tournament.');
+   const payload={tournament_id:tid,group_id:groupId||null,round_name:round.name,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:s1,player2_points:s2,match_date:String(fd.get('match_date')||new Date().toLocaleDateString('en-CA')),is_scheduled:String(fd.get('match_status'))==='scheduled',notes:existing?.notes||('Fixture '+(fixtureCount+1))};
    const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
    if(result.error)throw result.error;
    selectedTournamentMatchEditId=null;await loadAll();selectedTournamentId=tid;selectedTournamentTab='matches';renderTournamentTab();
