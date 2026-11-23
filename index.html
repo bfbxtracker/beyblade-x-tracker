@@ -1462,7 +1462,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const qualified=stage==='quarter'&&round12.length===6&&winners.length===6?[...winners,...bestLoserRows.map(x=>x.id)]:entries.map(e=>e.player_id);
  const seedRows=stage==='quarter'?r12Results.map(m=>({id:winnerOf(m),score:Math.max(Number(m.player1_points),Number(m.player2_points)),margin:Math.abs(Number(m.player1_points)-Number(m.player2_points)),kind:'Winner'})).concat(bestLoserRows.map(x=>({...x,kind:'Best loser'}))).sort((a,b)=>b.score-a.score||b.margin-a.margin||a.kind.localeCompare(b.kind)): [];
  if(isRise&&stage==='quarter'){
-  const qfMatches=stageMatches.map(m=>({match:m,no:Number(String(m.round_name||'').match(/QF[- ]?(\\d+)/i)?.[1])})).filter(x=>x.no>=1&&x.no<=4);
+  const qfMatches=stageMatches.map(m=>({match:m,no:Number(String(m.round_name||'').match(/QF[- ]?(\d+)/i)?.[1])})).filter(x=>x.no>=1&&x.no<=4);
   const allPlayers=entries.map(e=>({id:e.player_id,group:groups.find(g=>g.id===e.group_id)?.name||'Unassigned'}));
   const playerOption=(selected)=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>'<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(pName(x.id))+' · '+E(x.group)+'</option>').join('');
   const forms=[1,2,3,4].map(no=>{
