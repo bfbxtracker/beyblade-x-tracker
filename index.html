@@ -320,6 +320,8 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-round-fixture-side{min-width:0;display:grid;gap:8px}
 .bx-round-fixture-vs{align-self:center;font-weight:800;color:#7DC8F7;padding:0 4px}
 .bx-round-deck-preview{min-height:24px;overflow:hidden}
+.bx-round-deck-preview .bx-match-deck-names{display:none!important}
+.bx-round-deck-preview .bx-match-deck{margin:0!important}
 .bx-round-fixture-meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
 .bx-round-fixture-meta label{flex:1;min-width:150px}
 .bx-round-fixture-group-row{margin:0 0 12px}
@@ -1518,7 +1520,7 @@ function renderTournamentMatchRoundManager(tid,entries,groups,matches){
     '<div class="bx-round-fixture-side"><label>Blader 2<select name="player2_id" data-round-player-select="2" required>'+playerOptions(player2)+'</select></label><div class="bx-round-deck-preview" data-round-deck-preview="2">'+deckPreview(deck2)+'</div><label>Points<input name="player2_points" type="number" min="0" step="1" value="'+(Number(m?.player2_points)||0)+'" required></label></div>'+
    '</div>'+
    '<div class="bx-round-fixture-meta"><label>Match date<input name="match_date" type="date" value="'+E(date)+'" required></label><label>Status<select name="match_status"><option value="scheduled" '+(m?.is_scheduled?'selected':'')+'>Scheduled</option><option value="completed" '+(editing&&!m?.is_scheduled?'selected':'')+'>Completed result</option></select></label></div>'+
-   '<div class="button-row"><button class="primary" type="submit">'+(editing?'Save fixture changes':'Add fixture')+'</button>'+(editing?'<button type="button" class="small ghost" data-round-fixture-cancel>Cancel</button>':'')+'</div>'+
+   '<div class="button-row"><button class="primary" type="button" data-round-fixture-save>'+(editing?'Save fixture changes':'Add fixture')+'</button>'+(editing?'<button type="button" class="small ghost" data-round-fixture-cancel>Cancel</button>':'')+'</div>'+
   '</form>';
  };
  let out='<div class="bx-round-manager-intro"><h3>Match rounds</h3><p class="muted">Create rounds, assign Bladers from this tournament’s groups, use their registered tournament decks, enter points and update fixtures whenever needed.</p></div>';
@@ -2246,46 +2248,59 @@ $('heroBannerUpload').addEventListener('change',async e=>{
 });
 
 
+async function saveTournamentRoundFixture(form){
+ if(!form||form.dataset.saving==='true')return;
+ if(!isAdmin){banner('Only admins and content admins can manage match rounds.','error');return;}
+ if(!form.reportValidity())return;
+ const fd=new FormData(form),tid=form.dataset.tournamentId,round=data.tournament_match_rounds.find(r=>r.id===form.dataset.roundId&&r.tournament_id===tid);
+ if(!round){banner('This tournament round no longer exists. Refresh and try again.','error');return;}
+ const p1=String(fd.get('player1_id')||''),p2=String(fd.get('player2_id')||'');
+ if(!p1||!p2||p1===p2){banner('Choose two different Bladers.','error');return;}
+ const part1=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p1&&x.group_id);
+ const part2=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p2&&x.group_id);
+ if(!part1||!part2){banner('Both players must belong to a group in this tournament.','error');return;}
+ const s1=Number(fd.get('player1_points')),s2=Number(fd.get('player2_points'));
+ if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0){banner('Points must be non-negative whole numbers.','error');return;}
+ const groupId=String(fd.get('group_id')||'');
+ if(groupId&&!data.tournament_groups.some(g=>g.id===groupId&&g.tournament_id===tid)){banner('Choose a group belonging to this tournament.','error');return;}
+ const existing=data.matches.find(m=>m.id===form.dataset.matchId&&m.tournament_id===tid);
+ const fixtureCount=data.matches.filter(m=>m.tournament_id===tid&&m.round_name===round.name).length;
+ const payload={tournament_id:tid,group_id:groupId||null,round_name:round.name,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:s1,player2_points:s2,match_date:String(fd.get('match_date')||new Date().toLocaleDateString('en-CA')),is_scheduled:String(fd.get('match_status'))==='scheduled',notes:existing?.notes||('Fixture '+(fixtureCount+1))};
+ const saveButton=form.querySelector('[data-round-fixture-save]');
+ form.dataset.saving='true';if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving…';}
+ try{
+  const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
+  if(result.error)throw result.error;
+  selectedTournamentMatchEditId=null;
+  await loadAll();selectedTournamentId=tid;selectedTournamentTab='matches';renderTournamentTab();
+  banner(existing?'Fixture updated successfully.':'Fixture added successfully to '+round.name+'.','success');
+ }catch(err){
+  console.error('Tournament fixture save failed:',err);
+  banner('Could not save fixture: '+(err?.message||'Unknown database error')+(err?.code?' ('+err.code+')':''),'error');
+  form.dataset.saving='false';if(saveButton){saveButton.disabled=false;saveButton.textContent=existing?'Save fixture changes':'Add fixture';}
+ }
+}
 document.addEventListener('submit',async e=>{
- const roundCreate=e.target.closest('[data-round-create]');
- const fixtureForm=e.target.closest('[data-round-fixture-form]');
+ const roundCreate=e.target.closest('[data-round-create]'),fixtureForm=e.target.closest('[data-round-fixture-form]');
  if(!roundCreate&&!fixtureForm)return;
  e.preventDefault();
+ if(fixtureForm){await saveTournamentRoundFixture(fixtureForm);return;}
  if(!isAdmin){banner('Only admins and content admins can manage match rounds.','error');return;}
- const form=e.target,fd=new FormData(form),tid=form.dataset.tournamentId;
- const submit=form.querySelector('button[type="submit"]');if(submit){submit.disabled=true;submit.textContent='Saving…';}
+ const form=e.target,fd=new FormData(form),tid=form.dataset.tournamentId,submit=form.querySelector('button[type="submit"]');
+ if(submit){submit.disabled=true;submit.textContent='Saving…';}
  try{
-  if(roundCreate){
-   const name=String(fd.get('round_name')||'').trim();
-   if(!name)throw new Error('Enter a round name.');
-   if(data.tournament_match_rounds.some(r=>r.tournament_id===tid&&r.name.toLowerCase()===name.toLowerCase()))throw new Error('That round already exists.');
-   const order=Math.max(0,...data.tournament_match_rounds.filter(r=>r.tournament_id===tid).map(r=>Number(r.sort_order)||0))+1;
-   const {error}=await sb.from('tournament_match_rounds').insert({tournament_id:tid,name,sort_order:order});
-   if(error)throw error;
-   await loadAll();selectedTournamentId=tid;selectedTournamentTab='matches';selectedTournamentMatchEditId=null;renderTournamentTab();banner(name+' added.','success');
-  }else{
-   const round=data.tournament_match_rounds.find(r=>r.id===form.dataset.roundId&&r.tournament_id===tid);
-   if(!round)throw new Error('This tournament round no longer exists.');
-   const p1=String(fd.get('player1_id')||''),p2=String(fd.get('player2_id')||'');
-   if(!p1||!p2||p1===p2)throw new Error('Choose two different Bladers.');
-   const part1=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p1&&x.group_id);
-   const part2=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p2&&x.group_id);
-   if(!part1||!part2)throw new Error('Both players must belong to a group in this tournament.');
-   const s1=Number(fd.get('player1_points')),s2=Number(fd.get('player2_points'));
-   if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)throw new Error('Points must be non-negative whole numbers.');
-   const existing=data.matches.find(m=>m.id===form.dataset.matchId&&m.tournament_id===tid);
-   const fixtureCount=data.matches.filter(m=>m.tournament_id===tid&&m.round_name===round.name).length;
-   const groupId=String(fd.get('group_id')||'');
-   if(groupId&&!groups.some(g=>g.id===groupId))throw new Error('Choose a group belonging to this tournament.');
-   const payload={tournament_id:tid,group_id:groupId||null,round_name:round.name,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:s1,player2_points:s2,match_date:String(fd.get('match_date')||new Date().toLocaleDateString('en-CA')),is_scheduled:String(fd.get('match_status'))==='scheduled',notes:existing?.notes||('Fixture '+(fixtureCount+1))};
-   const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
-   if(result.error)throw result.error;
-   selectedTournamentMatchEditId=null;await loadAll();selectedTournamentId=tid;selectedTournamentTab='matches';renderTournamentTab();
-   banner(existing?'Fixture updated. Players, decks and points saved.':'Fixture added to '+round.name+'.','success');
-  }
- }catch(err){banner('Could not save match round: '+err.message,'error');if(submit){submit.disabled=false;submit.textContent=roundCreate?'+ Add round':(form.dataset.matchId?'Save fixture changes':'Add fixture');}}
+  const name=String(fd.get('round_name')||'').trim();
+  if(!name)throw new Error('Enter a round name.');
+  if(data.tournament_match_rounds.some(r=>r.tournament_id===tid&&r.name.toLowerCase()===name.toLowerCase()))throw new Error('That round already exists.');
+  const order=Math.max(0,...data.tournament_match_rounds.filter(r=>r.tournament_id===tid).map(r=>Number(r.sort_order)||0))+1;
+  const {error}=await sb.from('tournament_match_rounds').insert({tournament_id:tid,name,sort_order:order});
+  if(error)throw error;
+  await loadAll();selectedTournamentId=tid;selectedTournamentTab='matches';selectedTournamentMatchEditId=null;renderTournamentTab();banner(name+' added.','success');
+ }catch(err){banner('Could not save match round: '+err.message,'error');if(submit){submit.disabled=false;submit.textContent='+ Add round';}}
 });
 document.addEventListener('click',async e=>{
+ const fixtureSave=e.target.closest('[data-round-fixture-save]');
+ if(fixtureSave){const form=fixtureSave.closest('[data-round-fixture-form]');await saveTournamentRoundFixture(form);return;}
  const edit=e.target.closest('[data-round-fixture-edit]'),cancel=e.target.closest('[data-round-fixture-cancel]'),remove=e.target.closest('[data-round-delete]'),move=e.target.closest('[data-round-move]'),swap=e.target.closest('[data-round-fixture-swap]');
  if(edit){if(!isAdmin)return;selectedTournamentMatchEditId=edit.dataset.roundFixtureEdit;renderTournamentTab();return;}
  if(cancel){selectedTournamentMatchEditId=null;renderTournamentTab();return;}
