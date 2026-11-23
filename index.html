@@ -1485,6 +1485,17 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const seedGuide=stage==='quarter'&&isRise?'<div class="bx-seed-guide"><h4>Super 8 qualification & seed ranking</h4><p>Six R12 winners and the two highest-scoring R12 losers qualify. Rank the eight by R12 score, then score margin; use this ranking to assign Seeds 1–8.</p>'+seedRows.map((x,i)=>'<p><strong>Seed '+(i+1)+'</strong> · '+playerButton(x.id,pName(x.id))+' · '+E(x.kind)+' · '+x.score+' points</p>').join('')+'<p><strong>Quarter-final fixtures:</strong> QF1 Seed 1 vs Seed 8 · QF2 Seed 4 vs Seed 5 · QF3 Seed 2 vs Seed 7 · QF4 Seed 3 vs Seed 6.</p></div>':'';
  return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage '+label+'</h4><p>'+stageMatches.length+' of '+capacity+' matches · '+(capacity*2)+' player slots. '+(stage==='quarter'?'Choose from the six winners and two best-scoring losers once all six Round of 12 results are recorded.':'Select tournament players.')+'</p>'+seedGuide+'<form class="bx-knockout-compact-form" data-admin-knockout-form data-tournament-id="'+E(tid)+'" data-stage="'+stage+'"><input type="hidden" name="round_name" value="'+(stage==='quarter'?'Quarter-final':label)+'">'+player(1)+player(2)+'<button class="primary" type="submit" '+(full?'disabled':'')+'>'+(full?'Round is full':'Add '+label+' match')+'</button></form></div>';
 }
+function tournamentAdminSemiControls(tid,entries,semiMatches){
+ if(!isAdmin)return '';
+ const allPlayers=entries.map(e=>({id:e.player_id,group:data.tournament_groups.find(g=>g.id===e.group_id)?.name||'Unassigned'}));
+ const option=selected=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(pName(x.id))+(realName?' ('+E(realName)+')':'')+' · '+E(x.group)+'</option>';}).join('');
+ const forms=[1,2].map(no=>{
+  const existing=semiMatches.find(m=>Number(String(m.round_name||'').match(/SF[- ]?(\\d+)/i)?.[1])===no)||semiMatches[no-1];
+  const select=side=>'<label>Blader '+side+'<select name="player'+side+'_id" required>'+option(existing?.['player'+side+'_id']||'')+'</select></label>';
+  return '<form class="bx-admin-editor bx-knockout-compact-form" data-admin-semi-fixture-form data-tournament-id="'+E(tid)+'" data-semi-number="'+no+'" '+(existing?'data-match-id="'+E(existing.id)+'"':'')+'><h4>Semi-final '+no+(existing?' · Existing fixture':' · Empty fixture')+'</h4>'+select(1)+select(2)+'<label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="'+E(existing?.player1_points??0)+'" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="'+E(existing?.player2_points??0)+'" required></label><div class="button-row"><button class="primary" type="submit">'+(existing?'Save points / changes':'Add semifinal fixture')+'</button>'+(existing?'<button type="button" class="small danger" data-semi-fixture-remove="'+E(existing.id)+'">Remove fixture</button>':'')+'</div></form>';
+ }).join('');
+ return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage Semi-finals</h4><p>Select the two players for each semi-final and enter or update both players’ points. Scores are saved as completed results and displayed in the bracket tree.</p>'+forms+'</div>';
+}
 function drawBracketConnectors(){
  const tree=document.querySelector('.bx-bracket-tree');if(!tree)return;
  tree.querySelectorAll('.bx-bracket-connectors').forEach(x=>x.remove());
@@ -1646,7 +1657,7 @@ function renderTournamentTab(){
    const champ=finalMatch?winnerOf(finalMatch):null,runner=finalMatch?loserOf(finalMatch):null;
    const matchCard=m=>{
     const w=winnerOf(m),p1=m.player1_id,p2=m.player2_id;
-    const slot=(pid,score,deck,number)=>{const participant=entries.find(e=>e.player_id===pid),savedDeck=participant?.deck||[];return '<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&(w===pid||bestLoserIds.includes(pid))?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(savedDeck))+'" title="Drag qualified Blader to the Super 8"':'')+'><div class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+(pid?bracketPlayerButton(pid):'Blader '+number)+'</span>'+(pid?renderBracketDeck(savedDeck):'')+'</div><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';};
+    const slot=(pid,score,deck,number)=>{const participant=entries.find(e=>e.player_id===pid),savedDeck=participant?.deck||[];return '<div class="bx-tree-slot '+(pid&&w===pid?'is-winner':'')+'" '+(isAdmin&&pid&&(w===pid||bestLoserIds.includes(pid))?'draggable="true" data-knockout-winner="'+E(pid)+'" data-knockout-player-name="'+E(pName(pid))+'" data-knockout-deck="'+E(JSON.stringify(savedDeck))+'" title="Drag qualified Blader to the Super 8"':'')+'><div class="bx-tree-slot-content"><span class="bx-tree-slot-label">'+(pid?bracketPlayerButton(pid):'Blader '+number)+'</span>'+''+'</div><span class="bx-tree-slot-score">'+(pid?E(score):'')+'</span></div>';};
     return '<div class="bx-bracket-match"><div class="bx-match-code">'+E(m.round_name||'Match')+'</div>'+slot(p1,m.player1_points,m.player1_deck,1)+slot(p2,m.player2_points,m.player2_deck,2)+(isAdmin?'<div class="bx-admin-match-actions"><button type="button" class="small" data-admin-edit-match="'+E(m.id)+'">Edit</button><button type="button" class="small danger" data-admin-delete-match="'+E(m.id)+'">Remove</button></div>':'')+'</div>';
    };
    out='<div class="bx-bracket-head"><div><h2>Knockout Bracket</h2><p class="muted">Follow each round through to the champion.</p></div><div class="bx-bracket-toggle"><button type="button" data-bracket-view="list">List</button><button type="button" data-bracket-view="tree" class="active">Tree</button></div></div>';
@@ -1654,6 +1665,8 @@ function renderTournamentTab(){
    if(isAdmin)out+='<section class="bx-r16-admin-top">'+tournamentAdminKnockoutControls(id,entries,'r16',r16Matches)+'</section>';
    const quarterMatches=main.filter(m=>stageOf(m.round_name)==='quarter').sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
    if(isAdmin&&isRiseChampionship)out+='<section class="bx-qf-admin-top">'+tournamentAdminKnockoutControls(id,entries,'quarter',quarterMatches)+'</section>';
+   const semiMatches=main.filter(m=>stageOf(m.round_name)==='semi').sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));
+   if(isAdmin&&isRiseChampionship)out+='<section class="bx-semi-admin-top">'+tournamentAdminSemiControls(id,entries,semiMatches)+'</section>';
    if(finalMatch&&champ)out+='<div class="bx-champion"><span class="bx-cup">🏆</span><div><small>TOURNAMENT CHAMPION</small><h2>'+playerButton(champ,pName(champ))+'</h2><p>Runner-up: '+playerButton(runner,pName(runner))+'</p></div></div>';
    out+='<div class="bx-bracket-tree" data-bracket-panel="tree">'+stages.map(stage=>{const stageMatches=main.filter(m=>stageOf(m.round_name)===stage.id).sort((a,b)=>(a.match_date||'').localeCompare(b.match_date||''));const capacity={r12:6,quarter:4,semi:2,final:1}[stage.id];const blanks=isAdmin&&stage.id!=='r12'?Array.from({length:Math.max(0,capacity-stageMatches.length)},(_,i)=>'<div class="bx-bracket-match bx-empty-match" data-knockout-target-match data-tournament-id="'+E(id)+'" data-stage="'+stage.id+'" data-slot-index="'+(stageMatches.length+i)+'"><div class="bx-match-code">'+stage.label+'</div>'+[1,2].map(side=>'<div class="bx-tree-slot bx-knockout-tree-drop" data-knockout-target-side="'+side+'"><span class="bx-tree-slot-content"><span class="bx-tree-slot-label">Blader '+side+'</span></span></div>').join('')+'</div>').join(''):'';return '<section class="bx-bracket-round bx-stage-'+stage.id+'"><h3>'+stage.label+'</h3><small>'+stage.hint+'</small>'+stageMatches.map(matchCard).join('')+blanks+(stageMatches.length===0&&!isAdmin?'<div class="bx-bracket-pending">Waiting for<br>'+stage.label.toLowerCase()+'</div>':'')+'</section>';}).join('')+'</div>';
    out+='<div class="bx-bracket-list hide" data-bracket-panel="list">'+table(['Round','Blader','Score','Opponent','Winner'],main.map(m=>row([E(m.round_name),playerButton(m.player1_id,pName(m.player1_id)),m.player1_points+'–'+m.player2_points,playerButton(m.player2_id,pName(m.player2_id)),E(pName(winnerOf(m))||'Draw')])) )+'</div>';
@@ -2095,9 +2108,10 @@ document.addEventListener('change',async e=>{
 document.addEventListener('click',async e=>{
  const removePlayer=e.target.closest('[data-admin-remove-player]');
  const removeQuarterFixture=e.target.closest('[data-quarter-fixture-remove]');
+ const removeSemiFixture=e.target.closest('[data-semi-fixture-remove]');
  const deleteMatch=e.target.closest('[data-admin-delete-match]');
  const editMatch=e.target.closest('[data-admin-edit-match]');
- if(!removePlayer&&!removeQuarterFixture&&!deleteMatch&&!editMatch)return;
+ if(!removePlayer&&!removeQuarterFixture&&!removeSemiFixture&&!deleteMatch&&!editMatch)return;
  if(!isAdmin){banner('Only admins can edit tournament entries.','error');return;}
  if(removePlayer){
   if(!confirm('Remove this player from the tournament? Their player profile and other tournament history will remain.'))return;
@@ -2106,6 +2120,9 @@ document.addEventListener('click',async e=>{
   if(!isAdmin){banner('Only admins and content admins can edit Quarter-finals.','error');return;}
   if(!confirm('Remove this Quarter-final fixture and both player assignments?'))return;
   try{const {error}=await sb.from('matches').delete().eq('id',removeQuarterFixture.dataset.quarterFixtureRemove);if(error)throw error;await loadAll();selectedTournamentTab='bracket';renderTournamentTab();banner('Quarter-final fixture removed.','success');}catch(err){banner('Could not remove Quarter-final: '+err.message,'error');}
+ }else if(removeSemiFixture){
+  if(!confirm('Remove this Semi-final fixture and both player assignments?'))return;
+  try{const {error}=await sb.from('matches').delete().eq('id',removeSemiFixture.dataset.semiFixtureRemove);if(error)throw error;await loadAll();selectedTournamentTab='bracket';renderTournamentTab();banner('Semi-final fixture removed.','success');}catch(err){banner('Could not remove Semi-final: '+err.message,'error');}
  }else if(deleteMatch){
   if(!isSuperAdmin&&!isSinanContentAdmin){banner('This admin role cannot delete matches.','error');return;}
   if(!confirm('Remove this knockout match record?'))return;
@@ -2369,9 +2386,10 @@ document.addEventListener('submit',async e=>{
  const createGroupForm=e.target.closest('[data-admin-create-group]');
  const knockoutForm=e.target.closest('[data-admin-knockout-form]');
  const quarterFixtureForm=e.target.closest('[data-admin-quarter-fixture-form]');
+ const semiFixtureForm=e.target.closest('[data-admin-semi-fixture-form]');
  const deckForm=e.target.closest('[data-participant-deck-form]');
  const clearDeck=e.target.closest('[data-clear-participant-deck]');
- if(!groupForm&&!createGroupForm&&!knockoutForm&&!quarterFixtureForm&&!deckForm&&!clearDeck)return;
+ if(!groupForm&&!createGroupForm&&!knockoutForm&&!quarterFixtureForm&&!semiFixtureForm&&!deckForm&&!clearDeck)return;
  e.preventDefault();if(!isAdmin){banner('Only tournament admins can make these changes.','error');return;}
  try{
   if(quarterFixtureForm){
@@ -2390,6 +2408,22 @@ document.addEventListener('submit',async e=>{
    const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
    if(result.error)throw result.error;
    await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner('Quarter-final '+no+' saved.','success');
+  }else if(semiFixtureForm){
+   const fd=new FormData(semiFixtureForm),tid=semiFixtureForm.dataset.tournamentId,no=Number(semiFixtureForm.dataset.semiNumber);
+   const p1=String(fd.get('player1_id')||''),p2=String(fd.get('player2_id')||'');
+   if(!p1||!p2||p1===p2)throw new Error('Choose two different tournament Bladers.');
+   const existing=data.matches.find(m=>m.id===semiFixtureForm.dataset.matchId&&m.tournament_id===tid);
+   const otherSemis=data.matches.filter(m=>m.tournament_id===tid&&/semi/i.test(m.round_name||'')&&m.id!==existing?.id);
+   if(otherSemis.some(m=>[m.player1_id,m.player2_id].includes(p1)||[m.player1_id,m.player2_id].includes(p2)))throw new Error('A selected Blader is already assigned to the other Semi-final.');
+   const part1=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p1),part2=data.tournament_participants.find(x=>x.tournament_id===tid&&x.player_id===p2);
+   if(!part1||!part2)throw new Error('Only Bladers registered in this tournament can be selected.');
+   const s1=Number(fd.get('player1_points')),s2=Number(fd.get('player2_points'));
+   if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)throw new Error('Scores must be non-negative whole numbers.');
+   const changed1=existing&&existing.player1_id!==p1,changed2=existing&&existing.player2_id!==p2;
+   const payload={tournament_id:tid,round_name:'Semi-final · SF-'+no,group_id:null,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:changed1?0:s1,player2_points:changed2?0:s2,match_date:existing?.match_date||new Date().toLocaleDateString('en-CA'),is_scheduled:false,notes:existing?.notes||('SF-'+no)};
+   const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
+   if(result.error)throw result.error;
+   await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner('Semi-final '+no+' saved.','success');
   }else if(deckForm||clearDeck){
    const participantId=deckForm?.dataset.participantDeckForm||clearDeck.dataset.clearParticipantDeck;
    const tournament_id=deckForm?.dataset.tournamentId||selectedTournamentId;
