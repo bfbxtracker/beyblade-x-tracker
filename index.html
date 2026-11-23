@@ -1612,7 +1612,7 @@ function renderTournamentTab(){
    out+=tournamentAdminGroupControls(id,groups,entries);
   }else if(selectedTournamentTab==='matches'){
    out='<h3>Matches</h3><p class="muted">Offline match records entered by tournament admins. Each round can contain editable fixtures with players selected from this tournament’s groups.</p>';
-   if(isAdmin)out+=renderTournamentMatchRoundManager(id,entries,groups,matches);
+   out+=renderTournamentMatchRoundManager(id,entries,groups,matches);
   }else if(selectedTournamentTab==='bracket'){
    const knockout=matches.filter(m=>!m.is_scheduled&&!m.group_id&&m.round_name&&!/group/i.test(m.round_name));
    const stageOf=name=>{
