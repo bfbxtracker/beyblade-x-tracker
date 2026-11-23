@@ -2385,7 +2385,7 @@ document.addEventListener('submit',async e=>{
    const s1=Number(fd.get('player1_points')),s2=Number(fd.get('player2_points'));
    if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)throw new Error('Scores must be non-negative whole numbers.');
    const changed1=existing&&existing.player1_id!==p1,changed2=existing&&existing.player2_id!==p2;
-   const payload={tournament_id:tid,round_name:'Quarter-final · QF-'+no,group_id:null,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:changed1?0:s1,player2_points:changed2?0:s2,match_date:existing?.match_date||new Date().toLocaleDateString('en-CA'),is_scheduled:existing?!!existing.is_scheduled:true,notes:existing?.notes||('QF-'+no)};
+   const payload={tournament_id:tid,round_name:'Quarter-final · QF-'+no,group_id:null,player1_id:p1,player2_id:p2,player1_deck:Array.isArray(part1.deck)?part1.deck:[],player2_deck:Array.isArray(part2.deck)?part2.deck:[],player1_points:changed1?0:s1,player2_points:changed2?0:s2,match_date:existing?.match_date||new Date().toLocaleDateString('en-CA'),is_scheduled:false,notes:existing?.notes||('QF-'+no)};
    const result=existing?await sb.from('matches').update(payload).eq('id',existing.id).eq('tournament_id',tid):await sb.from('matches').insert(payload);
    if(result.error)throw result.error;
    await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner('Quarter-final '+no+' saved.','success');
