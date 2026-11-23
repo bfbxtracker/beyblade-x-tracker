@@ -491,6 +491,7 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-third-place-heading:before{content:"";position:absolute;left:0;top:1px;bottom:1px;width:4px;background:#43bdf2;transform:skew(-12deg)}
 .bx-third-place-result{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;min-height:44px;padding:9px 11px;border:1px solid #40305c;border-left:2px solid #35d99a;border-radius:3px;background:#17112a;color:#f1eafa}
 .bx-third-place-player{min-width:0;color:#ff3d9a;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.bx-third-place-real-name{margin-left:5px;color:#a99bbd;font-size:10px;font-weight:400;font-style:normal}
 .bx-third-place-star{display:inline-block;margin-right:5px;color:#ffc83d;font-size:14px;line-height:1;text-shadow:0 0 7px rgba(255,200,61,.35);vertical-align:-1px}
 .bx-third-place-score{color:#eee8f7;font-size:13px;font-weight:800;text-align:center;white-space:nowrap}
 .bx-third-place-opponent{min-width:0;color:#eee8f7;font-size:11px;text-align:right;overflow-wrap:anywhere}
@@ -1370,7 +1371,7 @@ function renderMainTournamentStandings(){
 }
 function table(headers,rows){if(!rows.length)return '<div class="empty">No records yet.</div>';return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${E(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;}
 function row(cells){return '<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';}
-function playerOptionLabel(x){return x.viewer_name?x.viewer_name+' — '+x.name:x.name;}
+function playerOptionLabel(x){const realName=String(x?.viewer_name||'').trim();return String(x?.name||'Unknown player')+(realName?' ('+realName+')':'');}
 function options(id,items,emptyLabel,selected=null){const el=$(id),old=selected===null?el.value:selected;el.innerHTML=`<option value="">${E(emptyLabel)}</option>`+items.map(x=>`<option value="${E(x.id)}">${E(items===data.players?playerOptionLabel(x):x.name)}</option>`).join('');if(items.some(x=>x.id===old))el.value=old;}
 function playerButton(id,name){const p=data.players.find(x=>x.id===id),viewer=String(p?.viewer_name||'').trim(),hasProfile=!!(p&&(p.auth_user_id||viewer||p.profile_image_url||p.team||p.location||p.notes)),isVerified=!!p?.auth_user_id;return `<button type="button" class="player-link ${hasProfile?'has-blader-profile':''} ${isVerified?'is-verified-blader':''}" data-profile="${E(id)}"><span class="player-identity">${viewer?`<strong class="player-viewer-name">${E(viewer)}</strong>`:''}<span class="player-blader-name">${E(name)}</span></span></button>`;}
 function bracketPlayerButton(id){
@@ -1535,7 +1536,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  if(isRise&&stage==='quarter'){
   const qfMatches=data.matches.filter(m=>m.tournament_id===tid&&/quarter|super\s*8/i.test(m.round_name||'')).map(m=>({match:m,no:Number(String(m.round_name||'').match(/QF[- ]?(\d+)/i)?.[1])})).filter(x=>x.no>=1&&x.no<=4);
   const allPlayers=entries.map(e=>({id:e.player_id,group:groups.find(g=>g.id===e.group_id)?.name||'Unassigned'}));
-  const playerOption=(selected)=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(pName(x.id))+(realName?' ('+E(realName)+')':'')+' · '+E(x.group)+'</option>';}).join('');
+  const playerOption=(selected)=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(playerOptionLabel(data.players.find(p=>p.id===x.id)||{name:pName(x.id)}))+' · '+E(x.group)+'</option>';}).join('');
   const forms=[1,2,3,4].map(no=>{
    const existing=qfMatches.find(x=>x.no===no)?.match;
    const playerFields=side=>'<div class="bx-qf-player-fields"><label>Blader '+side+'<select name="player'+side+'_id" required>'+playerOption(existing?.['player'+side+'_id']||'')+'</select></label><label>Score<input name="player'+side+'_points" type="number" min="0" step="1" value="'+E(existing?.['player'+side+'_points']??0)+'" required></label></div>';
@@ -1545,7 +1546,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  }
  const ordered=stage==='quarter'?seedRows.map(x=>x.id):qualified;
  const eligible=ordered.map(id=>data.players.find(p=>p.id===id)).filter(Boolean);
- const opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(p.viewer_name?p.viewer_name+' — '+p.name:p.name)+'</option>').join('');
+ const opts=eligible.map(p=>'<option value="'+E(p.id)+'">'+E(playerOptionLabel(p))+'</option>').join('');
  const full=stageMatches.length>=capacity;
  const player=number=>'<div class="bx-knockout-blader-block"><label>Blader '+number+'<select name="player'+number+'_id" required><option value="">Choose qualified Blader</option>'+opts+'</select></label><label>Score<input name="player'+number+'_points" type="number" min="0" step="1" value="0" required></label></div>';
  const seedGuide=stage==='quarter'&&isRise?'<div class="bx-seed-guide"><h4>Super 8 qualification & seed ranking</h4><p>Six R12 winners and the two highest-scoring R12 losers qualify. Rank the eight by R12 score, then score margin; use this ranking to assign Seeds 1–8.</p>'+seedRows.map((x,i)=>'<p><strong>Seed '+(i+1)+'</strong> · '+playerButton(x.id,pName(x.id))+' · '+E(x.kind)+' · '+x.score+' points</p>').join('')+'<p><strong>Quarter-final fixtures:</strong> QF1 Seed 1 vs Seed 8 · QF2 Seed 4 vs Seed 5 · QF3 Seed 2 vs Seed 7 · QF4 Seed 3 vs Seed 6.</p></div>':'';
@@ -1554,7 +1555,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
 function tournamentAdminSemiControls(tid,entries,semiMatches){
  if(!isAdmin)return '';
  const allPlayers=entries.map(e=>({id:e.player_id,group:data.tournament_groups.find(g=>g.id===e.group_id)?.name||'Unassigned'}));
- const option=selected=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(pName(x.id))+(realName?' ('+E(realName)+')':'')+' · '+E(x.group)+'</option>';}).join('');
+ const option=selected=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(playerOptionLabel(data.players.find(p=>p.id===x.id)||{name:pName(x.id)}))+' · '+E(x.group)+'</option>';}).join('');
  const forms=[1,2].map(no=>{
   const existing=semiMatches.find(m=>Number(String(m.round_name||'').match(/SF[- ]?(\d+)/i)?.[1])===no)||semiMatches[no-1];
   const playerFields=side=>'<div class="bx-qf-player-fields"><label>Blader '+side+'<select name="player'+side+'_id" required>'+option(existing?.['player'+side+'_id']||'')+'</select></label><label>Score<input name="player'+side+'_points" type="number" min="0" step="1" value="'+E(existing?.['player'+side+'_points']??0)+'" required></label></div>';
@@ -1565,7 +1566,7 @@ function tournamentAdminSemiControls(tid,entries,semiMatches){
 function tournamentAdminFinalControls(tid,entries,finalMatches){
  if(!isAdmin)return '';
  const existing=finalMatches[0]||null;
- const option=selected=>'<option value="">Choose tournament Blader</option>'+entries.map(e=>{const p=data.players.find(x=>x.id===e.player_id),realName=String(p?.viewer_name||'').trim();return '<option value="'+E(e.player_id)+'" '+(e.player_id===selected?'selected':'')+'>'+E(pName(e.player_id))+(realName?' ('+E(realName)+')':'')+'</option>';}).join('');
+ const option=selected=>'<option value="">Choose tournament Blader</option>'+entries.map(e=>{const p=data.players.find(x=>x.id===e.player_id),realName=String(p?.viewer_name||'').trim();return '<option value="'+E(e.player_id)+'" '+(e.player_id===selected?'selected':'')+'>'+E(playerOptionLabel(p||{name:pName(e.player_id)}))+'</option>';}).join('');
  const playerFields=side=>'<div class="bx-qf-player-fields"><label>Blader '+side+'<select name="player'+side+'_id" required>'+option(existing?.['player'+side+'_id']||'')+'</select></label><label>Score<input name="player'+side+'_points" type="number" min="0" step="1" value="'+E(existing?.['player'+side+'_points']??0)+'" required></label></div>';
  return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Manage Grand Final</h4><p>Choose the finalists and add or update both players’ scores.</p><form class="bx-admin-editor bx-knockout-compact-form bx-quarter-fixture-compact" data-admin-final-fixture-form data-tournament-id="'+E(tid)+'" '+(existing?'data-match-id="'+E(existing.id)+'"':'')+'><h4>'+(existing?'Grand Final · Existing fixture':'Grand Final · Empty fixture')+'</h4>'+playerFields(1)+playerFields(2)+'<div class="button-row"><button class="primary" type="submit">'+(existing?'Save final scores':'Add final fixture')+'</button></div></form></div>';
 }
@@ -1749,13 +1750,15 @@ function renderTournamentTab(){
    const thirdMatch=third.slice().sort((a,b)=>(b.match_date||'').localeCompare(a.match_date||''))[0]||null;
    const thirdWinner=thirdMatch?winnerOf(thirdMatch):null;
    const thirdLoser=thirdMatch?loserOf(thirdMatch):null;
-   const thirdWinnerName=thirdPlaceName||pName(thirdWinner);
+   const savedThirdPlayer=data.players.find(p=>p.id===thirdPlacePlayerId)||null;
+   const thirdWinnerName=savedThirdPlayer?pName(savedThirdPlayer.id):(thirdPlaceName||pName(thirdWinner));
+   const thirdWinnerRealName=String(savedThirdPlayer?.viewer_name||'').trim();
    const thirdWinnerScore=thirdWinner?(thirdWinner===thirdMatch.player1_id?thirdMatch.player1_points:thirdMatch.player2_points):null;
    const thirdLoserScore=thirdWinner?(thirdWinner===thirdMatch.player1_id?thirdMatch.player2_points:thirdMatch.player1_points):null;
    if(isRiseChampionship||third.length||thirdPlaceName){
-    const selectedThirdPlayer=entries.find(e=>pName(e.player_id)===thirdPlaceName)?.player_id||'';
-    const thirdPlayerOptions='<option value="">Choose an existing Blader (optional)</option>'+entries.map(e=>'<option value="'+E(e.player_id)+'" '+(e.player_id===selectedThirdPlayer?'selected':'')+'>'+E(pName(e.player_id))+'</option>').join('');
-    out+='<section class="bx-third-place"><h3 class="bx-third-place-heading">Third place</h3>'+(isAdmin?'<form class="bx-third-place-editor" data-third-place-form data-tournament-id="'+E(id)+'"><label for="thirdPlacePlayerSelect">Select an existing Blader</label><select id="thirdPlacePlayerSelect" name="third_place_player_id">'+thirdPlayerOptions+'</select><label for="thirdPlaceNameInput">Or enter a name manually</label><div><input id="thirdPlaceNameInput" name="third_place_name" type="text" maxlength="80" placeholder="Enter third-place Blader name" value="'+(selectedThirdPlayer?'':E(thirdPlaceName))+'"><button class="primary" type="submit">Save</button></div></form>':'')+'<div class="bx-third-place-result">'+(thirdWinnerName?'<strong class="bx-third-place-player"><span class="bx-third-place-star" aria-hidden="true">★</span>'+E(thirdWinnerName)+'</strong>':'<span class="bx-third-place-pending">Third-place Blader</span>')+(thirdWinner&&thirdLoser?'<strong class="bx-third-place-score">'+E(thirdWinnerScore)+'–'+E(thirdLoserScore)+'</strong><span class="bx-third-place-opponent">'+E(pName(thirdLoser))+'</span>':(thirdMatch?'<strong class="bx-third-place-score">'+E(thirdMatch.player1_points)+'–'+E(thirdMatch.player2_points)+'</strong><span class="bx-third-place-opponent">'+E(pName(thirdMatch.player2_id))+'</span>':''))+'</div></section>';
+    const selectedThirdPlayer=thirdPlacePlayerId||'';
+    const thirdPlayerOptions='<option value="">Choose an existing Blader (optional)</option>'+entries.map(e=>'<option value="'+E(e.player_id)+'" '+(e.player_id===selectedThirdPlayer?'selected':'')+'>'+E(playerOptionLabel(data.players.find(p=>p.id===e.player_id)||{name:pName(e.player_id)}))+'</option>').join('');
+    out+='<section class="bx-third-place"><h3 class="bx-third-place-heading">Third place</h3>'+(isAdmin?'<form class="bx-third-place-editor" data-third-place-form data-tournament-id="'+E(id)+'"><label for="thirdPlacePlayerSelect">Select an existing Blader</label><select id="thirdPlacePlayerSelect" name="third_place_player_id">'+thirdPlayerOptions+'</select><label for="thirdPlaceNameInput">Or enter a name manually</label><div><input id="thirdPlaceNameInput" name="third_place_name" type="text" maxlength="80" placeholder="Enter third-place Blader name" value="'+(selectedThirdPlayer?'':E(thirdPlaceName))+'"><button class="primary" type="submit">Save</button></div></form>':'')+'<div class="bx-third-place-result">'+(thirdWinnerName?'<strong class="bx-third-place-player"><span class="bx-third-place-star" aria-hidden="true">★</span>'+E(thirdWinnerName)+(thirdWinnerRealName?'<small class="bx-third-place-real-name">('+E(thirdWinnerRealName)+')</small>':'')+'</strong>':'<span class="bx-third-place-pending">Third-place Blader</span>')+(thirdWinner&&thirdLoser?'<strong class="bx-third-place-score">'+E(thirdWinnerScore)+'–'+E(thirdLoserScore)+'</strong><span class="bx-third-place-opponent">'+E(pName(thirdLoser))+'</span>':(thirdMatch?'<strong class="bx-third-place-score">'+E(thirdMatch.player1_points)+'–'+E(thirdMatch.player2_points)+'</strong><span class="bx-third-place-opponent">'+E(pName(thirdMatch.player2_id))+'</span>':''))+'</div></section>';
    }
   }else{
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
@@ -2516,8 +2519,8 @@ document.addEventListener('submit',async e=>{
    const thirdFormData=new FormData(thirdPlaceForm),tid=thirdPlaceForm.dataset.tournamentId,selectedPlayerId=String(thirdFormData.get('third_place_player_id')||''),manualThirdName=String(thirdFormData.get('third_place_name')||'').trim().slice(0,80);
    const selectedPlayer=selectedPlayerId?data.players.find(p=>p.id===selectedPlayerId):null;
    if(selectedPlayerId&&!selectedPlayer)throw new Error('Selected Blader could not be found.');
-   const thirdPlaceName=selectedPlayer?String(selectedPlayer.viewer_name||selectedPlayer.name||'').trim():manualThirdName;
-   const {error}=await sb.from('tournaments').update({third_place_name:thirdPlaceName||null}).eq('id',tid);
+   const thirdPlaceName=selectedPlayer?null:manualThirdName;
+   const {error}=await sb.from('tournaments').update({third_place_name:thirdPlaceName||null,third_place_player_id:selectedPlayerId||null}).eq('id',tid);
    if(error)throw error;
    await loadAll();selectedTournamentId=tid;selectedTournamentTab='bracket';renderTournamentTab();banner(thirdPlaceName?'Third-place name saved.':'Third-place name cleared.','success');
   }else if(finalFixtureForm){
