@@ -16,41 +16,9 @@ jobs:
         with:
           node-version: 22
       - name: Check inline JavaScript syntax
-        shell: bash
         run: |
-          python3 - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
-          class Scripts(HTMLParser):
-              def __init__(self):
-                  super().__init__()
-                  self.active = False
-                  self.external = False
-                  self.parts = []
-                  self.scripts = []
-              def handle_starttag(self, tag, attrs):
-                  if tag.lower() == "script":
-                      self.active = True
-                      self.external = any(k.lower() == "src" for k, _ in attrs)
-                      self.parts = []
-              def handle_data(self, data):
-                  if self.active:
-                      self.parts.append(data)
-              def handle_endtag(self, tag):
-                  if tag.lower() == "script" and self.active:
-                      if not self.external and "".join(self.parts).strip():
-                          self.scripts.append("".join(self.parts))
-                      self.active = False
-          parser = Scripts()
-          parser.feed(Path("index.html").read_text(encoding="utf-8"))
-          if not parser.scripts:
-              raise SystemExit("No inline scripts found in index.html")
-          for i, script in enumerate(parser.scripts, 1):
-              Path(f"/tmp/bfbx-inline-{i}.js").write_text(script, encoding="utf-8")
-              print(f"Checking inline script {i}: {len(script)} characters")
-          Path("/tmp/bfbx-script-count").write_text(str(len(parser.scripts)))
-          count=$(cat /tmp/bfbx-script-count)
-          for i in $(seq 1 "$count"); do
-            echo "node --check /tmp/bfbx-inline-$i.js"
-            node --check "/tmp/bfbx-inline-$i.js"
+          python3 scripts/check_inline_js.py
+          for file in /tmp/bfbx-inline-*.js; do
+            echo "node --check $file"
+            node --check "$file"
           done
