@@ -329,13 +329,20 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-round-fixture-card{border:1px solid #263f47;background:#0b1316;border-radius:9px;padding:12px;margin:10px 0}
 .bx-round-fixture-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .bx-round-fixture-top small{margin-left:auto;color:#a8bdcc}
-.bx-round-fixture-match{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.bx-round-fixture-match{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:center}
 .bx-round-fixture-player{min-width:0;display:grid;gap:6px}
+.bx-round-fixture-player:last-child{justify-items:end;text-align:right}
 .bx-round-fixture-player strong{overflow-wrap:anywhere}
-.bx-round-fixture-score{font-size:19px;font-weight:800;color:#7DC8F7;white-space:nowrap}
+.bx-round-fixture-score{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;font-size:19px;font-weight:800;color:#7DC8F7;white-space:nowrap;text-align:center;pointer-events:none}
+.bx-round-deck-toggle{position:relative;width:max-content;max-width:100%;cursor:pointer;outline-offset:3px}
+.bx-round-deck-toggle .bx-match-deck{margin:0!important}
+.bx-round-deck-toggle .bx-match-deck-names{display:none!important}
+.bx-round-deck-details{display:none;position:absolute;z-index:20;top:calc(100% + 7px);left:0;min-width:220px;max-width:min(340px,80vw);padding:9px 11px;border:1px solid rgba(67,190,198,.45);border-radius:8px;background:#101c22;box-shadow:0 8px 24px rgba(0,0,0,.45);color:#e7fbfc;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.bx-round-fixture-player:last-child .bx-round-deck-details{left:auto;right:0}
+.bx-round-deck-toggle.is-details-open .bx-round-deck-details{display:grid;gap:3px}
 .bx-round-fixture-card .button-row{margin-top:10px}
 .bx-round-empty{margin:10px 0}
-@media(max-width:600px){.bx-round-fixture-sides,.bx-round-fixture-match{grid-template-columns:minmax(0,1fr)}.bx-round-fixture-vs{text-align:center}.bx-round-fixture-score{text-align:center}.bx-round-fixture-top small{margin-left:0}}
+@media(max-width:600px){.bx-round-fixture-sides{grid-template-columns:minmax(0,1fr)}.bx-round-fixture-match{grid-template-columns:minmax(0,1fr);gap:10px}.bx-round-fixture-player:last-child{justify-items:start;text-align:left}.bx-round-fixture-score{position:static;grid-row:2;transform:none;justify-self:center;text-align:center}.bx-round-fixture-top small{margin-left:0}.bx-round-fixture-player:last-child .bx-round-deck-details{left:0;right:auto}}
 /* Compact standings rows: names and results only, without deck details */
 #tournamentTabContent .standings-group-card table tbody td{
  padding:5px 7px!important;
@@ -1503,7 +1510,7 @@ function renderTournamentMatchRoundManager(tid,entries,groups,matches){
  const eligible=entries.filter(e=>e.group_id&&groups.some(g=>g.id===e.group_id));
  const participantFor=pid=>entries.find(e=>e.player_id===pid);
  const deckFor=pid=>{const e=participantFor(pid);return Array.isArray(e?.deck)?e.deck:[];};
- const deckPreview=deck=>{const parts=Array.isArray(deck)?deck:[];return renderKnockoutDeck(parts)||(parts.length?'<small class="muted">Registered tournament deck saved · '+parts.length+' combos</small>':'<small class="muted">No tournament deck assigned</small>');};
+ const deckPreview=deck=>{const parts=Array.isArray(deck)?deck:[];if(!parts.length)return '<small class="muted">No tournament deck assigned</small>';const rendered=renderKnockoutDeck(parts);if(!rendered)return '<small class="muted">Deck images hidden</small>';const details=parts.slice(0,3).map((part,i)=>'<div><strong>Combo '+(i+1)+':</strong> '+E([part.blade,part.ratchet,part.bit].filter(Boolean).join(' · '))+'</div>').join('');return '<div class="bx-round-deck-toggle" data-round-deck-toggle tabindex="0" role="button" aria-label="Show deck details for 8 seconds" title="Click deck images to view details for 8 seconds">'+rendered+'<div class="bx-round-deck-details" data-round-deck-details aria-hidden="true">'+details+'</div></div>';};
  const playerOptions=selected=>'<option value="">Choose a Blader</option>'+eligible.map(e=>{const player=data.players.find(p=>p.id===e.player_id),bladerName=pName(e.player_id),realName=String(player?.viewer_name||'').trim(),groupName=groups.find(g=>g.id===e.group_id)?.name||'Group';return '<option value="'+E(e.player_id)+'" '+(e.player_id===selected?'selected':'')+'>'+E(bladerName)+(realName?' ('+E(realName)+')':'')+' · '+E(groupName)+'</option>';}).join('');
  const renderEditor=(round,m)=>{
   const editing=!!m,player1=m?.player1_id||'',player2=m?.player2_id||'';
@@ -2299,6 +2306,8 @@ document.addEventListener('submit',async e=>{
  }catch(err){banner('Could not save match round: '+err.message,'error');if(submit){submit.disabled=false;submit.textContent='+ Add round';}}
 });
 document.addEventListener('click',async e=>{
+ const deckToggle=e.target.closest('[data-round-deck-toggle]');
+ if(deckToggle){const details=deckToggle.querySelector('[data-round-deck-details]');if(details){document.querySelectorAll('[data-round-deck-toggle].is-details-open').forEach(x=>{if(x!==deckToggle){x.classList.remove('is-details-open');const d=x.querySelector('[data-round-deck-details]');if(d)d.setAttribute('aria-hidden','true');if(x._deckDetailsTimer)clearTimeout(x._deckDetailsTimer);}});const opening=!deckToggle.classList.contains('is-details-open');deckToggle.classList.toggle('is-details-open',opening);details.setAttribute('aria-hidden',String(!opening));if(deckToggle._deckDetailsTimer)clearTimeout(deckToggle._deckDetailsTimer);if(opening)deckToggle._deckDetailsTimer=setTimeout(()=>{deckToggle.classList.remove('is-details-open');details.setAttribute('aria-hidden','true');deckToggle._deckDetailsTimer=null;},8000);}return;}
  const fixtureSave=e.target.closest('[data-round-fixture-save]');
  if(fixtureSave){const form=fixtureSave.closest('[data-round-fixture-form]');await saveTournamentRoundFixture(form);return;}
  const edit=e.target.closest('[data-round-fixture-edit]'),cancel=e.target.closest('[data-round-fixture-cancel]'),remove=e.target.closest('[data-round-delete]'),move=e.target.closest('[data-round-move]'),swap=e.target.closest('[data-round-fixture-swap]');
