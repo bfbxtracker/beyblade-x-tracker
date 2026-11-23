@@ -726,6 +726,41 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 }
 
 
+/* Slim quarter-final fixture cards: keep each score beside its Blader selector */
+.bx-quarter-fixture-compact{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:8px!important;
+ padding:10px!important;
+}
+.bx-quarter-fixture-compact>h4{grid-column:1/-1;margin:0 0 2px!important}
+.bx-quarter-fixture-compact .bx-qf-player-fields{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) 76px;
+ gap:7px;
+ align-items:end;
+ min-width:0;
+ padding:7px;
+ border:1px solid #294B78;
+ border-radius:7px;
+ background:rgba(8,13,20,.45);
+}
+.bx-quarter-fixture-compact .bx-qf-player-fields label{
+ min-width:0;
+ margin:0!important;
+ font-size:10px!important;
+}
+.bx-quarter-fixture-compact .bx-qf-player-fields select,
+.bx-quarter-fixture-compact .bx-qf-player-fields input{
+ min-width:0;
+ min-height:34px;
+ padding:6px 7px!important;
+ font-size:11px!important;
+}
+.bx-quarter-fixture-compact>.button-row{grid-column:1/-1;margin-top:1px}
+@media(max-width:620px){
+ .bx-quarter-fixture-compact{grid-template-columns:minmax(0,1fr)!important}
+ .bx-quarter-fixture-compact>h4,.bx-quarter-fixture-compact>.button-row{grid-column:1}
+}
 /* Compact admin-only knockout match editor */
 .bx-knockout-compact-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .bx-knockout-compact-form>.primary{grid-column:1/-1;justify-self:start}
@@ -1472,8 +1507,8 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
   const playerOption=(selected)=>'<option value="">Choose tournament Blader</option>'+allPlayers.map(x=>{const realName=String(data.players.find(p=>p.id===x.id)?.viewer_name||'').trim();return '<option value="'+E(x.id)+'" '+(x.id===selected?'selected':'')+'>'+E(pName(x.id))+(realName?' ('+E(realName)+')':'')+' · '+E(x.group)+'</option>';}).join('');
   const forms=[1,2,3,4].map(no=>{
    const existing=qfMatches.find(x=>x.no===no)?.match;
-   const select=side=>'<label>Blader '+side+'<select name="player'+side+'_id" required>'+playerOption(existing?.['player'+side+'_id']||'')+'</select></label>';
-   return '<form class="bx-admin-editor bx-knockout-compact-form" data-admin-quarter-fixture-form data-tournament-id="'+E(tid)+'" data-qf-number="'+no+'" '+(existing?'data-match-id="'+E(existing.id)+'"':'')+'><h4>Quarter-final '+no+(existing?' · Existing fixture':' · Empty fixture')+'</h4>'+select(1)+select(2)+'<label>Blader 1 score<input name="player1_points" type="number" min="0" step="1" value="'+E(existing?.player1_points??0)+'" required></label><label>Blader 2 score<input name="player2_points" type="number" min="0" step="1" value="'+E(existing?.player2_points??0)+'" required></label><div class="button-row"><button class="primary" type="submit">'+(existing?'Save changes':'Add fixture')+'</button>'+(existing?'<button type="button" class="small danger" data-quarter-fixture-remove="'+E(existing.id)+'">Remove fixture</button>':'')+'</div></form>';
+   const playerFields=side=>'<div class="bx-qf-player-fields"><label>Blader '+side+'<select name="player'+side+'_id" required>'+playerOption(existing?.['player'+side+'_id']||'')+'</select></label><label>Score<input name="player'+side+'_points" type="number" min="0" step="1" value="'+E(existing?.['player'+side+'_points']??0)+'" required></label></div>';
+   return '<form class="bx-admin-editor bx-knockout-compact-form bx-quarter-fixture-compact" data-admin-quarter-fixture-form data-tournament-id="'+E(tid)+'" data-qf-number="'+no+'" '+(existing?'data-match-id="'+E(existing.id)+'"':'')+'><h4>Quarter-final '+no+(existing?' · Existing fixture':' · Empty fixture')+'</h4>'+playerFields(1)+playerFields(2)+'<div class="button-row"><button class="primary" type="submit">'+(existing?'Save changes':'Add fixture')+'</button>'+(existing?'<button type="button" class="small danger" data-quarter-fixture-remove="'+E(existing.id)+'">Remove fixture</button>':'')+'</div></form>';
   }).join('');
   return '<div class="bx-admin-editor bx-bracket-round-editor"><h4>Admin · Edit Quarter-finals</h4><p>Select any Bladers registered in this tournament, replace either player, add a new fixture, or remove an existing fixture. Each Blader can appear only once in the Quarter-finals.</p>'+forms+'</div>';
  }
