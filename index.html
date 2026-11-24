@@ -1317,7 +1317,7 @@ function renderKnockoutDeck(deck){
  return '<div class="bx-match-deck bx-match-deck-blades" aria-label="Three Beyblade deck">'+parts.slice(0,3).map((part,i)=>{const blade=BLADE_CATALOG.find(x=>x.name.toLowerCase()===String(part.blade||'').toLowerCase());return '<span class="bx-match-blade-only">'+(blade?.image?'<img loading="lazy" decoding="async" src="'+E(blade.image)+'" alt="'+E(part.blade||'')+'">':'<span class="bx-match-blade-fallback"></span>')+'</span>';}).join('')+'</div><small class="bx-match-deck-names">'+parts.slice(0,3).map(part=>E([part.blade,part.ratchet,part.bit].filter(Boolean).join(' · '))).join(' | ')+'</small>';
 }
 function tName(id){return data.tournaments.find(t=>t.id===id)?.name||'Friendly / Other';}
-function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,against:0}]));for(const x of matches){if(x.is_scheduled)continue;let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;a.played++;b.played++;a.points+=Number(x.player1_points)||0;b.points+=Number(x.player2_points)||0;a.against+=Number(x.player2_points)||0;b.against+=Number(x.player1_points)||0;if(x.player1_points>x.player2_points){a.w++;b.l++}else if(x.player1_points<x.player2_points){a.l++;b.w++}else{a.d++;b.d++}}return [...m.values()].map(x=>({...x,points:3*x.w+x.d,rate:x.played?100*x.w/x.played:0,diff:x.points-x.against,hasStandingResults:x.played>0})).sort((a,b)=>b.points-a.points||b.w-a.w||b.rate-a.rate||b.played-a.played||a.name.localeCompare(b.name));}
+function winStats(matches=data.matches){let m=new Map(data.players.map(p=>[p.id,{...p,played:0,w:0,l:0,d:0,points:0,scored:0,against:0,winMargin:0}]));for(const x of matches){if(x.is_scheduled)continue;let a=m.get(x.player1_id),b=m.get(x.player2_id);if(!a||!b)continue;const ap=Number(x.player1_points)||0,bp=Number(x.player2_points)||0;a.played++;b.played++;a.scored+=ap;b.scored+=bp;a.against+=bp;b.against+=ap;if(ap>bp){a.w++;b.l++;a.points+=ap;a.winMargin+=ap-bp;}else if(ap<bp){a.l++;b.w++;b.points+=bp;b.winMargin+=bp-ap;}else{a.d++;b.d++}}return [...m.values()].map(x=>({...x,rate:x.played?100*x.w/x.played:0,diff:x.scored-x.against,hasStandingResults:x.played>0})).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points||a.name.localeCompare(b.name));}
 async function loadPublishedYearlyStandings(year=selectedPublicRankingYear){
  try{
   const {data:result,error}=await sb.rpc('get_public_yearly_standings',{p_year:year});
@@ -1702,17 +1702,17 @@ function renderTournamentTab(){
   const eligible=entries.map(e=>e.player_id);
   const calcGroup=(group,gm)=>{
    // Seed the standings with every registered player in this group, including players with no matches yet.
-   const map=new Map(entries.filter(e=>e.group_id===group.id).map(e=>[e.player_id,{id:e.player_id,name:pName(e.player_id),played:0,w:0,l:0,d:0,points:0,against:0,winMargin:0}]));
+   const map=new Map(entries.filter(e=>e.group_id===group.id).map(e=>[e.player_id,{id:e.player_id,name:pName(e.player_id),played:0,w:0,l:0,d:0,points:0,scored:0,against:0,winMargin:0}]));
    gm.forEach(m=>{
     const sides=[[m.player1_id,Number(m.player1_points),Number(m.player2_points)],[m.player2_id,Number(m.player2_points),Number(m.player1_points)]];
     sides.forEach(([pid,forPts,againstPts])=>{
      if(!eligible.includes(pid))return;
-     if(!map.has(pid))map.set(pid,{id:pid,name:pName(pid),played:0,w:0,l:0,points:0,against:0,winMargin:0});
-     const x=map.get(pid);x.played++;x.points+=forPts;x.against+=againstPts;
-     if(forPts>againstPts){x.w++;x.winMargin+=forPts-againstPts;}else if(forPts<againstPts)x.l++;else x.d++;
+     if(!map.has(pid))map.set(pid,{id:pid,name:pName(pid),played:0,w:0,l:0,points:0,scored:0,against:0,winMargin:0});
+     const x=map.get(pid);x.played++;x.scored+=forPts;x.against+=againstPts;
+     if(forPts>againstPts){x.w++;x.points+=forPts;x.winMargin+=forPts-againstPts;}else if(forPts<againstPts)x.l++;else x.d++;
     });
    });
-   return [...map.values()].map(x=>{const participant=entries.find(e=>e.player_id===x.id);if(participant?.standing_manual){x.played=Number(participant.standing_played)||0;x.w=Number(participant.standing_wins)||0;x.l=Number(participant.standing_losses)||0;x.d=Number(participant.standing_draws)||0;}x.tablePoints=3*x.w+x.d;return {...x,diff:x.points-x.against};}).sort((a,b)=>{const ea=entries.find(e=>e.player_id===a.id),eb=entries.find(e=>e.player_id===b.id);if(ea?.seed!=null&&eb?.seed!=null&&ea.seed!==eb.seed)return ea.seed-eb.seed;if(ea?.seed!=null&&eb?.seed==null)return -1;if(ea?.seed==null&&eb?.seed!=null)return 1;return b.w-a.w||b.winMargin-a.winMargin||b.diff-a.diff||a.name.localeCompare(b.name);});
+   return [...map.values()].map(x=>{const participant=entries.find(e=>e.player_id===x.id);if(participant?.standing_manual){x.played=Number(participant.standing_played)||0;x.w=Number(participant.standing_wins)||0;x.l=Number(participant.standing_losses)||0;x.d=Number(participant.standing_draws)||0;}x.tablePoints=3*x.w+x.d;return {...x,diff:x.scored-x.against};}).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points||b.diff-a.diff||a.name.localeCompare(b.name));
   };
   const groupRows=activeGroups.map(g=>{
    const gm=groupMatches.filter(m=>m.group_id===g.id),st=calcGroup(g,gm),serialPlayers=entries.filter(e=>e.group_id===g.id);
