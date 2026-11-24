@@ -1546,7 +1546,7 @@ function tournamentAdminKnockoutControls(tid,entries,stage,stageMatches){
  const standings=groups.map(g=>{
   const rows=entries.filter(e=>e.group_id===g.id).map(e=>({id:e.player_id,w:0,winMargin:0,points:0,scored:0,against:0}));
   groupMatches.filter(m=>m.group_id===g.id).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.scored+=ap;a.against+=bp;b.scored+=bp;b.against+=ap;if(ap>bp){a.w++;a.points+=ap;a.winMargin+=ap-bp;}else if(bp>ap){b.w++;b.points+=bp;b.winMargin+=bp-ap;}});
-  return {group:g,players:rows.map(x=>({...x,diff:x.scored-x.against})).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points||a.name?.localeCompare?.(pName(b.id))||pName(a.id).localeCompare(pName(b.id)))};
+  return {group:g,players:rows.map(x=>({...x,diff:x.scored-x.against})).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points||pName(a.id).localeCompare(pName(b.id)))};
  });
  const r12Fixtures=[['A1 vs B3',0,1,1,3],['B1 vs A3',1,3,0,3],['C1 vs D3',2,3,3,3],['D1 vs C3',3,3,2,3],['A2 vs B2',0,2,1,2],['C2 vs D2',2,2,3,2]];
  const r12Name=m=>String(m.round_name||'').match(/R12[- ]?([1-6])/i)?.[1];
@@ -1724,8 +1724,8 @@ function renderTournamentTab(){
    return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['Rank','Serial','Blader','P','W','L','D','Points','Margin','+/−',...(canReorder?['Tournament adjustments']:[])],rows)+'</div>';
   }).join('');
   const best=groups.flatMap(g=>calcGroup(g,groupMatches.filter(m=>m.group_id===g.id))).filter(x=>x.played>0).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points)[0];
-  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then total margin across won matches only. The +/− column shows overall points difference. Top 3 from each group qualify for the Round of 12. Tap a blader name to open their full record.</p>';
-  if(best)out+='<div class="standings-champion"><span class="champion-cup">♕</span><div><small>TOURNAMENT LEADER</small><h3>'+playerButton(best.id,best.name)+'</h3><p>Best group-stage record — '+best.w+' wins, margin '+best.diff+'</p></div></div>';
+  out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then win margin, then points scored in winning matches only. The +/− column shows overall points difference. Top 3 from each group qualify for the Round of 12. Tap a blader name to open their full record.</p>';
+  if(best)out+='<div class="standings-champion"><span class="champion-cup">♕</span><div><small>TOURNAMENT LEADER</small><h3>'+playerButton(best.id,best.name)+'</h3><p>Best group-stage record — '+best.w+' wins, win margin '+best.winMargin+', winning-match points '+best.points+'</p></div></div>';
   out+='<div class="standings-filter"><button type="button" data-table-group="all" class="'+(selectedTableGroup==='all'?'active':'')+'">All</button>'+groups.map(g=>'<button type="button" data-table-group="'+E(g.id)+'" class="'+(selectedTableGroup===g.id?'active':'')+'">'+E(g.name)+'</button>').join('')+'</div>'+ (groupRows||'<div class="empty">No group match results have been recorded yet.</div>')+'</div>';
  }else{
   const stats=winStats(matches);
@@ -2618,7 +2618,7 @@ document.addEventListener('submit',async e=>{
     const fixture=Number(knockoutForm.dataset.riseFixture),pairs=[[0,1,1,3],[1,1,0,3],[2,1,3,3],[3,1,2,3],[0,2,1,2],[2,2,3,2]];
     const spec=pairs[fixture-1],groups=data.tournament_groups.filter(g=>g.tournament_id===tournament_id).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||a.name.localeCompare(b.name));
     if(!spec||groups.length<4)throw new Error('Create four groups before recording Round of 12 fixtures.');
-    const ranked=groups.map(g=>{const rows=data.tournament_participants.filter(e=>e.tournament_id===tournament_id&&e.group_id===g.id).map(e=>({id:e.player_id,w:0,margin:0,points:0,against:0}));data.matches.filter(m=>m.tournament_id===tournament_id&&m.group_id===g.id&&!m.is_scheduled).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.points+=ap;a.against+=bp;b.points+=bp;b.against+=ap;if(ap>bp){a.w++;a.margin+=ap-bp;}else if(bp>ap){b.w++;b.margin+=bp-ap;}});return rows.sort((a,b)=>b.w-a.w||b.margin-a.margin||b.points-a.points||pName(a.id).localeCompare(pName(b.id)));});
+    const ranked=groups.map(g=>{const rows=data.tournament_participants.filter(e=>e.tournament_id===tournament_id&&e.group_id===g.id).map(e=>({id:e.player_id,w:0,margin:0,points:0,scored:0,against:0}));data.matches.filter(m=>m.tournament_id===tournament_id&&m.group_id===g.id&&!m.is_scheduled).forEach(m=>{const a=rows.find(x=>x.id===m.player1_id),b=rows.find(x=>x.id===m.player2_id);if(!a||!b)return;const ap=Number(m.player1_points)||0,bp=Number(m.player2_points)||0;a.scored+=ap;a.against+=bp;b.scored+=bp;b.against+=ap;if(ap>bp){a.w++;a.points+=ap;a.margin+=ap-bp;}else if(bp>ap){b.w++;b.points+=bp;b.margin+=bp-ap;}});return rows.sort((a,b)=>b.w-a.w||b.margin-a.margin||b.points-a.points||pName(a.id).localeCompare(pName(b.id)));});
     if(ranked[spec[0]][spec[1]-1]?.id!==player1_id||ranked[spec[2]][spec[3]-1]?.id!==player2_id)throw new Error('This fixture must use the specified group standings positions.');
    }
    if(isRiseTournament&&stage==='quarter'){
