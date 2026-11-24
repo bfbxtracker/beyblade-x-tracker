@@ -285,6 +285,11 @@ strong,b,th,.primary,button{font-weight:500}
 button,.button{font-family:Inter,Arial,Helvetica,sans-serif!important;font-weight:500!important}
 h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvetica,sans-serif!important;font-weight:600!important;letter-spacing:0!important}
 
+/* Keep total winning-match points as the final, highlighted standings column across all tournaments. */
+.bx-total-points{display:inline-block;color:#43BEC6!important;font-size:15px!important;font-weight:800!important;letter-spacing:.15px;text-shadow:0 0 8px rgba(67,190,198,.16)}
+.standings-group-card td:last-child .bx-total-points{font-size:16px!important}
+#rankingsTable td:last-child .bx-total-points{font-size:16px!important}
+
 /* Detailed tournament standings and blader record layouts */
 .tournament-standings h2{font-size:27px;margin:0 0 4px}
 .standings-champion{display:flex;align-items:center;gap:15px;padding:17px;margin:18px 0;border:1px solid #7DC8F7;border-radius:7px;background:linear-gradient(110deg,rgba(67,190,198,.13),rgba(67,190,198,.035))}
@@ -1394,12 +1399,12 @@ function renderMainTournamentStandings(){
  }
  if(!selectedPublicTournamentId){host.innerHTML='<div class="empty">Select a tournament to view its standings.</div>';return;}
  const rows=publicTournamentStandings.filter(x=>x.tournament_id===selectedPublicTournamentId).sort((a,b)=>Number(a.rank)-Number(b.rank));
- host.innerHTML=rows.length?table(['Rank','Player','Team','Group','Serial','P','W','L','D','Points','Win margin','+/−'],rows.map(x=>row([
+ host.innerHTML=rows.length?table(['Rank','Player','Team','Group','Serial','P','W','L','D','Win margin','+/−','Points'],rows.map(x=>row([
   '<span class="rank">'+Number(x.rank)+'</span>',
   x.is_verified?'<button type="button" class="player-link bx-public-profile-link" data-public-profile="'+E(x.player_id)+'"><strong style="color:#7DC8F7!important">'+E(x.player_name)+'</strong></button>':'<strong>'+E(x.player_name)+'</strong>',
   E(x.team||'—'),E(x.group_name||'—'),E(x.serial||''),
   Number(x.played)||0,Number(x.wins)||0,Number(x.losses)||0,Number(x.draws)||0,
-  Number(x.points)||0,Number(x.win_margin)||0,(Number(x.point_diff)||0)>0?'+'+Number(x.point_diff):Number(x.point_diff)||0
+  Number(x.win_margin)||0,(Number(x.point_diff)||0)>0?'+'+Number(x.point_diff):Number(x.point_diff)||0,'<span class="bx-total-points">'+(Number(x.points)||0)+'</span>'
  ]))):'<div class="empty">No players have been registered in this tournament yet.</div>';
 }
 function table(headers,rows){if(!rows.length)return '<div class="empty">No records yet.</div>';return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${E(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;}
@@ -1719,9 +1724,9 @@ function renderTournamentTab(){
    const canReorder=isSuperAdmin||isSinanContentAdmin,rows=st.map((x,i)=>{
     const participant=entries.find(e=>e.player_id===x.id&&e.group_id===g.id),manual=!!participant?.standing_manual;
     const edit=canReorder?'<div class="standing-edit-grid tournament-standing-edit">'+[['played',x.played],['wins',x.w],['losses',x.l],['draws',x.d]].map(([field,value])=>'<label>'+field[0].toUpperCase()+field.slice(1)+'<input class="standing-input" data-tournament-standing-field="'+field+'" type="number" min="0" step="1" value="'+value+'"></label>').join('')+'<button type="button" class="standing-save-icon" data-tournament-standing-save="'+E(participant?.id||'')+'">SAVE</button>'+(manual?'<button type="button" class="small ghost" data-tournament-standing-reset="'+E(participant?.id||'')+'">Reset to match records</button>':'')+'</div>':'';
-    const serialOptions=Array.from({length:serialPlayers.length},(_,n)=>{const value=g.name+'-'+(n+1);return '<option value="'+E(value)+'" '+(participant?.serial===value?'selected':'')+'>'+E(value)+'</option>';}).join('');const serialCell=canReorder?'<select class="standing-serial-select" data-tournament-serial="'+E(participant?.id||'')+'"><option value="">— Assign —</option>'+serialOptions+'</select>':'<span class="bx-standing-serial">'+E(participant?.serial||'')+'</span>';return row(['<span class="rank">'+(i+1)+'</span>',serialCell,'<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+playerButton(x.id,x.name)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.d,x.tablePoints,x.winMargin,x.diff>0?'+'+x.diff:x.diff,edit]);
+    const serialOptions=Array.from({length:serialPlayers.length},(_,n)=>{const value=g.name+'-'+(n+1);return '<option value="'+E(value)+'" '+(participant?.serial===value?'selected':'')+'>'+E(value)+'</option>';}).join('');const serialCell=canReorder?'<select class="standing-serial-select" data-tournament-serial="'+E(participant?.id||'')+'"><option value="">— Assign —</option>'+serialOptions+'</select>':'<span class="bx-standing-serial">'+E(participant?.serial||'')+'</span>';return row(['<span class="rank">'+(i+1)+'</span>',serialCell,'<span class="bx-standing-drag" '+(canReorder?'draggable="true"':'')+' data-standing-player="'+E(x.id)+'" data-standing-group="'+E(g.id)+'" title="'+(canReorder?'Drag to change group order':'')+'">'+playerButton(x.id,x.name)+(canReorder?'<span class="bx-drag-grip" draggable="true" role="button" aria-label="Drag to reorder player" title="Drag to reorder player">⠿</span>':'')+'</span>',x.played,x.w,x.l,x.d,x.winMargin,x.diff>0?'+'+x.diff:x.diff,edit,'<span class="bx-total-points">'+x.points+'</span>']);
    });
-   return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['Rank','Serial','Blader','P','W','L','D','Points','Margin','+/−',...(canReorder?['Tournament adjustments']:[])],rows)+'</div>';
+   return '<div class="standings-group-card"><h3>'+E(g.name)+'</h3>'+table(['Rank','Serial','Blader','P','W','L','D','Margin','+/−',...(canReorder?['Tournament adjustments']:[]),'Points'],rows)+'</div>';
   }).join('');
   const best=groups.flatMap(g=>calcGroup(g,groupMatches.filter(m=>m.group_id===g.id))).filter(x=>x.played>0).sort((a,b)=>b.w-a.w||b.winMargin-a.winMargin||b.points-a.points)[0];
   out='<div class="tournament-standings"><h2>Standings</h2><p class="muted">Ranked by wins, then win margin, then points scored in winning matches only. The +/− column shows overall points difference. Top 3 from each group qualify for the Round of 12. Tap a blader name to open their full record.</p>';
@@ -1795,7 +1800,7 @@ function renderTournamentTab(){
    }
   }else{
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
-   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,x.points])));
+   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>'])));
   }
  }
  const completedMatches=matches.filter(m=>!m.is_scheduled),stageCounts={group:completedMatches.filter(m=>m.group_id).length,r12:completedMatches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:completedMatches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:completedMatches.filter(m=>/semi/i.test(m.round_name||'')).length,final:completedMatches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
