@@ -1134,6 +1134,139 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .profile-match-content{padding-top:9px}
 .profile-match-content .blader-match-card{margin-bottom:6px}
 
+
+/* =========================================================
+   BFB X TRACKER — SITE-WIDE RESPONSIVE LAYOUT
+   Keep desktop presentation intact; make every section usable
+   at normal mobile viewport width without page-level zoom.
+   ========================================================= */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+img,svg,video,canvas{max-width:100%}
+.wrap{width:100%;min-width:0}
+.view,.panel,.card,.section,.admin-grid,.admin-grid>.panel,
+.tournament-workspace,.tournament-round-fixtures,.standings-group-card,
+.my-profile-card,.my-profile-section{min-width:0;max-width:100%}
+.table-scroll{display:block;width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.table-scroll table{width:max-content;min-width:100%}
+button,.button-row button,.actions button{min-height:38px}
+input,select,textarea{max-width:100%;min-width:0}
+.form-grid>*{min-width:0}
+.profile-stat-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.tournament-tabs{min-width:0}
+.tournament-tabs button{min-width:0}
+.bx-bracket-tree{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.bx-bracket-round{flex-shrink:0}
+#adminPanel .admin-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+#adminPanel .admin-grid>.panel{min-width:0}
+#myProfileModal .bx-profile-modal-dialog{width:min(560px,100%);max-width:100%}
+
+/* Tablets and compact laptop windows */
+@media(max-width:900px){
+ .wrap{max-width:100%;padding-left:16px;padding-right:16px}
+ .grid,.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #adminPanel .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .profile-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .tournament-hero{gap:12px;padding:12px}
+ .tournament-tabs{gap:6px}
+ .tournament-tabs button{padding:10px 6px;font-size:12px}
+}
+
+/* Phones: single-column page structure and touch-friendly controls */
+@media(max-width:640px){
+ html{font-size:14px}
+ body{font-size:14px;line-height:1.5}
+ .wrap{padding-left:12px;padding-right:12px}
+ .top .wrap{padding-top:12px;padding-bottom:12px}
+ .head{width:100%;gap:10px}
+ .header-tools{width:100%;justify-content:space-between;gap:8px}
+ .admin-tools{min-width:0;max-width:48%;width:48%}
+ .brand{min-width:0;max-width:100%;gap:9px}
+ .brand-copy{min-width:0}
+ .brand-copy h1{overflow-wrap:anywhere}
+ .nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 0}
+ .nav button{width:100%;min-width:0;min-height:42px;padding:9px 6px;font-size:13px!important;white-space:normal;line-height:1.2}
+ main,.main,.view{width:100%;max-width:100%;min-width:0}
+ .panel,.card{padding:13px;border-radius:10px}
+ h1{font-size:clamp(22px,6vw,30px)}
+ h2{font-size:18px;line-height:1.25}
+ h3{font-size:15px}
+ .grid,.admin-grid,#adminPanel .admin-grid,.stats{grid-template-columns:minmax(0,1fr);gap:10px}
+ .admin-grid .wide{grid-column:auto}
+ .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 9px}
+ .actions,.button-row{gap:7px;flex-wrap:wrap}
+ .actions>*{max-width:100%}
+ .actions button,.button-row button{flex:0 1 auto;min-height:40px}
+ label{font-size:12px}
+ input,select,textarea{font-size:16px!important;padding:10px 11px;min-height:42px}
+ textarea{min-height:90px}
+ .table-scroll{margin:0;width:100%}
+ table{font-size:12px}
+ th,td{padding:8px 7px}
+ .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+ .profile-stat-grid>*{min-width:0}
+ .my-profile-card-head{align-items:center;flex-wrap:wrap;gap:10px}
+ .my-profile-avatar{width:62px;height:62px;flex:0 0 62px}
+ .my-profile-card-head h3{font-size:20px;overflow-wrap:anywhere}
+ .my-profile-edit{margin-left:auto;align-self:center}
+ .my-profile-section{margin-top:12px}
+ .my-profile-stat{padding:9px}
+ .my-profile-stat small{font-size:10px;line-height:1.25;overflow-wrap:anywhere}
+ .my-profile-stat b{font-size:15px;overflow-wrap:anywhere}
+ .tournament-hero{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0;margin:8px 0 14px}
+ .hero-info-square,.hero-banner-square{width:100%;max-width:100%;min-width:0;aspect-ratio:auto;min-height:190px;max-height:none;margin:0;justify-self:stretch}
+ .hero-info-square{padding:16px}
+ .hero-info-square h2{font-size:clamp(20px,5.5vw,26px)}
+ .hero-info-square p,.hero-info-square #heroTournamentSub,
+ .hero-info-square #heroTournamentSub .hero-meta-row,
+ .hero-info-square #heroTournamentSub .hero-meta-row>span{font-size:12px!important}
+ .hero-banner-square{min-height:180px}
+ .hero-banner-square img{width:100%;height:100%;object-fit:cover}
+ .tournament-workspace-head{gap:10px;margin-bottom:12px}
+ .tournament-tabs{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding:0 0 9px;margin:0 0 13px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+ .tournament-tabs button{flex:0 0 auto;width:auto;min-width:max-content;min-height:40px;padding:9px 12px;font-size:12px!important}
+ .tournament-group-card{padding:10px;margin:9px 0}
+ #tournamentTabContent .tournament-group-card>.tournament-blader-chip{width:calc(50% - 10px);margin:3px;padding:8px;vertical-align:top}
+ .tournament-round-fixtures{padding:9px;margin:10px 0}
+ .tournament-round-heading{align-items:flex-start;flex-wrap:wrap;gap:6px}
+ .bx-bracket-tree{display:flex;gap:12px;padding:8px 0 12px}
+ .bx-bracket-round{flex:0 0 170px;min-width:170px!important}
+ .bx-bracket-match{padding:7px}
+ .bx-bracket-round h3{font-size:13px}
+ .bx-admin-editor{padding:10px;margin:10px 0}
+ .bx-admin-editor form{grid-template-columns:minmax(0,1fr);gap:8px}
+ .tournament-standing-edit{min-width:190px;max-width:100%}
+ .standings-filter{gap:6px;flex-wrap:wrap}
+ .standings-filter button{flex:1 1 140px;min-width:0;min-height:42px}
+ .hero-banner-admin{left:6px;right:6px;bottom:6px;gap:5px}
+ .hero-banner-admin button{font-size:11px;padding:7px}
+ #tournamentFixtureEditModal{padding:7px}
+ #tournamentFixtureEditModal .delete-player-dialog{width:100%;max-height:94dvh;overflow:auto;padding:13px}
+ #tournamentFixtureEditModal .form-grid{grid-template-columns:minmax(0,1fr)}
+ #emailWelcomeScreen{padding:12px}
+ #emailWelcomeScreen .welcome-board{width:100%;padding:28px 16px}
+ .footer{padding:18px 0 25px}
+}
+
+/* Narrow phones: prevent cramped two-column forms and cards */
+@media(max-width:380px){
+ .wrap{padding-left:9px;padding-right:9px}
+ .panel,.card{padding:10px}
+ .form-grid{grid-template-columns:minmax(0,1fr)}
+ .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .my-profile-stat{padding:7px}
+ .my-profile-stat b{font-size:14px}
+ #tournamentTabContent .tournament-group-card>.tournament-blader-chip{width:calc(100% - 8px)}
+ .nav button{font-size:12px!important;padding:8px 4px}
+ .admin-tools{width:100%;max-width:100%}
+ .header-tools{align-items:stretch;flex-direction:column}
+}
+
+/* Respect reduced-motion preferences on mobile and desktop */
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
