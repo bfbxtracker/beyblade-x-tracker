@@ -423,6 +423,11 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 }
 /* Make blader names more prominent throughout tournament tabs */
 .tournament-workspace .player-link,.tournament-group-card .player-link,.tournament-standings .player-link,.bx-tree-slot .player-link{font-weight:700!important}
+/* Tournament podium labels beside the top three Bladers */
+#tournamentTabContent .bx-placement-medal{display:inline-flex;align-items:center;justify-content:center;margin-left:7px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:900;line-height:1.35;letter-spacing:.35px;vertical-align:middle;border:1px solid currentColor}
+#tournamentTabContent .bx-placement-medal.gold{color:#f2ca55;background:rgba(242,202,85,.12);text-shadow:0 0 8px rgba(242,202,85,.18)}
+#tournamentTabContent .bx-placement-medal.silver{color:#d6dce5;background:rgba(214,220,229,.12)}
+#tournamentTabContent .bx-placement-medal.bronze{color:#cd8b55;background:rgba(205,139,85,.12)}
 .blader-profile-top{display:flex;align-items:center;gap:15px;margin-bottom:16px;flex-wrap:wrap}
 .blader-profile-name{display:flex;align-items:center;gap:12px}
 .blader-profile-name h2{font-size:25px;margin:0;color:#f0ffff}
@@ -2005,7 +2010,16 @@ function renderTournamentTab(){
    }
   }else{
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
-   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>row([tournamentPlayerCell(e.player_id),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>'])));
+   const medalByPlayer=new Map();
+   if(isRiseChampionship){
+    const finalMatch=completedMatches.find(m=>/final/i.test(m.round_name||'')&&!/semi|third/i.test(m.round_name||''));
+    const thirdMatch=completedMatches.find(m=>/third.place/i.test(m.round_name||''));
+    const winnerOf=m=>m?(Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null):null;
+    const loserOf=m=>m?(winnerOf(m)==null?null:(winnerOf(m)===m.player1_id?m.player2_id:m.player1_id)):null;
+    if(finalMatch){const champion=winnerOf(finalMatch),runnerUp=loserOf(finalMatch);if(champion)medalByPlayer.set(champion,{label:'1st',kind:'gold'});if(runnerUp)medalByPlayer.set(runnerUp,{label:'2nd',kind:'silver'});}
+    const third=winnerOf(thirdMatch);if(third)medalByPlayer.set(third,{label:'3rd',kind:'bronze'});
+   }
+   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id);return row([tournamentPlayerCell(e.player_id)+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':''),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>']);}));
   }
  }
  const completedMatches=matches.filter(m=>!m.is_scheduled),stageCounts={group:completedMatches.filter(m=>m.group_id).length,r12:completedMatches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:completedMatches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:completedMatches.filter(m=>/semi/i.test(m.round_name||'')).length,final:completedMatches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
