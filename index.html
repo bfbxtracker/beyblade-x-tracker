@@ -1423,18 +1423,18 @@ function renderMainTournamentStandings(){
  $('tournamentRankingControls')?.classList.toggle('hide',yearlyMode);
  document.querySelectorAll('[data-main-ranking-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mainRankingMode===selectedPublicRankingMode));
  if(yearlyMode){
-  let html='<div class="table-scroll"><table><thead><tr><th>Rank</th><th>Blader</th><th>Team</th>';
-  if(isAdmin)html+='<th>Edit yearly rank</th>';
+  let html='<div class="table-scroll"><table><thead><tr><th>Rank</th><th>Blader</th><th>Points</th>';
+  if(isAdmin)html+='<th>Edit rank &amp; points</th>';
   html+='</tr></thead><tbody>';
   const rows=[...publicYearlyStandings].sort((a,b)=>{
    const ar=a.rank==null?99999:Number(a.rank),br=b.rank==null?99999:Number(b.rank);
-   return ar-br||String(a.player_name||'').localeCompare(String(b.player_name||''));
+   return ar-br||Number(b.points||0)-Number(a.points||0)||String(a.player_name||'').localeCompare(String(b.player_name||''));
   });
   rows.forEach(x=>{
    const player=playerNameMarkup(x.player_id,x.player_name);
    let editor='';
-   if(isAdmin)editor='<div class="yearly-rank-editor"><input type="number" min="1" max="10000" step="1" inputmode="numeric" aria-label="Yearly rank for '+E(x.player_name)+'" placeholder="Rank" value="'+(x.rank==null?'':Number(x.rank))+'" data-yearly-rank-input="'+E(x.player_id)+'"><button type="button" class="standing-save-icon" data-yearly-rank-save="'+E(x.player_id)+'">SAVE</button></div>';
-   html+='<tr><td><span class="rank">'+(x.rank==null?'—':Number(x.rank))+'</span></td><td>'+player+'</td><td>'+E(x.team||'—')+'</td>';
+   if(isAdmin)editor='<div class="yearly-rank-editor"><input type="number" min="1" max="10000" step="1" inputmode="numeric" aria-label="Yearly rank for '+E(x.player_name)+'" placeholder="Rank" value="'+(x.rank==null?'':Number(x.rank))+'" data-yearly-rank-input="'+E(x.player_id)+'"><input type="number" min="0" max="1000000" step="1" inputmode="numeric" aria-label="Yearly points for '+E(x.player_name)+'" placeholder="Points" value="'+Number(x.points||0)+'" data-yearly-points-input="'+E(x.player_id)+'"><button type="button" class="standing-save-icon" data-yearly-standing-save="'+E(x.player_id)+'">SAVE</button></div>';
+   html+='<tr><td><span class="rank">'+(x.rank==null?'—':Number(x.rank))+'</span></td><td>'+player+'</td><td><span class="bx-total-points">'+Number(x.points||0)+'</span></td>';
    if(isAdmin)html+='<td>'+editor+'</td>';
    html+='</tr>';
   });
@@ -1940,17 +1940,21 @@ document.addEventListener('change',async e=>{
 const tournamentSerialSelect=e.target.closest('[data-tournament-serial]');if(tournamentSerialSelect){if(!isAdmin)return;const participantId=tournamentSerialSelect.dataset.tournamentSerial,serial=tournamentSerialSelect.value||null;if(!participantId)return;if(serial&&data.tournament_participants.some(p=>p.id!==participantId&&p.tournament_id===selectedTournamentId&&p.group_id===data.tournament_participants.find(x=>x.id===participantId)?.group_id&&p.serial===serial)){banner('That serial is already assigned to another player in this group.','error');tournamentSerialSelect.value='';return;}tournamentSerialSelect.disabled=true;const {error}=await sb.from('tournament_participants').update({serial}).eq('id',participantId).eq('tournament_id',selectedTournamentId);if(error){tournamentSerialSelect.disabled=false;banner('Could not save serial: '+error.message,'error');return;}await loadAll();renderTournamentTab();banner(serial?'Serial '+serial+' assigned.':'Serial assignment cleared.','success');return;}
 });
 document.addEventListener('click',async e=>{
- const save=e.target.closest('[data-yearly-rank-save]');if(!save)return;
- if(!isAdmin){banner('Only admins and content admins can edit yearly rankings.','error');return;}
- const playerId=save.dataset.yearlyRankSave,input=document.querySelector('[data-yearly-rank-input="'+playerId+'"]');
- const raw=input?.value?.trim()??'',rank=raw===''?null:Number(raw);
- if(rank!==null&&(!Number.isInteger(rank)||rank<1||rank>10000)){banner('Enter a whole-number rank from 1 to 10000.','error');return;}
+ const save=e.target.closest('[data-yearly-standing-save]');if(!save)return;
+ if(!isAdmin){banner('Only admins and content admins can edit yearly rankings and points.','error');return;}
+ const playerId=save.dataset.yearlyStandingSave;
+ const rankInput=document.querySelector('[data-yearly-rank-input="'+playerId+'"]');
+ const pointsInput=document.querySelector('[data-yearly-points-input="'+playerId+'"]');
+ const rawRank=rankInput?.value?.trim()??'',rawPoints=pointsInput?.value?.trim()??'';
+ const rank=rawRank===''?null:Number(rawRank),points=rawPoints===''?0:Number(rawPoints);
+ if(rank!==null&&(!Number.isInteger(rank)||rank<1||rank>10000)){banner('Enter a whole-number rank from 1 to 10000, or leave it blank.','error');return;}
+ if(!Number.isInteger(points)||points<0||points>1000000){banner('Enter whole-number points from 0 to 1000000.','error');return;}
  save.disabled=true;save.textContent='…';
- const {error}=await sb.rpc('set_yearly_player_rank',{p_year:selectedPublicRankingYear,p_player_id:playerId,p_rank:rank});
+ const {error}=await sb.rpc('set_yearly_player_standing',{p_year:selectedPublicRankingYear,p_player_id:playerId,p_rank:rank,p_points:points});
  save.disabled=false;save.textContent='SAVE';
- if(error){banner('Could not save yearly ranking: '+error.message,'error');return;}
+ if(error){banner('Could not save yearly standing: '+error.message,'error');return;}
  await loadPublishedYearlyStandings(selectedPublicRankingYear);
- banner(rank===null?'Yearly rank cleared.':'Yearly rank saved.','success');
+ banner('Yearly rank and points saved.','success');
 });
 document.addEventListener('change',async e=>{
  const yearFilter=e.target.closest('#rankingsYearFilter');if(yearFilter){selectedPublicRankingYear=Number(yearFilter.value)||new Date().getFullYear();await loadPublishedYearlyStandings(selectedPublicRankingYear);return;}
