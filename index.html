@@ -303,6 +303,20 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 /* Make the main standings mode tabs and selected ranking year easier to read. */
 #mainStandingsMode button{font-weight:800!important}
 #rankingsYearFilter{font-weight:800!important}
+/* Responsive profile editor modal for desktop and mobile. */
+.bx-profile-modal{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(4px)}
+.bx-profile-modal.hide{display:none!important}
+.bx-profile-modal-dialog{width:min(560px,100%);max-height:min(88vh,820px);overflow:auto;background:#0c1011;border:1px solid #43BEC6;border-radius:12px;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.65)}
+.bx-profile-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;position:sticky;top:-20px;background:#0c1011;padding:4px 0 12px;z-index:2;border-bottom:1px solid #26394A}
+.bx-profile-modal-head h3{margin:0;font-size:20px}
+.bx-profile-modal-close{min-width:38px;width:38px;height:38px;padding:0;font-size:22px;line-height:1}
+#myProfileModalBody #myProfileForm{display:block!important}
+#myProfileModalBody #myProfileForm .actions{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:650px){
+ .bx-profile-modal{align-items:flex-end;padding:0}
+ .bx-profile-modal-dialog{width:100%;max-height:92dvh;border-radius:16px 16px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));border-bottom:0}
+ .bx-profile-modal-head{top:-18px}
+}
 #rankingsTable .yearly-rank-editor{display:flex;align-items:center;gap:6px;min-width:132px}
 #rankingsTable .yearly-rank-editor input{width:66px;min-width:66px;padding:5px 7px;font-size:12px;border-radius:6px}
 #rankingsTable .yearly-rank-editor .standing-save-icon{white-space:nowrap}
@@ -1153,8 +1167,14 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
    <label>Location *</label><input id="myProfileLocation" required maxlength="120" placeholder="City / area">
    
    <label>Blader details (optional)</label><textarea id="myProfileNotes" rows="3" maxlength="3000" placeholder="Play style, achievements, preferred format, etc. Leave blank if you have nothing to add."></textarea>
-   <div class="actions"><button type="submit" class="primary" id="myProfileSave">Save profile</button></div>
+   <div class="actions"><button type="submit" class="primary" id="myProfileSave">Save profile</button><button type="button" class="ghost" id="cancelMyProfileEdit">Cancel</button></div>
   </form><p id="myProfileMessage" class="muted"></p>
+  <div id="myProfileModal" class="bx-profile-modal hide" aria-hidden="true">
+   <div class="bx-profile-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="myProfileModalTitle">
+    <div class="bx-profile-modal-head"><h3 id="myProfileModalTitle">Edit Blader Profile</h3><button type="button" class="ghost bx-profile-modal-close" id="closeMyProfileModal" aria-label="Close">×</button></div>
+    <div id="myProfileModalBody"></div>
+   </div>
+  </div>
  </div>
  <div class="panel">
   <h2>My Beyblade Decks</h2><p class="muted">Build a Deck by choosing three of your saved Beyblade combos. Each Deck will appear on your profile with all three Blade images and its name.</p>
@@ -2040,6 +2060,25 @@ function refreshMyDeckForm(){if(!$('myDeckPickers').innerHTML){$('myDeckPickers'
  [1,2,3].forEach(slot=>['blade','ratchet','bit'].forEach(part=>renderDeckPicker(slot,part,$('deck'+slot+part[0].toUpperCase()+part.slice(1)).value)));}
 function resetMyDeck(){ $('myDeckForm').reset();$('myDeckId').value='';$('myDeckSave').textContent='Create Deck';refreshMyDeckForm();[1,2,3].forEach(slot=>['blade','ratchet','bit'].forEach(part=>{const id='deck'+slot+part[0].toUpperCase()+part.slice(1);$(id+'Search').value='';$(id+'Picker').classList.add('hide');renderDeckPicker(slot,part,'');}));}
 async function saveMyDecks(decks){const p=myOwnedPlayer();if(!p)throw new Error('Save your Blader profile first.');const value=JSON.stringify(decks);const {error}=await sb.from('players').update({decks:value}).eq('id',p.id).eq('auth_user_id',session.user.id);if(error)throw error;p.decks=value;}
+function openMyProfileModal(){
+ const modal=$('myProfileModal');
+ if(!modal)return;
+ modal.classList.remove('hide');
+ modal.setAttribute('aria-hidden','false');
+ document.body.classList.add('bx-profile-modal-open');
+ setTimeout(()=>$('myProfileName')?.focus(),40);
+}
+function closeMyProfileModal(){
+ const modal=$('myProfileModal');
+ if(!modal)return;
+ modal.classList.add('hide');
+ modal.setAttribute('aria-hidden','true');
+ document.body.classList.remove('bx-profile-modal-open');
+}
+$('closeMyProfileModal')?.addEventListener('click',closeMyProfileModal);
+$('cancelMyProfileEdit')?.addEventListener('click',closeMyProfileModal);
+$('myProfileModal')?.addEventListener('click',e=>{if(e.target===$('myProfileModal'))closeMyProfileModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('myProfileModal')?.classList.contains('hide'))closeMyProfileModal();});
 function renderMyProfile(){
  const p=myOwnedPlayer(),form=$('myProfileForm'),card=$('myProfileCard');
  if(!p){form.classList.remove('hide');card.innerHTML='<div class="empty">Complete your profile to publish your Blader card.</div>';}
@@ -2054,13 +2093,10 @@ function renderMyProfile(){
   '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+
   '<div class="my-profile-stat"><small>Ranking</small><b>'+(ranking?'#'+ranking:'—')+'</b></div><div class="my-profile-stat"><small>Score % (Win rate)</small><b>'+st.rate.toFixed(1)+'%</b></div><div class="my-profile-stat"><small>Points scored</small><b>'+st.points+'</b></div><div class="my-profile-stat"><small>Matches</small><b>'+st.played+'</b></div><div class="my-profile-stat"><small>W - L - D</small><b>'+st.w+' - '+st.l+' - '+st.d+'</b></div><div class="my-profile-stat"><small>Tournaments played</small><b>'+tournamentCount+'</b></div></div></div>'+
   '<div class="my-profile-section"><h3>Decks</h3>'+renderMyDeckCards(p)+'</div></div>';
-  $('myProfileEditHost').appendChild(form);
-  form.classList.add('hide');
-  $('editMyProfile').addEventListener('click',()=>{
-   const opening=form.classList.contains('hide');
-   form.classList.toggle('hide',!opening);
-   if(opening)form.scrollIntoView({behavior:'smooth',block:'start'});
-  });
+  $('myProfileModalBody').appendChild(form);
+  form.classList.remove('hide');
+  closeMyProfileModal();
+  $('editMyProfile').addEventListener('click',openMyProfileModal);
  }
  $('myProfileName').value=p?.name||session?.user?.user_metadata?.blader_name||'';
  $('myProfileTeam').value=p?.team||'';
