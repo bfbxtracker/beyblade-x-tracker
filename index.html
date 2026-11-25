@@ -2013,14 +2013,14 @@ function renderTournamentTab(){
    const medalByPlayer=new Map();
    if(isRiseChampionship){
     const playedMatches=matches.filter(m=>!m.is_scheduled);
-    const finalMatch=playedMatches.find(m=>/final/i.test(m.round_name||'')&&!/semi|third/i.test(m.round_name||''));
+    const finalMatch=playedMatches.find(m=>/^grand\s*final$/i.test(String(m.round_name||'').trim()));
     const thirdMatch=playedMatches.find(m=>/third.place/i.test(m.round_name||''));
     const winnerOf=m=>m?(Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null):null;
     const loserOf=m=>m?(winnerOf(m)==null?null:(winnerOf(m)===m.player1_id?m.player2_id:m.player1_id)):null;
     if(finalMatch){const champion=winnerOf(finalMatch),runnerUp=loserOf(finalMatch);if(champion)medalByPlayer.set(champion,{label:'1st',kind:'gold'});if(runnerUp)medalByPlayer.set(runnerUp,{label:'2nd',kind:'silver'});}
     const third=winnerOf(thirdMatch);if(third)medalByPlayer.set(third,{label:'3rd',kind:'bronze'});
    }
-   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id);return row([tournamentPlayerCell(e.player_id)+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':''),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>']);}));
+   out='<h3>Bladers</h3><p class="muted">Participants and their tournament records, ranked by points (highest first).</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id);return row([playerButton(e.player_id,pName(e.player_id))+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':'')+renderKnockoutDeck(e.deck||[]),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>']);}));
   }
  }
  const completedMatches=matches.filter(m=>!m.is_scheduled),stageCounts={group:completedMatches.filter(m=>m.group_id).length,r12:completedMatches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:completedMatches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:completedMatches.filter(m=>/semi/i.test(m.round_name||'')).length,final:completedMatches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
