@@ -2012,8 +2012,9 @@ function renderTournamentTab(){
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
    const medalByPlayer=new Map();
    if(isRiseChampionship){
-    const finalMatch=completedMatches.find(m=>/final/i.test(m.round_name||'')&&!/semi|third/i.test(m.round_name||''));
-    const thirdMatch=completedMatches.find(m=>/third.place/i.test(m.round_name||''));
+    const playedMatches=matches.filter(m=>!m.is_scheduled);
+    const finalMatch=playedMatches.find(m=>/final/i.test(m.round_name||'')&&!/semi|third/i.test(m.round_name||''));
+    const thirdMatch=playedMatches.find(m=>/third.place/i.test(m.round_name||''));
     const winnerOf=m=>m?(Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null):null;
     const loserOf=m=>m?(winnerOf(m)==null?null:(winnerOf(m)===m.player1_id?m.player2_id:m.player1_id)):null;
     if(finalMatch){const champion=winnerOf(finalMatch),runnerUp=loserOf(finalMatch);if(champion)medalByPlayer.set(champion,{label:'1st',kind:'gold'});if(runnerUp)medalByPlayer.set(runnerUp,{label:'2nd',kind:'silver'});}
