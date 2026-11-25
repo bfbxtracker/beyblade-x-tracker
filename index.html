@@ -1106,6 +1106,17 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .bx-player-name-inline .player-real-name{font-size:10px!important;font-weight:400!important;color:var(--muted)!important}
 .public-top-player>.player-link{min-width:0}
 
+
+/* Compact, collapsed Match-by-match section in every Blader profile */
+.profile-match-details{padding-top:8px!important;margin-top:10px!important}
+.profile-match-details>summary{display:flex;align-items:center;gap:9px;min-height:28px;cursor:pointer;list-style:none;color:#7DC8F7;font-size:12px;font-weight:750;line-height:1.25;user-select:none}
+.profile-match-details>summary::-webkit-details-marker{display:none}
+.profile-match-details>summary::before{content:"▸";font-size:13px;color:#7DC8F7;transition:transform .15s}
+.profile-match-details[open]>summary::before{transform:rotate(90deg)}
+.profile-match-count{font-size:10px;font-weight:500;color:#A8BDCC;border:1px solid #26394A;border-radius:10px;padding:2px 7px}
+.profile-match-content{padding-top:9px}
+.profile-match-content .blader-match-card{margin-bottom:6px}
+
 </style>
 </head>
 <body>
@@ -1392,7 +1403,7 @@ async function openPublicBladerProfile(id){
  host.innerHTML='<div class="my-profile-card"><div class="my-profile-card-head">'+photo+'<div class="bx-profile-title"><small class="muted">VERIFIED BLADER</small><h3>'+E(p.name)+'</h3><div class="muted">'+E([p.team,p.location].filter(Boolean).join(' · '))+'</div></div></div>'+
  (p.notes?'<div class="my-profile-section"><h3>Blader Details</h3><p>'+E(p.notes)+'</p></div>':'')+
  '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+stat('Overall ranking',st.ranking?'#'+st.ranking:'—')+stat('Win rate',Number(st.rate||0).toFixed(1)+'%')+stat('Points scored',Number(st.points)||0)+stat('Matches',Number(st.played)||0)+stat('W - L - D',(Number(st.wins)||0)+' - '+(Number(st.losses)||0)+' - '+(Number(st.draws)||0))+stat('Tournaments played',tournaments.length)+'</div></div>'+
- '<section class="my-profile-section"><h3>Match by match</h3>'+matchHtml+'</section>'+
+ '<details class="my-profile-section profile-match-details"><summary>Match by match <span class="profile-match-count">View history</span></summary><div class="profile-match-content">'+matchHtml+'</div></details>'+
  '<section class="my-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.date)])))+'</section></div>';
 }
 function renderMainTournamentStandings(){
@@ -1473,7 +1484,7 @@ function openPlayerProfile(id){
  '<div class="my-profile-section"><h3>Competitive Record</h3><div class="profile-stat-grid">'+statCard('Ranking',ranking?'#'+ranking:'—')+statCard('Score % (Win rate)',st.rate.toFixed(1)+'%')+statCard('Points scored',st.points)+statCard('Matches',st.played)+statCard('W - L - D',st.w+' - '+st.l+' - '+st.d)+statCard('Tournaments played',tournaments.length)+'</div></div>'+
  '<section class="my-profile-section"><h3>Decks</h3>'+deckHtml+'</section>'+
  '<section class="my-profile-section"><h3>Finishes</h3><div class="finish-count-grid">'+(finishes.size?[...finishes.entries()].map(([name,count])=>'<div class="finish-count-card"><b>'+count+'</b><span>'+E(name)+'</span><small>recorded matches</small></div>').join(''):'<div class="empty">No finish types recorded.</div>')+'</div></section>'+
- '<section class="my-profile-section"><h3>Match by match</h3>'+matchHtml+'</section>'+
+ '<details class="my-profile-section profile-match-details"><summary>Match by match <span class="profile-match-count">View history</span></summary><div class="profile-match-content">'+matchHtml+'</div></details>'+
  '<section class="my-profile-section"><h3>Tournaments</h3>'+table(['Tournament','Date'],tournaments.map(t=>row([E(t.name),displayDate(t.tournament_date)])))+'</section></div>';
  $('backToPlayers').onclick=()=>{window.bfbxCurrentProfileId=null;setView('players');};
  setView('playerProfile');
