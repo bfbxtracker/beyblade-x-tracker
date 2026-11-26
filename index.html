@@ -440,9 +440,15 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .tournament-workspace .player-link,.tournament-group-card .player-link,.tournament-standings .player-link,.bx-tree-slot .player-link{font-weight:700!important}
 /* Tournament podium labels beside the top three Bladers */
 #tournamentTabContent .bx-placement-medal{display:inline-flex;align-items:center;justify-content:center;margin-left:7px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:900;line-height:1.35;letter-spacing:.35px;vertical-align:middle;border:1px solid currentColor}
-#tournamentTabContent .bx-placement-medal.gold{color:#f2ca55;background:rgba(242,202,85,.12);text-shadow:0 0 8px rgba(242,202,85,.18)}
-#tournamentTabContent .bx-placement-medal.silver{color:#d6dce5;background:rgba(214,220,229,.12)}
-#tournamentTabContent .bx-placement-medal.bronze{color:#cd8b55;background:rgba(205,139,85,.12)}
+#tournamentTabContent .bx-placement-medal.gold{color:#f2ca55;background:rgba(242,202,85,.16);box-shadow:0 0 7px rgba(242,202,85,.42),0 0 15px rgba(242,202,85,.2);text-shadow:0 0 7px rgba(242,202,85,.8)}
+#tournamentTabContent .bx-placement-medal.silver{color:#e1e7ef;background:rgba(214,220,229,.16);box-shadow:0 0 7px rgba(214,220,229,.4),0 0 15px rgba(214,220,229,.18);text-shadow:0 0 7px rgba(214,220,229,.75)}
+#tournamentTabContent .bx-placement-medal.bronze{color:#e3a06b;background:rgba(205,139,85,.16);box-shadow:0 0 7px rgba(205,139,85,.42),0 0 15px rgba(205,139,85,.2);text-shadow:0 0 7px rgba(205,139,85,.8)}
+#tournamentTabContent .bx-podium-row.gold>td{background:linear-gradient(100deg,rgba(242,202,85,.17),rgba(242,202,85,.045))!important;border-top:1px solid rgba(242,202,85,.62)!important;border-bottom:1px solid rgba(242,202,85,.62)!important;box-shadow:inset 0 0 22px rgba(242,202,85,.11),0 0 16px rgba(242,202,85,.18)}
+#tournamentTabContent .bx-podium-row.silver>td{background:linear-gradient(100deg,rgba(214,220,229,.16),rgba(214,220,229,.04))!important;border-top:1px solid rgba(214,220,229,.58)!important;border-bottom:1px solid rgba(214,220,229,.58)!important;box-shadow:inset 0 0 22px rgba(214,220,229,.10),0 0 16px rgba(214,220,229,.16)}
+#tournamentTabContent .bx-podium-row.bronze>td{background:linear-gradient(100deg,rgba(205,139,85,.18),rgba(205,139,85,.045))!important;border-top:1px solid rgba(205,139,85,.62)!important;border-bottom:1px solid rgba(205,139,85,.62)!important;box-shadow:inset 0 0 22px rgba(205,139,85,.11),0 0 16px rgba(205,139,85,.17)}
+#tournamentTabContent .bx-podium-row.gold .bx-total-points{color:#f2ca55!important;text-shadow:0 0 10px rgba(242,202,85,.75)}
+#tournamentTabContent .bx-podium-row.silver .bx-total-points{color:#e1e7ef!important;text-shadow:0 0 10px rgba(214,220,229,.7)}
+#tournamentTabContent .bx-podium-row.bronze .bx-total-points{color:#e3a06b!important;text-shadow:0 0 10px rgba(205,139,85,.75)}
 .blader-profile-top{display:flex;align-items:center;gap:15px;margin-bottom:16px;flex-wrap:wrap}
 .blader-profile-name{display:flex;align-items:center;gap:12px}
 .blader-profile-name h2{font-size:25px;margin:0;color:#f0ffff}
@@ -2037,7 +2043,7 @@ function renderTournamentTab(){
    const third=winnerOf(thirdMatch);if(third)medalByPlayer.set(third,{label:'3rd',kind:'bronze'});
    const placementOrder={'1st':1,'2nd':2,'3rd':3};
    rankedBladers.sort((a,b)=>(placementOrder[medalByPlayer.get(a.entry.player_id)?.label]||99)-(placementOrder[medalByPlayer.get(b.entry.player_id)?.label]||99)||Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
-   out='<h3>Bladers</h3><p class="muted">Podium finishers first (1st, 2nd, 3rd), followed by remaining Bladers ranked by points.</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id);return row([playerButton(e.player_id,pName(e.player_id))+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':'')+renderKnockoutDeck(e.deck||[]),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>']);}));
+   out='<h3>Bladers</h3><p class="muted">Podium finishers first (1st, 2nd, 3rd), followed by remaining Bladers ranked by points.</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id),cells=[playerButton(e.player_id,pName(e.player_id))+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':'')+renderKnockoutDeck(e.deck||[]),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>'],html=row(cells);return medal?html.replace('<tr>','<tr class="bx-podium-row '+medal.kind+'">'):html;}));
   }
  }
  const completedMatches=matches.filter(m=>!m.is_scheduled),stageCounts={group:completedMatches.filter(m=>m.group_id).length,r12:completedMatches.filter(m=>/round of 12|round 12/i.test(m.round_name||'')).length,quarter:completedMatches.filter(m=>/quarter|super 8/i.test(m.round_name||'')).length,semi:completedMatches.filter(m=>/semi/i.test(m.round_name||'')).length,final:completedMatches.filter(m=>/final/i.test(m.round_name||'')&&!/semi/i.test(m.round_name||'')).length};
