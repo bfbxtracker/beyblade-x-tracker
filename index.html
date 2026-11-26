@@ -2028,15 +2028,13 @@ function renderTournamentTab(){
   }else{
    const rankedBladers=entries.map((e,index)=>({entry:e,index,stats:stats.find(z=>z.id===e.player_id)||{played:0,w:0,l:0,points:0}})).sort((a,b)=>Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
    const medalByPlayer=new Map();
-   if(isRiseChampionship){
-    const playedMatches=matches.filter(m=>!m.is_scheduled);
-    const finalMatch=playedMatches.find(m=>/^grand\s*final$/i.test(String(m.round_name||'').trim()));
-    const thirdMatch=playedMatches.find(m=>/third.place/i.test(m.round_name||''));
-    const winnerOf=m=>m?(Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null):null;
-    const loserOf=m=>m?(winnerOf(m)==null?null:(winnerOf(m)===m.player1_id?m.player2_id:m.player1_id)):null;
-    if(finalMatch){const champion=winnerOf(finalMatch),runnerUp=loserOf(finalMatch);if(champion)medalByPlayer.set(champion,{label:'1st',kind:'gold'});if(runnerUp)medalByPlayer.set(runnerUp,{label:'2nd',kind:'silver'});}
-    const third=winnerOf(thirdMatch);if(third)medalByPlayer.set(third,{label:'3rd',kind:'bronze'});
-   }
+   const playedMatches=matches.filter(m=>!m.is_scheduled);
+   const finalMatch=playedMatches.find(m=>/final/i.test(String(m.round_name||''))&&!/semi|third|quarter/i.test(String(m.round_name||'')));
+   const thirdMatch=playedMatches.find(m=>/third[\s-]*place/i.test(String(m.round_name||'')));
+   const winnerOf=m=>m?(Number(m.player1_points)>Number(m.player2_points)?m.player1_id:Number(m.player2_points)>Number(m.player1_points)?m.player2_id:null):null;
+   const loserOf=m=>m?(winnerOf(m)==null?null:(winnerOf(m)===m.player1_id?m.player2_id:m.player1_id)):null;
+   if(finalMatch){const champion=winnerOf(finalMatch),runnerUp=loserOf(finalMatch);if(champion)medalByPlayer.set(champion,{label:'1st',kind:'gold'});if(runnerUp)medalByPlayer.set(runnerUp,{label:'2nd',kind:'silver'});}
+   const third=winnerOf(thirdMatch);if(third)medalByPlayer.set(third,{label:'3rd',kind:'bronze'});
    const placementOrder={'1st':1,'2nd':2,'3rd':3};
    rankedBladers.sort((a,b)=>(placementOrder[medalByPlayer.get(a.entry.player_id)?.label]||99)-(placementOrder[medalByPlayer.get(b.entry.player_id)?.label]||99)||Number(b.stats.points||0)-Number(a.stats.points||0)||Number(b.stats.w||0)-Number(a.stats.w||0)||a.index-b.index);
    out='<h3>Bladers</h3><p class="muted">Podium finishers first (1st, 2nd, 3rd), followed by remaining Bladers ranked by points.</p>'+table(['Blader','Played','Wins','Losses','Points'],rankedBladers.map(({entry:e,stats:x})=>{const medal=medalByPlayer.get(e.player_id);return row([playerButton(e.player_id,pName(e.player_id))+(medal?'<span class="bx-placement-medal '+medal.kind+'">'+medal.label+'</span>':'')+renderKnockoutDeck(e.deck||[]),x.played,x.w,x.l,'<span class="bx-total-points">'+x.points+'</span>']);}));
