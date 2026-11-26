@@ -290,6 +290,21 @@ h1,h2,h3,h4,h5,h6,.brand,.hero-kicker,.stat-value{font-family:Inter,Arial,Helvet
 .standings-group-card td:last-child .bx-total-points{font-size:16px!important}
 #rankingsTable td:last-child .bx-total-points{font-size:16px!important}
 
+/* Overall Yearly Ranking podium highlights: crown, matching row tint and glow */
+#rankingsTable .bx-yearly-podium-gold td{background:linear-gradient(90deg,rgba(244,197,66,.19),rgba(244,197,66,.055))!important;border-top:1px solid rgba(255,211,89,.72)!important;border-bottom:1px solid rgba(255,211,89,.72)!important;box-shadow:inset 0 0 18px rgba(244,197,66,.10),0 0 13px rgba(244,197,66,.10)}
+#rankingsTable .bx-yearly-podium-silver td{background:linear-gradient(90deg,rgba(205,216,229,.17),rgba(205,216,229,.045))!important;border-top:1px solid rgba(218,226,237,.68)!important;border-bottom:1px solid rgba(218,226,237,.68)!important;box-shadow:inset 0 0 18px rgba(205,216,229,.09),0 0 13px rgba(205,216,229,.08)}
+#rankingsTable .bx-yearly-podium-bronze td{background:linear-gradient(90deg,rgba(196,123,67,.19),rgba(196,123,67,.05))!important;border-top:1px solid rgba(218,145,86,.7)!important;border-bottom:1px solid rgba(218,145,86,.7)!important;box-shadow:inset 0 0 18px rgba(196,123,67,.10),0 0 13px rgba(196,123,67,.09)}
+#rankingsTable .bx-yearly-crown{display:inline-block;margin-left:7px;font-size:17px;font-weight:900;line-height:1;vertical-align:middle}
+#rankingsTable .bx-yearly-podium-gold .bx-yearly-crown{color:#ffd34f;text-shadow:0 0 5px #e5a900,0 0 12px rgba(255,204,55,.85)}
+#rankingsTable .bx-yearly-podium-silver .bx-yearly-crown{color:#e2e8f0;text-shadow:0 0 5px #aab6c5,0 0 12px rgba(218,228,240,.8)}
+#rankingsTable .bx-yearly-podium-bronze .bx-yearly-crown{color:#d99158;text-shadow:0 0 5px #a85c2a,0 0 12px rgba(217,145,88,.8)}
+#rankingsTable .bx-yearly-podium-gold .rank{color:#ffd34f!important;text-shadow:0 0 9px rgba(255,204,55,.55)}
+#rankingsTable .bx-yearly-podium-silver .rank{color:#e2e8f0!important;text-shadow:0 0 9px rgba(218,228,240,.5)}
+#rankingsTable .bx-yearly-podium-bronze .rank{color:#d99158!important;text-shadow:0 0 9px rgba(217,145,88,.5)}
+#rankingsTable .bx-yearly-podium-gold .bx-total-points{color:#ffd34f!important;text-shadow:0 0 10px rgba(255,204,55,.55)}
+#rankingsTable .bx-yearly-podium-silver .bx-total-points{color:#e2e8f0!important;text-shadow:0 0 10px rgba(218,228,240,.45)}
+#rankingsTable .bx-yearly-podium-bronze .bx-total-points{color:#d99158!important;text-shadow:0 0 10px rgba(217,145,88,.5)}
+
 /* Detailed tournament standings and blader record layouts */
 .tournament-standings h2{font-size:27px;margin:0 0 4px}
 .standings-champion{display:flex;align-items:center;gap:15px;padding:17px;margin:18px 0;border:1px solid #7DC8F7;border-radius:7px;background:linear-gradient(110deg,rgba(67,190,198,.13),rgba(67,190,198,.035))}
@@ -1598,7 +1613,9 @@ function renderMainTournamentStandings(){
    const player=playerNameMarkup(x.player_id,x.player_name);
    let editor='';
    if(isAdmin)editor='<div class="yearly-rank-editor"><input type="number" min="1" max="10000" step="1" inputmode="numeric" aria-label="Yearly rank for '+E(x.player_name)+'" placeholder="Rank" value="'+(x.rank==null?'':Number(x.rank))+'" data-yearly-rank-input="'+E(x.player_id)+'"><input type="number" min="0" max="1000000" step="1" inputmode="numeric" aria-label="Yearly points for '+E(x.player_name)+'" placeholder="Points" value="'+Number(x.points||0)+'" data-yearly-points-input="'+E(x.player_id)+'"><button type="button" class="standing-save-icon" data-yearly-standing-save="'+E(x.player_id)+'">SAVE</button></div>';
-   html+='<tr><td><span class="rank">'+(x.rank==null?'—':Number(x.rank))+'</span></td><td>'+player+'</td><td><span class="bx-total-points">'+Number(x.points||0)+'</span></td>';
+   const podiumRank=Number(x.rank),podiumClass=podiumRank===1?'bx-yearly-podium-gold':podiumRank===2?'bx-yearly-podium-silver':podiumRank===3?'bx-yearly-podium-bronze':'';
+   const crown=podiumRank>=1&&podiumRank<=3?'<span class="bx-yearly-crown" aria-label="'+podiumRank+' place">♛</span>':'';
+   html+='<tr'+(podiumClass?' class="'+podiumClass+'"':'')+'><td><span class="rank">'+(x.rank==null?'—':Number(x.rank))+'</span>'+crown+'</td><td>'+player+'</td><td><span class="bx-total-points">'+Number(x.points||0)+'</span></td>';
    if(isAdmin)html+='<td>'+editor+'</td>';
    html+='</tr>';
   });
